@@ -13,8 +13,10 @@ const loginError = document.getElementById('loginError');
 function showDashboard() {
   loginScreen.hidden = true;
   dashboard.hidden = false;
+  renderOverview();
   renderCarAdminGrid();
   renderInquiries();
+  renderFinance();
 }
 
 function showLogin() {
@@ -45,13 +47,17 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 });
 
 // ---- Tabs ----
+const TAB_PANELS = ['dashboard', 'cars', 'inquiries', 'finance'];
 document.querySelectorAll('.admin-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('active'));
     tab.classList.add('active');
     const target = tab.dataset.tab;
-    document.getElementById('panel-cars').hidden = target !== 'cars';
-    document.getElementById('panel-inquiries').hidden = target !== 'inquiries';
+    TAB_PANELS.forEach((name) => {
+      document.getElementById(`panel-${name}`).hidden = target !== name;
+    });
+    if (target === 'dashboard') renderOverview();
+    if (target === 'finance') renderFinance();
   });
 });
 
@@ -99,6 +105,7 @@ function renderCarAdminGrid() {
       if (!confirm(`Delete "${car.name}"? This can't be undone.`)) return;
       saveCars(loadCars().filter((c) => c.id !== id));
       renderCarAdminGrid();
+      renderOverview();
     });
   });
 }
@@ -160,6 +167,7 @@ carForm.addEventListener('submit', (e) => {
   saveCars(cars);
   closeCarModal();
   renderCarAdminGrid();
+  renderOverview();
 });
 
 // ---- Inquiries ----
@@ -190,4 +198,136 @@ document.getElementById('clearInquiriesBtn').addEventListener('click', () => {
   if (!confirm('Clear all booking inquiries? This can\'t be undone.')) return;
   localStorage.removeItem(INQUIRY_STORE_KEY);
   renderInquiries();
+  renderOverview();
 });
+
+// ---- Finance ----
+const FINANCE_STORE_KEY = 'nitesha_finance_v1';
+
+function loadTransactions() {
+  try {
+    const raw = localStorage.getItem(FINANCE_STORE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveTransaction(txn) {
+  const transactions = loadTransactions();
+  transactions.unshift({ ...txn, id: Date.now(), recordedAt: new Date().toISOString() });
+  localStorage.setItem(FINANCE_STORE_KEY, JSON.stringify(transactions));
+}
+
+function deleteTransaction(id) {
+  localStorage.setItem(FINANCE_STORE_KEY, JSON.stringify(loadTransactions().filter((t) => t.id !== id)));
+}
+
+function financeTotals() {
+  const transactions = loadTransactions();
+  const income = transactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const expense = transactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  return { income, expense, balance: income - expense };
+}
+
+function formatINR(amount) {
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
+
+function transactionCardHTML(txn) {
+  const sign = txn.type === 'income' ? '+' : '−';
+  return `
+    <div class="transaction-card" data-id="${txn.id}">
+      <div class="transaction-info">
+        <span class="transaction-category">${txn.category}</span>
+        <span class="transaction-note">${txn.note || 'No note'}</span>
+        <span class="transaction-time">${new Date(txn.recordedAt).toLocaleString()}</span>
+      </div>
+      <div class="transaction-right">
+        <span class="transaction-amount ${txn.type}">${sign} ${formatINR(txn.amount)}</span>
+        <button class="transaction-delete" aria-label="Delete entry" title="Delete entry">✕</button>
+      </div>
+    </div>`;
+}
+
+function renderFinance() {
+  const wrap = document.getElementById('transactionsWrap');
+  if (!wrap) return;
+  const transactions = loadTransactions();
+  const { income, expense, balance } = financeTotals();
+
+  document.getElementById('financeIncome').textContent = formatINR(income);
+  document.getElementById('financeExpense').textContent = formatINR(expense);
+  document.getElementById('financeBalance').textContent = formatINR(balance);
+
+  if (!transactions.length) {
+    wrap.innerHTML = '<div class="empty-state">No entries yet. Log a booking payment or an expense above.</div>';
+    return;
+  }
+
+  wrap.innerHTML = transactions.map(transactionCardHTML).join('');
+  wrap.querySelectorAll('.transaction-delete').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = Number(e.target.closest('.transaction-card').dataset.id);
+      deleteTransaction(id);
+      renderFinance();
+      renderOverview();
+    });
+  });
+}
+
+document.getElementById('financeForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveTransaction({
+    type: document.getElementById('txnType').value,
+    category: document.getElementById('txnCategory').value,
+    amount: Number(document.getElementById('txnAmount').value),
+    note: document.getElementById('txnNote').value.trim(),
+  });
+  e.target.reset();
+  renderFinance();
+  renderOverview();
+});
+
+// ---- Dashboard overview ----
+function renderOverview() {
+  const carCountEl = document.getElementById('statCarCount');
+  if (!carCountEl) return;
+
+  const cars = loadCars();
+  const inquiries = loadInquiries();
+  const { income, expense, balance } = financeTotals();
+
+  carCountEl.textContent = cars.length;
+  document.getElementById('statInquiryCount').textContent = inquiries.length;
+  document.getElementById('statIncome').textContent = formatINR(income);
+  document.getElementById('statExpense').textContent = formatINR(expense);
+  document.getElementById('statBalance').textContent = formatINR(balance);
+
+  const recentInquiries = document.getElementById('recentInquiries');
+  recentInquiries.innerHTML = inquiries.length
+    ? inquiries.slice(0, 5).map((inq) => `
+      <div class="inquiry-card">
+        <div class="inquiry-info">
+          <span class="inquiry-name">${inq.name || '(no name)'}</span>
+          <span class="inquiry-detail">${inq.phone || '—'} · ${inq.city || '—'}</span>
+        </div>
+        <span class="inquiry-time">${new Date(inq.receivedAt).toLocaleString()}</span>
+      </div>`).join('')
+    : '<div class="empty-state">No inquiries yet.</div>';
+
+  const recentTransactions = document.getElementById('recentTransactions');
+  const transactions = loadTransactions();
+  recentTransactions.innerHTML = transactions.length
+    ? transactions.slice(0, 5).map(transactionCardHTML).join('')
+    : '<div class="empty-state">No transactions yet.</div>';
+  recentTransactions.querySelectorAll('.transaction-delete').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = Number(e.target.closest('.transaction-card').dataset.id);
+      deleteTransaction(id);
+      renderOverview();
+      renderFinance();
+    });
+  });
+}

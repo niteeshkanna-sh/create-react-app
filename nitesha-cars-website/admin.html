@@ -43,12 +43,58 @@
 
     <div class="admin-body">
       <nav class="admin-tabs">
-        <button class="admin-tab active" data-tab="cars">🚗 Cars</button>
+        <button class="admin-tab active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="admin-tab" data-tab="cars">🚗 Cars</button>
         <button class="admin-tab" data-tab="inquiries">📩 Inquiries <span class="tab-count" id="inquiryCount"></span></button>
+        <button class="admin-tab" data-tab="finance">💰 Finance</button>
       </nav>
 
+      <!-- Dashboard tab -->
+      <section class="admin-panel" id="panel-dashboard">
+        <div class="panel-header">
+          <div>
+            <h2>Overview</h2>
+            <p>A snapshot of your fleet, inquiries, and finances.</p>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-label">Cars Listed</span>
+            <span class="stat-value" id="statCarCount">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Booking Inquiries</span>
+            <span class="stat-value" id="statInquiryCount">0</span>
+          </div>
+          <div class="stat-card stat-card-income">
+            <span class="stat-label">Total Income</span>
+            <span class="stat-value" id="statIncome">₹0</span>
+          </div>
+          <div class="stat-card stat-card-expense">
+            <span class="stat-label">Total Expenses</span>
+            <span class="stat-value" id="statExpense">₹0</span>
+          </div>
+          <div class="stat-card stat-card-balance">
+            <span class="stat-label">Net Balance</span>
+            <span class="stat-value" id="statBalance">₹0</span>
+          </div>
+        </div>
+
+        <div class="dashboard-cols">
+          <div class="dashboard-col">
+            <h3>Recent Inquiries</h3>
+            <div id="recentInquiries"></div>
+          </div>
+          <div class="dashboard-col">
+            <h3>Recent Transactions</h3>
+            <div id="recentTransactions"></div>
+          </div>
+        </div>
+      </section>
+
       <!-- Cars tab -->
-      <section class="admin-panel" id="panel-cars">
+      <section class="admin-panel" id="panel-cars" hidden>
         <div class="panel-header">
           <div>
             <h2>Car Listings</h2>
@@ -71,6 +117,63 @@
         </div>
 
         <div id="inquiriesWrap"></div>
+      </section>
+
+      <!-- Finance tab -->
+      <section class="admin-panel" id="panel-finance" hidden>
+        <div class="panel-header">
+          <div>
+            <h2>Finance &amp; Accounts</h2>
+            <p>Log booking payments and expenses to track your balance.</p>
+          </div>
+        </div>
+
+        <div class="stat-grid stat-grid-3">
+          <div class="stat-card stat-card-income">
+            <span class="stat-label">Total Income</span>
+            <span class="stat-value" id="financeIncome">₹0</span>
+          </div>
+          <div class="stat-card stat-card-expense">
+            <span class="stat-label">Total Expenses</span>
+            <span class="stat-value" id="financeExpense">₹0</span>
+          </div>
+          <div class="stat-card stat-card-balance">
+            <span class="stat-label">Net Balance</span>
+            <span class="stat-value" id="financeBalance">₹0</span>
+          </div>
+        </div>
+
+        <form class="finance-form" id="financeForm">
+          <div class="field-group">
+            <label for="txnType">Type</label>
+            <select id="txnType" required>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="txnCategory">Category</label>
+            <select id="txnCategory" required>
+              <option>Booking Payment</option>
+              <option>Fuel</option>
+              <option>Maintenance</option>
+              <option>Insurance</option>
+              <option>Salary</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="txnAmount">Amount (₹)</label>
+            <input type="number" id="txnAmount" required min="0" placeholder="1500" />
+          </div>
+          <div class="field-group txn-note-group">
+            <label for="txnNote">Note</label>
+            <input type="text" id="txnNote" placeholder="e.g. Swift booking — 3 days" />
+          </div>
+          <button type="submit" class="btn btn-primary">Add Entry</button>
+        </form>
+
+        <div id="transactionsWrap"></div>
       </section>
     </div>
 
