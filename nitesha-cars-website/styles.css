@@ -156,7 +156,7 @@ button { font-family: inherit; }
   align-items: end;
   padding: 24px;
 }
-.field { padding: 0 18px; border-right: 1px solid var(--border); }
+.field { padding: 0 18px; border-right: 1px solid var(--border); min-width: 0; }
 .field:first-child { padding-left: 0; }
 .booking-form .btn-search { border-radius: 0 0 14px 0; margin: 0; align-self: stretch; }
 
@@ -179,8 +179,8 @@ button { font-family: inherit; }
   outline: none;
   padding: 4px 0;
 }
-.field-row { display: flex; gap: 8px; }
-.field-row input { min-width: 0; }
+.field-row { display: flex; gap: 8px; min-width: 0; }
+.field-row input { min-width: 0; flex: 1 1 0; }
 
 .btn-search {
   padding: 0 30px;
@@ -416,4 +416,10 @@ button { font-family: inherit; }
   .wa-float { display: none; }
   .mobile-footer-nav { display: grid; }
   body { padding-bottom: 78px; }
+}
+
+@media (max-width: 480px) {
+  .booking-form { grid-template-columns: 1fr; }
+  .btn-search { grid-column: span 1; }
+  .field-row { flex-direction: column; gap: 10px; }
 }
