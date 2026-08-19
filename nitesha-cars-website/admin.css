@@ -144,7 +144,7 @@ button { font-family: inherit; }
 
 /* ---------- Finance ---------- */
 .finance-form {
-  display: grid; grid-template-columns: 1fr 1fr 1fr 2fr auto; gap: 12px; align-items: end;
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 2fr auto; gap: 12px; align-items: end;
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
   padding: 18px; margin-bottom: 24px;
 }
@@ -207,17 +207,147 @@ button { font-family: inherit; }
 .field-group input:focus, .field-group select:focus { border-color: var(--primary); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
+/* ---------- Dashboard: rental overview ---------- */
+.dashboard-subheading { font-size: 1.1rem; margin: 8px 0 16px; }
+.stat-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.stat-card-deposit .stat-value { color: #b7791f; }
+
+/* ---------- Wide/tall modal variants ---------- */
+.modal-wide { max-width: 720px; }
+.modal-tall { max-height: 92vh; }
+.modal-row-4 { grid-template-columns: repeat(4, 1fr); }
+.modal-section-label {
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--ink-faint); margin: 18px 0 10px;
+}
+.modal-section-label:first-of-type { margin-top: 4px; }
+.field-hint { font-size: 0.85rem; color: var(--ink-dim); margin: -6px 0 14px; }
+.field-hint strong { color: var(--ink); }
+.booking-number-preview { font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 14px; }
+.booking-conflict-error {
+  color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
+}
+.proof-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.proof-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+
+/* ---------- Bookings ---------- */
+.booking-filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
+.filter-chip {
+  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
+  padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 0.82rem; cursor: pointer;
+  flex-shrink: 0; white-space: nowrap;
+}
+.filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.booking-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap; cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.booking-card:hover { box-shadow: var(--shadow); }
+.booking-card-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.booking-card-number { font-weight: 800; color: var(--primary); font-size: 0.92rem; }
+.booking-card-customer { font-weight: 700; }
+.booking-card-meta { font-size: 0.82rem; color: var(--ink-dim); }
+.booking-card-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.booking-card-balance { text-align: right; }
+.booking-card-balance .amount { font-weight: 800; font-variant-numeric: tabular-nums; }
+.booking-card-balance .label { display: block; font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; }
+
+.status-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.72rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+}
+.status-badge-Confirmed { background: #eaf1ff; color: var(--primary); }
+.status-badge-Active { background: #e8f9f0; color: #0f9d6c; }
+.status-badge-Completed { background: #f1f3f8; color: var(--ink-dim); }
+.status-badge-Cancelled { background: #fdecec; color: var(--danger); }
+.status-badge-Available { background: #e8f9f0; color: #0f9d6c; }
+.status-badge-Booked { background: #eaf1ff; color: var(--primary); }
+.status-badge-OnRental { background: #fff6e6; color: #b7791f; }
+.status-badge-Maintenance { background: #fdecec; color: var(--danger); }
+.status-badge-Inactive { background: #f1f3f8; color: var(--ink-faint); }
+
+/* ---------- Booking detail ---------- */
+.booking-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.booking-detail-header h3 { margin: 0; }
+.detail-section {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 14px;
+}
+.detail-section-title {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-weight: 700; margin-bottom: 12px;
+}
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 20px; }
+.detail-field { display: flex; flex-direction: column; gap: 2px; }
+.detail-field .k { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.03em; }
+.detail-field .v { font-weight: 600; font-size: 0.92rem; }
+.detail-empty { color: var(--ink-faint); font-size: 0.88rem; }
+
+.payment-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+}
+.payment-row:last-child { border-bottom: none; }
+.payment-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.timeline-list { list-style: none; padding: 0; margin: 0; }
+.timeline-list li {
+  position: relative; padding: 0 0 16px 22px; font-size: 0.88rem; border-left: 2px solid var(--border);
+}
+.timeline-list li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.timeline-list li::before {
+  content: ''; position: absolute; left: -5px; top: 2px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--primary);
+}
+.timeline-list .t-event { font-weight: 600; display: block; }
+.timeline-list .t-time { font-size: 0.75rem; color: var(--ink-faint); }
+
+/* ---------- Reports ---------- */
+.report-tabs { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; }
+.report-tab {
+  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
+  padding: 9px 16px; border-radius: 999px; font-weight: 600; font-size: 0.82rem; cursor: pointer;
+  flex-shrink: 0; white-space: nowrap;
+}
+.report-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.report-filters {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: end; background: #fff;
+  border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+}
+.report-filters .field-group { margin-bottom: 0; min-width: 160px; }
+.report-export-row { display: flex; gap: 10px; margin-bottom: 18px; }
+.report-results { overflow-x: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); }
+.report-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.report-table th, .report-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.report-table th { background: var(--bg); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); }
+.report-table tfoot td { font-weight: 700; background: var(--bg); }
+
+@media print {
+  .header, .admin-tabs, .panel-header .btn, .report-tabs, .report-filters, .report-export-row,
+  .booking-filters, .admin-header, .storage-note, .wa-float, .mobile-footer-nav { display: none !important; }
+  body { background: #fff; }
+  .report-results { border: none; }
+}
+
 @media (max-width: 900px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid-4 { grid-template-columns: repeat(2, 1fr); }
   .dashboard-cols { grid-template-columns: 1fr; }
   .finance-form { grid-template-columns: 1fr 1fr; }
   .finance-form button { grid-column: span 2; }
+  .modal-row-4 { grid-template-columns: 1fr 1fr; }
+  .booking-card { flex-direction: column; align-items: flex-start; }
+  .booking-card-right { width: 100%; justify-content: space-between; }
 }
 
 @media (max-width: 560px) {
-  .modal-row, .modal-row-3 { grid-template-columns: 1fr; }
+  .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
   .admin-header-inner { flex-direction: column; gap: 10px; align-items: flex-start; }
-  .stat-grid, .stat-grid-3 { grid-template-columns: 1fr; }
+  .stat-grid, .stat-grid-3, .stat-grid-4 { grid-template-columns: 1fr; }
   .finance-form { grid-template-columns: 1fr; }
   .finance-form button { grid-column: span 1; }
+  .report-filters .field-group { min-width: 0; flex: 1 1 100%; }
 }
