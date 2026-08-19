@@ -77,13 +77,14 @@ function renderCarAdminGrid() {
 
   wrap.innerHTML = cars.map((car) => `
     <div class="car-admin-card" data-id="${car.id}">
+      <div class="admin-car-thumb">${carIllustrationSVG(car.bodyType, car.color)}</div>
       <div class="row1">
-        <span class="icon">${car.icon}</span>
         <span class="name">${car.name}</span>
         <span class="status-badge status-badge-${car.status.replace(' ', '')}">${car.status}</span>
       </div>
       <div class="meta">
         <span>${car.brand}</span>
+        <span>${car.bodyType}</span>
         <span>${car.regNumber || 'No reg. no.'}</span>
         <span>${car.fuel}</span>
         <span>${car.transmission}</span>
@@ -132,9 +133,10 @@ function openCarModal(car) {
   document.getElementById('carId').value = car ? car.id : '';
   carModalTitle.textContent = car ? 'Edit Vehicle' : 'Add Vehicle';
   document.getElementById('carBrand').value = car ? car.brand : '';
-  document.getElementById('carIcon').value = car ? car.icon : '🚗';
+  document.getElementById('carBodyType').value = car ? car.bodyType : 'Hatchback';
   document.getElementById('carName').value = car ? car.name : '';
   document.getElementById('carRegNumber').value = car ? car.regNumber : '';
+  document.getElementById('carColor').value = car ? car.color : '#5B6472';
   document.getElementById('carFuel').value = car ? car.fuel : 'Petrol';
   document.getElementById('carTransmission').value = car ? car.transmission : 'Manual';
   document.getElementById('carSeats').value = car ? car.seats : 5;
@@ -168,9 +170,10 @@ carForm.addEventListener('submit', (e) => {
 
   const carData = {
     brand: document.getElementById('carBrand').value.trim(),
-    icon: document.getElementById('carIcon').value.trim() || '🚗',
+    bodyType: document.getElementById('carBodyType').value,
     name: document.getElementById('carName').value.trim(),
     regNumber: document.getElementById('carRegNumber').value.trim().toUpperCase(),
+    color: document.getElementById('carColor').value,
     fuel: document.getElementById('carFuel').value,
     transmission: document.getElementById('carTransmission').value,
     seats: Number(document.getElementById('carSeats').value),
@@ -422,7 +425,7 @@ function populateVehicleSelect(selectEl, selectedId) {
 
 function vehicleLabel(vehicleId) {
   const car = loadCars().find((c) => c.id === vehicleId);
-  return car ? `${car.icon} ${car.name}` : '(vehicle removed)';
+  return car ? car.name : '(vehicle removed)';
 }
 
 // ---- Booking list ----
@@ -672,7 +675,7 @@ function renderBookingDetail(id) {
         <div class="detail-field"><span class="k">Phone</span><span class="v">${booking.phone}</span></div>
         <div class="detail-field"><span class="k">Address</span><span class="v">${booking.address || '—'}</span></div>
         <div class="detail-field"><span class="k">Licence No.</span><span class="v">${booking.licenceNumber}</span></div>
-        <div class="detail-field"><span class="k">Vehicle</span><span class="v">${car ? `${car.icon} ${car.name}` : '(removed)'}</span></div>
+        <div class="detail-field"><span class="k">Vehicle</span><span class="v">${car ? car.name : '(removed)'}</span></div>
         <div class="detail-field"><span class="k">Reg. Number</span><span class="v">${booking.vehicleRegNumber || '—'}</span></div>
         <div class="detail-field"><span class="k">Start</span><span class="v">${formatDate(booking.startDate)} ${booking.startTime}</span></div>
         <div class="detail-field"><span class="k">Return</span><span class="v">${formatDate(booking.returnDate)} ${booking.returnTime}</span></div>

@@ -57,7 +57,7 @@ button { font-family: inherit; }
   background: #fff; border: 1px solid var(--border); border-radius: 20px;
   box-shadow: var(--shadow); padding: 40px; width: 100%; max-width: 380px; text-align: center;
 }
-.login-logo { font-weight: 800; font-size: 1.1rem; margin-bottom: 20px; }
+.login-logo { font-weight: 800; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .login-card h1 { font-size: 1.4rem; margin-bottom: 8px; }
 .login-note { font-size: 0.8rem; color: var(--ink-faint); margin-bottom: 24px; line-height: 1.5; }
 .login-card form { text-align: left; }
@@ -79,6 +79,11 @@ button { font-family: inherit; }
   display: flex; align-items: center; justify-content: space-between;
 }
 .logo { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+.logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
 .admin-tag {
   font-size: 0.7rem; font-weight: 700; background: var(--ink); color: #fff;
   padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;
@@ -94,6 +99,7 @@ button { font-family: inherit; }
   flex-shrink: 0; white-space: nowrap;
 }
 .admin-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tab-icon { vertical-align: -2px; margin-right: 4px; }
 .tab-count {
   display: inline-block; margin-left: 4px; background: rgba(255,255,255,0.2);
   padding: 1px 7px; border-radius: 999px; font-size: 0.72rem;
@@ -113,8 +119,12 @@ button { font-family: inherit; }
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
   padding: 18px; display: flex; flex-direction: column; gap: 10px;
 }
+.admin-car-thumb {
+  background: linear-gradient(135deg, #eaf1ff, #e3fbf9); border-radius: 10px;
+  padding: 8px; margin: -4px -4px 2px;
+}
+.admin-car-thumb svg { width: 100%; height: auto; display: block; }
 .car-admin-card .row1 { display: flex; align-items: center; gap: 10px; }
-.car-admin-card .icon { font-size: 1.8rem; }
 .car-admin-card .name { font-weight: 700; font-size: 0.95rem; flex: 1; }
 .car-admin-card .meta { font-size: 0.8rem; color: var(--ink-dim); display: flex; gap: 10px; flex-wrap: wrap; }
 .car-admin-card .price { font-weight: 800; color: var(--primary); font-size: 1.05rem; }
@@ -205,6 +215,7 @@ button { font-family: inherit; }
   font-size: 0.9rem; outline: none; font-family: inherit;
 }
 .field-group input:focus, .field-group select:focus { border-color: var(--primary); }
+.color-input { padding: 4px !important; height: 40px; cursor: pointer; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
 /* ---------- Dashboard: rental overview ---------- */

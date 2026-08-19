@@ -92,7 +92,11 @@ button { font-family: inherit; }
 .main-header-inner { display: flex; align-items: center; justify-content: space-between; height: 70px; }
 
 .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.2rem; color: var(--ink); }
-.logo-mark { font-size: 1.4rem; }
+.logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
 
 .nav-links { display: flex; align-items: center; gap: 28px; font-size: 0.92rem; font-weight: 500; color: var(--ink-dim); }
 .nav-links a.active, .nav-links a:hover { color: var(--primary); }
@@ -229,7 +233,8 @@ button { font-family: inherit; }
   background: linear-gradient(135deg, #eaf1ff, #e3fbf9);
   display: flex; align-items: center; justify-content: center;
 }
-.car-illustration { font-size: 4rem; }
+.car-illustration { width: 78%; max-width: 220px; }
+.car-illustration svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 8px 10px rgba(16,24,40,0.12)); }
 .badge {
   position: absolute; top: 12px;
   font-size: 0.7rem; font-weight: 700;
@@ -241,6 +246,8 @@ button { font-family: inherit; }
 .car-body { padding: 18px; }
 .car-name { font-size: 1.02rem; margin-bottom: 8px; }
 .car-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.78rem; color: var(--ink-dim); margin-bottom: 16px; }
+.car-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.car-meta svg { flex-shrink: 0; }
 
 .car-footer {
   display: flex; align-items: center; justify-content: space-between;
@@ -268,7 +275,7 @@ button { font-family: inherit; }
   text-align: center;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
 }
-.why-location-box .pin { font-size: 1.8rem; }
+.why-location-box .pin { color: var(--primary); }
 
 .why-right {
   background: var(--ink);
@@ -289,7 +296,7 @@ button { font-family: inherit; }
   border-radius: 50%;
   background: var(--bg-alt);
   display: flex; align-items: center; justify-content: center;
-  font-size: 2rem;
+  color: var(--primary);
   margin: 0 auto 20px;
 }
 .step-item h4 { font-size: 1.05rem; margin-bottom: 8px; }
