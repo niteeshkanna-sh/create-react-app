@@ -165,7 +165,7 @@ button { font-family: inherit; }
 .transaction-amount.income { color: #0f9d6c; }
 .transaction-amount.expense { color: var(--danger); }
 .transaction-delete {
-  background: var(--bg-admin); color: var(--ink-faint); border: none; border-radius: 8px;
+  background: var(--bg); color: var(--ink-faint); border: none; border-radius: 8px;
   width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem;
 }
 .transaction-delete:hover { background: #fdecec; color: var(--danger); }
