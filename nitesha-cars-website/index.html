@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Nitesha Cars - Self Drive Car Rental | Daily Car Rental</title>
+  <meta name="description" content="Rent self drive cars with Nitesha Cars. Affordable daily plans on hatchbacks, sedans &amp; SUVs. Easy booking, transparent pricing, reliable service." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚘</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header" id="header">
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <ul class="topbar-info">
+          <li><i class="ic">✉</i><a href="mailto:support@niteshacars.in">support@niteshacars.in</a></li>
+          <li><i class="ic">☎</i><a href="tel:+910000000000">+91 00000 00000</a></li>
+        </ul>
+        <ul class="topbar-social">
+          <li><a href="#" aria-label="Facebook">f</a></li>
+          <li><a href="#" aria-label="Instagram">ig</a></li>
+          <li><a href="#" aria-label="Twitter">x</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="main-header">
+      <div class="container main-header-inner">
+        <a href="#" class="logo">
+          <span class="logo-mark">🚘</span> Nitesha Cars
+        </a>
+
+        <nav class="nav-links" id="navLinks">
+          <a href="#home" class="active">Home</a>
+          <a href="#cars">Cars</a>
+          <a href="#offers">Offers</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
+          <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+        </nav>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Hero / Booking Search ===== -->
+  <section class="hero" id="home">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero-copy">
+        <p class="eyebrow">Self Drive Car Rental</p>
+        <h1>Rent Smarter with <strong>Nitesha Cars</strong></h1>
+        <p class="hero-sub">Book your self drive car in minutes. Transparent pricing, verified cars, and 24/7 support — wherever your next trip takes you.</p>
+      </div>
+
+      <div class="booking-card">
+        <div class="booking-tabs">
+          <button class="tab-btn active" type="button">Car</button>
+        </div>
+        <form class="booking-form" id="bookingForm">
+          <div class="field">
+            <label for="pickupLocation">Pick-up location</label>
+            <select id="pickupLocation" required>
+              <option value="">Choose location</option>
+              <option>City Center</option>
+              <option>Railway Station</option>
+              <option>Airport</option>
+              <option>Home Delivery</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pickupDate">Pick-up date &amp; time</label>
+            <div class="field-row">
+              <input type="date" id="pickupDate" required />
+              <input type="time" id="pickupTime" value="11:30" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="dropoffDate">Drop-off date &amp; time</label>
+            <div class="field-row">
+              <input type="date" id="dropoffDate" required />
+              <input type="time" id="dropoffTime" value="11:30" required />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-search">
+            <span class="ic">🔍</span> Search Available Cars
+          </button>
+        </form>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat"><strong>500+</strong><span>Happy Riders</span></div>
+        <div class="stat"><strong>50+</strong><span>Cars in Fleet</span></div>
+        <div class="stat"><strong>24/7</strong><span>Support</span></div>
+        <div class="stat"><strong>0</strong><span>Hidden Charges</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Popular Cars ===== -->
+  <section class="section" id="cars">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Popular Rentals</h2>
+          <p class="section-sub">Select from our best-rated self drive cars</p>
+        </div>
+        <a href="#cars" class="btn btn-outline">View All Cars</a>
+      </div>
+
+      <div class="grid grid-3 car-grid">
+        <!-- Car card 1 -->
+        <article class="car-card">
+          <div class="car-img-box">
+            <span class="badge badge-brand">Suzuki</span>
+            <span class="badge badge-fuel">Petrol</span>
+            <div class="car-illustration">🚗</div>
+          </div>
+          <div class="car-body">
+            <h3 class="car-name">Fronx — Brand New 2026</h3>
+            <div class="car-meta">
+              <span>⚙ Manual</span>
+              <span>👤 5 Seats</span>
+              <span>📅 2026</span>
+            </div>
+            <div class="car-footer">
+              <div><span class="price">₹3,500</span><span class="per">/day</span></div>
+              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Car card 2 -->
+        <article class="car-card">
+          <div class="car-img-box">
+            <span class="badge badge-brand">Kia</span>
+            <span class="badge badge-fuel">Diesel</span>
+            <div class="car-illustration">🚙</div>
+          </div>
+          <div class="car-body">
+            <h3 class="car-name">Carens — 7 Seater</h3>
+            <div class="car-meta">
+              <span>⚙ Manual</span>
+              <span>👤 7 Seats</span>
+              <span>📅 2026</span>
+            </div>
+            <div class="car-footer">
+              <div><span class="price">₹4,500</span><span class="per">/day</span></div>
+              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Car card 3 -->
+        <article class="car-card">
+          <div class="car-img-box">
+            <span class="badge badge-brand">Suzuki</span>
+            <span class="badge badge-fuel">Petrol</span>
+            <div class="car-illustration">🚕</div>
+          </div>
+          <div class="car-body">
+            <h3 class="car-name">Swift — Automatic</h3>
+            <div class="car-meta">
+              <span>⚙ Automatic</span>
+              <span>👤 5 Seats</span>
+              <span>📅 2025</span>
+            </div>
+            <div class="car-footer">
+              <div><span class="price">₹3,000</span><span class="per">/day</span></div>
+              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Car card 4 -->
+        <article class="car-card">
+          <div class="car-img-box">
+            <span class="badge badge-brand">Suzuki</span>
+            <span class="badge badge-fuel">Petrol</span>
+            <div class="car-illustration">🚗</div>
+          </div>
+          <div class="car-body">
+            <h3 class="car-name">Wagon R — AT 2025</h3>
+            <div class="car-meta">
+              <span>⚙ Automatic</span>
+              <span>👤 5 Seats</span>
+              <span>📅 2025</span>
+            </div>
+            <div class="car-footer">
+              <div><span class="price">₹2,500</span><span class="per">/day</span></div>
+              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Car card 5 -->
+        <article class="car-card">
+          <div class="car-img-box">
+            <span class="badge badge-brand">Kia</span>
+            <span class="badge badge-fuel">Petrol</span>
+            <div class="car-illustration">🚙</div>
+          </div>
+          <div class="car-body">
+            <h3 class="car-name">Seltos — GT Line</h3>
+            <div class="car-meta">
+              <span>⚙ Automatic</span>
+              <span>👤 5 Seats</span>
+              <span>📅 2021</span>
+            </div>
+            <div class="car-footer">
+              <div><span class="price">₹4,000</span><span class="per">/day</span></div>
+              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Car card 6 -->
+        <article class="car-card">
+          <div class="car-img-box">
+            <span class="badge badge-brand">Suzuki</span>
+            <span class="badge badge-fuel">Petrol</span>
+            <div class="car-illustration">🚗</div>
+          </div>
+          <div class="car-body">
+            <h3 class="car-name">Alto K10 — 2025</h3>
+            <div class="car-meta">
+              <span>⚙ Manual</span>
+              <span>👤 5 Seats</span>
+              <span>📅 2025</span>
+            </div>
+            <div class="car-footer">
+              <div><span class="price">₹2,000</span><span class="per">/day</span></div>
+              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Why Choose Us ===== -->
+  <section class="section section-alt" id="offers">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Why Choose Nitesha Cars</h2>
+        </div>
+        <p class="section-sub-r">Reliable self drive car rentals, transparent service.</p>
+      </div>
+
+      <div class="why-layout">
+        <div class="why-left">
+          <div class="why-info-box">
+            <p>We're here to help you anytime, day or night. Your payments are safe with our trusted and secure process.</p>
+          </div>
+          <div class="why-location-box">
+            <div class="pin">📍</div>
+            <p>Pickup Self Drive Car from Any Location</p>
+          </div>
+        </div>
+        <div class="why-right">
+          <h3>Why?</h3>
+          <ul class="why-list">
+            <li>
+              <h4>Easy Booking</h4>
+              <p>Book your self drive car in just a few simple steps from the comfort of your home.</p>
+            </li>
+            <li>
+              <h4>Transparent Pricing</h4>
+              <p>No hidden rental fees — what you see is what you pay.</p>
+            </li>
+            <li>
+              <h4>Verified Cars</h4>
+              <p>All cars are thoroughly inspected to ensure top quality and safety.</p>
+            </li>
+          </ul>
+          <a href="#contact" class="btn btn-light">View All <span class="ic">↗</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== How It Works ===== -->
+  <section class="section" id="how-it-works">
+    <div class="container text-center">
+      <h2 class="section-title center">How It Works</h2>
+      <div class="steps-row">
+        <div class="step-item">
+          <div class="step-icon">🚗</div>
+          <h4>Choose Your Vehicle</h4>
+          <p>Browse through our selection and compare prices.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-icon">📅</div>
+          <h4>Select Dates &amp; Location</h4>
+          <p>Select your dates and confirm in a few clicks.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-icon">🔑</div>
+          <h4>Confirm &amp; Drive</h4>
+          <p>Pick up your self drive car and start your journey.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="section section-alt" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Self Drive Car Rental — FAQs</h2>
+        </div>
+        <p class="section-sub-r">Answers to common questions about renting with Nitesha Cars.</p>
+      </div>
+
+      <div class="faq-list" id="faqList">
+        <div class="faq-item active">
+          <button class="faq-q" type="button">
+            <span>1. What documents do I need to rent a self drive car?</span>
+            <span class="faq-plus">+</span>
+          </button>
+          <div class="faq-a">
+            <p>You must submit any one original physical ID at pickup — Driving License, PAN Card, or Passport.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            <span>2. How does the booking process work?</span>
+            <span class="faq-plus">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Browse our fleet, select your preferred car, pick your dates, and pay the booking amount. Once verified, your car will be ready for pickup or delivery.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            <span>3. Are there any hidden charges?</span>
+            <span class="faq-plus">+</span>
+          </button>
+          <div class="faq-a">
+            <p>No — we believe in 100% transparent pricing. The price you see includes all standard fees. Only fuel and toll charges are paid separately by you.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            <span>4. Is fuel included in the rental price?</span>
+            <span class="faq-plus">+</span>
+          </button>
+          <div class="faq-a">
+            <p>Cars are provided with a full tank. At return, please refill to the same level; a fuel receipt may be requested as proof.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA / Contact ===== -->
+  <section class="cta" id="contact">
+    <div class="container cta-inner">
+      <div class="cta-copy">
+        <h2>Ready to hit the road?</h2>
+        <p>Fill in your details and our team will confirm your self drive car booking right away.</p>
+      </div>
+      <form class="cta-form" id="contactForm">
+        <div class="form-row">
+          <input type="text" placeholder="Full name" required aria-label="Full name" />
+          <input type="tel" placeholder="Phone / WhatsApp number" required aria-label="Phone number" />
+        </div>
+        <div class="form-row">
+          <input type="text" placeholder="Preferred city" required aria-label="City" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Request a Callback</button>
+        <p class="form-note" id="formNote" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="#" class="logo"><span class="logo-mark">🚘</span> Nitesha Cars</a>
+        <p>Your one-stop destination for hassle-free self drive car rentals. Affordable, reliable, and expanding soon.</p>
+      </div>
+      <div class="footer-cols">
+        <div>
+          <h4>Company</h4>
+          <a href="#home">Home</a>
+          <a href="#cars">Cars</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div>
+          <h4>Contact Us</h4>
+          <a href="mailto:support@niteshacars.in">support@niteshacars.in</a>
+          <a href="tel:+910000000000">+91 00000 00000</a>
+          <span class="footer-address">Your city &amp; address here</span>
+        </div>
+        <div>
+          <h4>Policy</h4>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Use</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> Nitesha Cars. All rights reserved.</p>
+      <ul class="footer-social">
+        <li><a href="#" aria-label="Twitter">x</a></li>
+        <li><a href="#" aria-label="WhatsApp">wa</a></li>
+        <li><a href="#" aria-label="Instagram">ig</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp button -->
+  <a href="https://wa.me/910000000000?text=Hi%2C%20I%20want%20to%20book%20a%20car." class="wa-float" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+  <!-- Mobile bottom nav -->
+  <nav class="mobile-footer-nav">
+    <a href="#home" class="active"><span class="ic">🏠</span>Home</a>
+    <a href="#cars"><span class="ic">🚗</span>Cars</a>
+    <a href="https://wa.me/910000000000" target="_blank" rel="noopener"><span class="ic">💬</span>Chat</a>
+    <a href="#contact"><span class="ic">👤</span>Contact</a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>
