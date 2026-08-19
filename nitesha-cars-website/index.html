@@ -116,133 +116,7 @@
         <a href="#cars" class="btn btn-outline">View All Cars</a>
       </div>
 
-      <div class="grid grid-3 car-grid">
-        <!-- Car card 1 -->
-        <article class="car-card">
-          <div class="car-img-box">
-            <span class="badge badge-brand">Suzuki</span>
-            <span class="badge badge-fuel">Petrol</span>
-            <div class="car-illustration">🚗</div>
-          </div>
-          <div class="car-body">
-            <h3 class="car-name">Fronx — Brand New 2026</h3>
-            <div class="car-meta">
-              <span>⚙ Manual</span>
-              <span>👤 5 Seats</span>
-              <span>📅 2026</span>
-            </div>
-            <div class="car-footer">
-              <div><span class="price">₹3,500</span><span class="per">/day</span></div>
-              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Car card 2 -->
-        <article class="car-card">
-          <div class="car-img-box">
-            <span class="badge badge-brand">Kia</span>
-            <span class="badge badge-fuel">Diesel</span>
-            <div class="car-illustration">🚙</div>
-          </div>
-          <div class="car-body">
-            <h3 class="car-name">Carens — 7 Seater</h3>
-            <div class="car-meta">
-              <span>⚙ Manual</span>
-              <span>👤 7 Seats</span>
-              <span>📅 2026</span>
-            </div>
-            <div class="car-footer">
-              <div><span class="price">₹4,500</span><span class="per">/day</span></div>
-              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Car card 3 -->
-        <article class="car-card">
-          <div class="car-img-box">
-            <span class="badge badge-brand">Suzuki</span>
-            <span class="badge badge-fuel">Petrol</span>
-            <div class="car-illustration">🚕</div>
-          </div>
-          <div class="car-body">
-            <h3 class="car-name">Swift — Automatic</h3>
-            <div class="car-meta">
-              <span>⚙ Automatic</span>
-              <span>👤 5 Seats</span>
-              <span>📅 2025</span>
-            </div>
-            <div class="car-footer">
-              <div><span class="price">₹3,000</span><span class="per">/day</span></div>
-              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Car card 4 -->
-        <article class="car-card">
-          <div class="car-img-box">
-            <span class="badge badge-brand">Suzuki</span>
-            <span class="badge badge-fuel">Petrol</span>
-            <div class="car-illustration">🚗</div>
-          </div>
-          <div class="car-body">
-            <h3 class="car-name">Wagon R — AT 2025</h3>
-            <div class="car-meta">
-              <span>⚙ Automatic</span>
-              <span>👤 5 Seats</span>
-              <span>📅 2025</span>
-            </div>
-            <div class="car-footer">
-              <div><span class="price">₹2,500</span><span class="per">/day</span></div>
-              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Car card 5 -->
-        <article class="car-card">
-          <div class="car-img-box">
-            <span class="badge badge-brand">Kia</span>
-            <span class="badge badge-fuel">Petrol</span>
-            <div class="car-illustration">🚙</div>
-          </div>
-          <div class="car-body">
-            <h3 class="car-name">Seltos — GT Line</h3>
-            <div class="car-meta">
-              <span>⚙ Automatic</span>
-              <span>👤 5 Seats</span>
-              <span>📅 2021</span>
-            </div>
-            <div class="car-footer">
-              <div><span class="price">₹4,000</span><span class="per">/day</span></div>
-              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Car card 6 -->
-        <article class="car-card">
-          <div class="car-img-box">
-            <span class="badge badge-brand">Suzuki</span>
-            <span class="badge badge-fuel">Petrol</span>
-            <div class="car-illustration">🚗</div>
-          </div>
-          <div class="car-body">
-            <h3 class="car-name">Alto K10 — 2025</h3>
-            <div class="car-meta">
-              <span>⚙ Manual</span>
-              <span>👤 5 Seats</span>
-              <span>📅 2025</span>
-            </div>
-            <div class="car-footer">
-              <div><span class="price">₹2,000</span><span class="per">/day</span></div>
-              <a href="#contact" class="btn btn-primary btn-sm">Book Now</a>
-            </div>
-          </div>
-        </article>
-      </div>
+      <div class="grid grid-3 car-grid" id="carGrid"></div>
     </div>
   </section>
 
@@ -408,6 +282,7 @@
           <h4>Policy</h4>
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Use</a>
+          <a href="admin.html">Admin Login</a>
         </div>
       </div>
     </div>
@@ -432,6 +307,7 @@
     <a href="#contact"><span class="ic">👤</span>Contact</a>
   </nav>
 
+  <script src="car-data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

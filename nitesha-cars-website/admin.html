@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Nitesha Cars</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- ===== Login screen ===== -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">🚘 Nitesha Cars</div>
+      <h1>Admin Login</h1>
+      <p class="login-note">Demo login — this protects nothing on a real server. See the note at the bottom of this page.</p>
+      <form id="loginForm">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter admin password" autocomplete="current-password" required />
+        <p class="login-error" id="loginError"></p>
+        <button type="submit" class="btn btn-primary btn-block">Log In</button>
+      </form>
+      <p class="login-hint">Demo password: <code>nitesha2026</code></p>
+      <a href="index.html" class="back-link">← Back to site</a>
+    </div>
+  </div>
+
+  <!-- ===== Dashboard ===== -->
+  <div class="dashboard" id="dashboard" hidden>
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <span class="logo">🚘 Nitesha Cars <span class="admin-tag">Admin</span></span>
+        <div class="admin-header-actions">
+          <a href="index.html" target="_blank" class="btn btn-outline btn-sm">View Site ↗</a>
+          <button class="btn btn-ghost btn-sm" id="logoutBtn">Log Out</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-body">
+      <nav class="admin-tabs">
+        <button class="admin-tab active" data-tab="cars">🚗 Cars</button>
+        <button class="admin-tab" data-tab="inquiries">📩 Inquiries <span class="tab-count" id="inquiryCount"></span></button>
+      </nav>
+
+      <!-- Cars tab -->
+      <section class="admin-panel" id="panel-cars">
+        <div class="panel-header">
+          <div>
+            <h2>Car Listings</h2>
+            <p>These are the cars shown in "Popular Rentals" on the public site.</p>
+          </div>
+          <button class="btn btn-primary" id="addCarBtn">+ Add Car</button>
+        </div>
+
+        <div class="car-admin-grid" id="carAdminGrid"></div>
+      </section>
+
+      <!-- Inquiries tab -->
+      <section class="admin-panel" id="panel-inquiries" hidden>
+        <div class="panel-header">
+          <div>
+            <h2>Booking Inquiries</h2>
+            <p>Submissions from the "Request a Callback" form on the public site.</p>
+          </div>
+          <button class="btn btn-outline btn-sm" id="clearInquiriesBtn">Clear All</button>
+        </div>
+
+        <div id="inquiriesWrap"></div>
+      </section>
+    </div>
+
+    <p class="storage-note">
+      ⚠️ Data here is stored in this browser only (localStorage), for demo/testing. To make edits appear
+      for every visitor on the live site, this needs a real backend (e.g. PHP + MySQL on Hostinger).
+    </p>
+  </div>
+
+  <!-- ===== Car edit/add modal ===== -->
+  <div class="modal-overlay" id="carModalOverlay" hidden>
+    <div class="modal">
+      <h3 id="carModalTitle">Add Car</h3>
+      <form id="carForm">
+        <input type="hidden" id="carId" />
+        <div class="modal-row">
+          <div class="field-group">
+            <label for="carBrand">Brand</label>
+            <input type="text" id="carBrand" required placeholder="e.g. Suzuki" />
+          </div>
+          <div class="field-group">
+            <label for="carIcon">Icon (emoji)</label>
+            <input type="text" id="carIcon" required placeholder="🚗" maxlength="4" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="carName">Listing Name</label>
+          <input type="text" id="carName" required placeholder="e.g. Fronx — Brand New 2026" />
+        </div>
+        <div class="modal-row">
+          <div class="field-group">
+            <label for="carFuel">Fuel</label>
+            <select id="carFuel" required>
+              <option>Petrol</option>
+              <option>Diesel</option>
+              <option>Electric</option>
+              <option>CNG</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="carTransmission">Transmission</label>
+            <select id="carTransmission" required>
+              <option>Manual</option>
+              <option>Automatic</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-row modal-row-3">
+          <div class="field-group">
+            <label for="carSeats">Seats</label>
+            <input type="number" id="carSeats" required min="2" max="9" placeholder="5" />
+          </div>
+          <div class="field-group">
+            <label for="carYear">Year</label>
+            <input type="number" id="carYear" required min="2000" max="2030" placeholder="2025" />
+          </div>
+          <div class="field-group">
+            <label for="carPrice">Price / day (₹)</label>
+            <input type="number" id="carPrice" required min="0" placeholder="3000" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="carModalCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Car</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="car-data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

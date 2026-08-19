@@ -1,3 +1,6 @@
+// Render the car grid from shared storage (see car-data.js)
+renderCarGrid();
+
 // Mobile nav toggle
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
@@ -52,6 +55,9 @@ const contactForm = document.getElementById('contactForm');
 const formNote = document.getElementById('formNote');
 contactForm.addEventListener('submit', (e) => {
   e.preventDefault();
+  const [name, phone] = contactForm.querySelectorAll('.form-row:first-child input');
+  const [city] = contactForm.querySelectorAll('.form-row:nth-child(2) input');
+  saveInquiry({ name: name.value, phone: phone.value, city: city.value });
   formNote.textContent = "Thanks! We'll call you shortly to confirm your booking.";
   contactForm.reset();
 });
