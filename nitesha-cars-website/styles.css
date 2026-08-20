@@ -5,9 +5,10 @@
   --gold-dark: #C98000;
   --gold-light: #FFD060;
   --gold-glow: rgba(245, 165, 0, 0.22);
-  --dark: #0D0D0D;
-  --dark-2: #1A1A1A;
-  --dark-3: #272727;
+  /* Brand navy — taken from the live niteshacars.in header, not pure black */
+  --dark: #0A0E20;
+  --dark-2: #121834;
+  --dark-3: #1C2444;
   --cream: #FFF8EE;
   --ink: #1A1A1A;
   --ink-dim: #5C5C5C;
@@ -80,6 +81,14 @@ button { font-family: inherit; }
 }
 .btn-outline:hover { background: var(--gold-glow); }
 
+/* Solid white pill — the primary hero CTA on the live site */
+.btn-white {
+  background: #fff;
+  color: var(--dark);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+.btn-white:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.26); }
+
 .btn-outline-white {
   background: transparent;
   color: #fff;
@@ -135,14 +144,27 @@ button { font-family: inherit; }
 .main-header { border-bottom: 1px solid var(--border-dark); }
 .main-header-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
 
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; color: #fff; flex-shrink: 0; }
+.logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.15rem; color: #fff; flex-shrink: 0; }
+/* Circular badge with a gold ring, as on the live site */
 .logo-mark {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-  background: var(--gold);
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  background: var(--dark-2);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 1px rgba(255,213,74,0.25) inset;
 }
-.logo-name { color: #fff; }
-.logo-name span { color: var(--gold); }
+.logo-text { display: flex; flex-direction: column; line-height: 1.15; }
+.logo-eyebrow {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--gold);
+}
+.logo-name { color: #fff; white-space: nowrap; }
+.logo-name span { color: #fff; }
+
+@media (max-width: 420px) {
+  .logo-name { font-size: 0.98rem; }
+  .logo-eyebrow { letter-spacing: 0.16em; }
+}
 
 .nav-links { display: flex; align-items: center; gap: 30px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
 .nav-links a { color: rgba(255,255,255,0.75); transition: color 0.15s ease; }
@@ -162,7 +184,10 @@ button { font-family: inherit; }
   display: flex;
   align-items: center;
   overflow: hidden;
-  background: linear-gradient(120deg, #060200 0%, #1E0A00 30%, #3C1800 55%, #6B3000 75%, #9A5000 90%, #C47800 100%);
+  /* Bright amber-orange field, as on the live site — not a dark-to-orange fade */
+  background:
+    radial-gradient(120% 90% at 18% 30%, rgba(255,190,60,0.30), transparent 60%),
+    linear-gradient(115deg, #B8630A 0%, #D97F0C 28%, #EE9F16 58%, #E08A10 82%, #C06E08 100%);
 }
 
 .hero::before {
@@ -176,11 +201,15 @@ button { font-family: inherit; }
 }
 
 .hero-grid-overlay {
-  position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0.04;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px);
-  background-size: 60px 60px;
+  /* Fine diagonal stripes, matching the live hero's texture */
+  position: absolute; inset: 0; z-index: 0; overflow: hidden; opacity: 0.06;
+  background-image: repeating-linear-gradient(
+    115deg,
+    rgba(255,255,255,0.55) 0px,
+    rgba(255,255,255,0.55) 1px,
+    transparent 1px,
+    transparent 14px
+  );
 }
 
 .hero-inner {
@@ -203,26 +232,27 @@ button { font-family: inherit; }
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(245,165,0,0.12);
-  border: 1px solid rgba(245,165,0,0.25);
+  color: #FFD54A;
+  background: rgba(10,14,32,0.42);
+  border: 1px solid rgba(255,213,74,0.30);
   border-radius: 999px;
   padding: 6px 16px;
   margin-bottom: 24px;
 }
 
+/* Matches the live site: very large, extra-bold, tight leading, all white */
 .hero-headline {
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-size: clamp(2.4rem, 6.2vw, 4.6rem);
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
   color: #fff;
   margin-bottom: 20px;
-  text-wrap: balance;
 }
 .hero-headline span { color: var(--gold); }
 
 .hero-sub {
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.94);
   font-size: 1.05rem;
   max-width: 480px;
   margin-bottom: 36px;
@@ -242,10 +272,11 @@ button { font-family: inherit; }
   display: block;
   font-size: 1.7rem;
   font-weight: 800;
-  color: var(--gold);
+  /* White, not gold — gold on the bright orange hero fails contrast */
+  color: #fff;
   line-height: 1.1;
 }
-.hero-stats .stat span { font-size: 0.78rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.05em; }
+.hero-stats .stat span { font-size: 0.78rem; color: rgba(255,255,255,0.82); text-transform: uppercase; letter-spacing: 0.05em; }
 
 .hero-visual {
   display: flex;
@@ -696,13 +727,13 @@ button { font-family: inherit; }
    ============================================================ */
 .social-float {
   position: fixed;
-  right: 0;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 500;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 12px;
 }
 .social-float a {
   display: flex;
@@ -711,13 +742,18 @@ button { font-family: inherit; }
   width: 46px;
   height: 46px;
   color: #fff;
-  transition: width 0.2s ease, padding-right 0.2s;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
   position: relative;
 }
-.social-float a:nth-child(1) { background: #E1306C; border-radius: 8px 0 0 8px; }
-.social-float a:nth-child(2) { background: #25D366; border-radius: 8px 0 0 8px; }
-.social-float a:nth-child(3) { background: var(--gold); border-radius: 8px 0 0 8px; }
-.social-float a:nth-child(3) svg { color: #000; }
+/* Separated circles with brand colours, matching the live site */
+.social-float a {
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+}
+.social-float a:hover { transform: scale(1.08); }
+.social-float a:nth-child(1) { background: linear-gradient(45deg, #F09433, #E6683C 25%, #DC2743 50%, #CC2366 75%, #BC1888); }
+.social-float a:nth-child(2) { background: #25D366; }
+.social-float a:nth-child(3) { background: #1F8FE0; }
 .social-float a:hover { width: 58px; }
 
 /* ============================================================
