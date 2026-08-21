@@ -440,6 +440,13 @@ document.querySelectorAll('.filter-chip').forEach((chip) => {
   });
 });
 
+// Small chip showing where a booking stands against the clock. Sits beside the
+// recorded status, which only ever moves on real pickup/return events.
+function scheduleChipHTML(booking) {
+  const st = bookingScheduleState(booking);
+  return st ? `<span class="sched-chip sched-${st.tone}" title="Derived from the booking dates">${st.label}</span>` : "";
+}
+
 function renderBookingList() {
   const wrap = document.getElementById('bookingListWrap');
   const countBadge = document.getElementById('bookingCount');
@@ -465,7 +472,10 @@ function renderBookingList() {
           <span class="booking-card-meta">${vehicleLabel(b.vehicleId)} · ${formatDate(b.startDate)} → ${formatDate(b.returnDate)} · ${b.rentalDurationDays} day(s)</span>
         </div>
         <div class="booking-card-right">
-          <span class="status-badge status-badge-${b.status}">${b.status}</span>
+          <span class="status-stack">
+            <span class="status-badge status-badge-${b.status}">${b.status}</span>
+            ${scheduleChipHTML(b)}
+          </span>
           <div class="booking-card-balance">
             <span class="label">Balance</span>
             <span class="amount">${formatINR(balance)}</span>
@@ -651,7 +661,7 @@ function renderBookingDetail(id) {
   const kmInfo = booking.return ? computeExtraKmForBooking(booking) : null;
 
   document.getElementById('bookingDetailTitle').innerHTML =
-    `${booking.bookingNumber} <span class="status-badge status-badge-${booking.status}">${booking.status}</span>`;
+    `${booking.bookingNumber} <span class="status-badge status-badge-${booking.status}">${booking.status}</span> ${scheduleChipHTML(booking)}`;
 
   const proofs = [];
   booking.payments.forEach((p) => { if (p.proof) proofs.push({ url: p.proof, label: `${PAYMENT_TYPE_LABELS[p.type]} payment` }); });
@@ -1092,7 +1102,10 @@ function renderRentalOverview() {
           <span class="booking-card-customer">${b.customerName}</span>
           <span class="booking-card-meta">${vehicleLabel(b.vehicleId)} · ${formatDate(b.startDate)} → ${formatDate(b.returnDate)}</span>
         </div>
-        <span class="status-badge status-badge-${b.status}">${b.status}</span>
+        <span class="status-stack">
+          <span class="status-badge status-badge-${b.status}">${b.status}</span>
+          ${scheduleChipHTML(b)}
+        </span>
       </div>`).join('')
     : '<div class="empty-state">No active or upcoming rentals.</div>';
   wrap.querySelectorAll('.booking-card').forEach((card) => {

@@ -286,6 +286,22 @@ button { font-family: inherit; }
 .status-badge-Maintenance { background: #FBECEA; color: var(--danger); }
 .status-badge-Inactive { background: #F1EDE6; color: var(--ink-faint); }
 
+/* Schedule chip — derived from the booking dates, shown under the recorded
+   status so a booking that is past its start time stops looking dormant. */
+.status-stack { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.sched-chip {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.sched-neutral { background: #F1EDE6; color: var(--ink-dim); }
+.sched-due     { background: #FDF0D5; color: #8A5A00; }
+.sched-live    { background: #E8F4EC; color: #2F6B4F; }
+.sched-late    { background: #FBECEA; color: var(--danger); }
+
+/* In the detail header the chip sits inline beside the status badge. */
+.booking-detail-header .sched-chip { margin-left: 6px; vertical-align: 2px; }
+
 /* ---------- Booking detail ---------- */
 .booking-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .booking-detail-header h3 { margin: 0; }

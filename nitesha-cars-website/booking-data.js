@@ -73,6 +73,47 @@ function calcRentalDurationDays(startDate, startTime, returnDate, returnTime) {
   return Math.max(1, Math.ceil((end - start) / (24 * 60 * 60 * 1000)));
 }
 
+// ---- Schedule state (derived from the clock, never stored) ----
+// booking.status records what has actually *happened* (pickup and return are
+// only set when someone records them, with odometer readings). This derives
+// where the booking stands against its scheduled dates, so a booking whose
+// start time has passed stops reading as a plain "Confirmed".
+//
+// It is deliberately not written back to booking.status: flipping a booking to
+// Active without a pickup would invent a rental that never started and leave
+// startKm empty, which silently breaks every extra-KM calculation.
+const SCHEDULE_TONES = { neutral: 'neutral', due: 'due', live: 'live', late: 'late' };
+
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function bookingScheduleState(booking, now = new Date()) {
+  if (booking.status === 'Cancelled' || booking.status === 'Completed') return null;
+
+  const start = combineDateTime(booking.startDate, booking.startTime);
+  const end = combineDateTime(booking.returnDate, booking.returnTime);
+  if (!start || !end) return null;
+
+  // Vehicle already back — waiting on final charges and completion.
+  if (booking.return) {
+    return { key: 'awaiting-completion', label: 'Awaiting Completion', tone: SCHEDULE_TONES.due };
+  }
+
+  // Vehicle is out with the customer.
+  if (booking.pickup) {
+    if (now > end) return { key: 'overdue-return', label: 'Overdue Return', tone: SCHEDULE_TONES.late };
+    if (isSameDay(now, end)) return { key: 'due-back', label: 'Due Back Today', tone: SCHEDULE_TONES.due };
+    return { key: 'on-rent', label: 'On Rent', tone: SCHEDULE_TONES.live };
+  }
+
+  // Not picked up yet.
+  if (now > end) return { key: 'not-collected', label: 'Not Collected', tone: SCHEDULE_TONES.late };
+  if (now >= start) return { key: 'overdue-pickup', label: 'Awaiting Pickup', tone: SCHEDULE_TONES.late };
+  if (isSameDay(now, start)) return { key: 'starts-today', label: 'Starts Today', tone: SCHEDULE_TONES.due };
+  return { key: 'upcoming', label: 'Upcoming', tone: SCHEDULE_TONES.neutral };
+}
+
 // Overlap check for double-booking protection. Two ranges overlap when
 // startA < endB AND startB < endA. excludeBookingId lets an edit compare
 // against every *other* booking without flagging itself.
