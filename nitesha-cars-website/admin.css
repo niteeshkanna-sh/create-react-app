@@ -1,16 +1,19 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 [hidden] { display: none !important; }
 
+/* NiteSha palette — same navy and gold as the public site, but kept flat and
+   dense: this is an operational tool, not a marketing page (spec Part 43). */
 :root {
-  --primary: #1163e8;
-  --accent: #0fb5ae;
-  --danger: #e34850;
-  --ink: #101828;
-  --ink-dim: #475467;
-  --ink-faint: #98a2b3;
-  --bg: #f5f8ff;
+  --primary: #0A0E20;      /* brand navy — buttons, active states, links */
+  --accent: #F5A500;       /* brand gold — highlights and key figures */
+  --accent-deep: #B36B00;  /* gold that stays legible as text on white */
+  --danger: #B3261E;
+  --ink: #14100D;
+  --ink-dim: #5C5348;
+  --ink-faint: #948B80;
+  --bg: #FAF8F4;
   --surface: #ffffff;
-  --border: #e6eaf2;
+  --border: #E9E2D8;
   --radius: 14px;
   --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
   --font: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -34,22 +37,24 @@ button { font-family: inherit; }
 }
 .btn-sm { padding: 8px 14px; font-size: 0.8rem; }
 .btn-block { width: 100%; }
-.btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
-.btn-primary:hover { transform: translateY(-1px); }
+/* Gold pill with near-black text — matches "Book Now" on the public site
+   and clears contrast, which gold-on-white text would not. */
+.btn-primary { background: var(--accent); color: #14100D; }
+.btn-primary:hover { background: #FFB829; transform: translateY(-1px); }
 .btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
 .btn-outline:hover { background: var(--bg); }
 .btn-ghost { background: var(--bg); color: var(--ink-dim); }
 .btn-ghost:hover { background: var(--border); }
-.btn-danger { background: #fdecec; color: var(--danger); }
-.btn-danger:hover { background: #fbd9d9; }
+.btn-danger { background: #FBECEA; color: var(--danger); }
+.btn-danger:hover { background: #F7DAD6; }
 
 /* ---------- Login ---------- */
 .login-screen {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
   background:
-    radial-gradient(55% 45% at 15% 10%, rgba(17, 99, 232, 0.10), transparent 70%),
-    radial-gradient(45% 45% at 90% 20%, rgba(15, 181, 174, 0.12), transparent 70%),
+    radial-gradient(55% 45% at 15% 10%, rgba(245, 165, 0, 0.14), transparent 70%),
+    radial-gradient(45% 45% at 90% 20%, rgba(10, 14, 32, 0.08), transparent 70%),
     var(--bg);
   padding: 24px;
 }
@@ -81,8 +86,9 @@ button { font-family: inherit; }
 .logo { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
 .logo-mark {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--primary);
+  border: 1.5px solid var(--accent);
 }
 .admin-tag {
   font-size: 0.7rem; font-weight: 700; background: var(--ink); color: #fff;
@@ -120,14 +126,14 @@ button { font-family: inherit; }
   padding: 18px; display: flex; flex-direction: column; gap: 10px;
 }
 .admin-car-thumb {
-  background: linear-gradient(135deg, #eaf1ff, #e3fbf9); border-radius: 10px;
+  background: linear-gradient(135deg, #FFF3DC, #FBEFE0); border-radius: 10px;
   padding: 8px; margin: -4px -4px 2px;
 }
 .admin-car-thumb svg { width: 100%; height: auto; display: block; }
 .car-admin-card .row1 { display: flex; align-items: center; gap: 10px; }
 .car-admin-card .name { font-weight: 700; font-size: 0.95rem; flex: 1; }
 .car-admin-card .meta { font-size: 0.8rem; color: var(--ink-dim); display: flex; gap: 10px; flex-wrap: wrap; }
-.car-admin-card .price { font-weight: 800; color: var(--primary); font-size: 1.05rem; }
+.car-admin-card .price { font-weight: 800; color: var(--accent-deep); font-size: 1.05rem; }
 .car-admin-card .actions { display: flex; gap: 8px; margin-top: 4px; }
 .car-admin-card .actions .btn { flex: 1; }
 
@@ -145,7 +151,7 @@ button { font-family: inherit; }
 }
 .stat-label { font-size: 0.78rem; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
 .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
-.stat-card-income .stat-value { color: #0f9d6c; }
+.stat-card-income .stat-value { color: #2F6B4F; }
 .stat-card-expense .stat-value { color: var(--danger); }
 .stat-card-balance .stat-value { color: var(--primary); }
 
@@ -172,13 +178,13 @@ button { font-family: inherit; }
 .transaction-time { font-size: 0.75rem; color: var(--ink-faint); }
 .transaction-right { display: flex; align-items: center; gap: 14px; }
 .transaction-amount { font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
-.transaction-amount.income { color: #0f9d6c; }
+.transaction-amount.income { color: #2F6B4F; }
 .transaction-amount.expense { color: var(--danger); }
 .transaction-delete {
   background: var(--bg); color: var(--ink-faint); border: none; border-radius: 8px;
   width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem;
 }
-.transaction-delete:hover { background: #fdecec; color: var(--danger); }
+.transaction-delete:hover { background: #FBECEA; color: var(--danger); }
 
 /* ---------- Inquiries ---------- */
 .inquiry-card {
@@ -221,7 +227,7 @@ button { font-family: inherit; }
 /* ---------- Dashboard: rental overview ---------- */
 .dashboard-subheading { font-size: 1.1rem; margin: 8px 0 16px; }
 .stat-grid-4 { grid-template-columns: repeat(4, 1fr); }
-.stat-card-deposit .stat-value { color: #b7791f; }
+.stat-card-deposit .stat-value { color: #8A5A00; }
 
 /* ---------- Wide/tall modal variants ---------- */
 .modal-wide { max-width: 720px; }
@@ -234,7 +240,7 @@ button { font-family: inherit; }
 .modal-section-label:first-of-type { margin-top: 4px; }
 .field-hint { font-size: 0.85rem; color: var(--ink-dim); margin: -6px 0 14px; }
 .field-hint strong { color: var(--ink); }
-.booking-number-preview { font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-bottom: 14px; }
+.booking-number-preview { font-size: 0.85rem; color: var(--accent-deep); font-weight: 700; margin-bottom: 14px; }
 .booking-conflict-error {
   color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
 }
@@ -258,7 +264,7 @@ button { font-family: inherit; }
 }
 .booking-card:hover { box-shadow: var(--shadow); }
 .booking-card-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.booking-card-number { font-weight: 800; color: var(--primary); font-size: 0.92rem; }
+.booking-card-number { font-weight: 800; color: var(--accent-deep); font-size: 0.92rem; }
 .booking-card-customer { font-weight: 700; }
 .booking-card-meta { font-size: 0.82rem; color: var(--ink-dim); }
 .booking-card-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
@@ -270,15 +276,15 @@ button { font-family: inherit; }
   display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.72rem;
   font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
 }
-.status-badge-Confirmed { background: #eaf1ff; color: var(--primary); }
-.status-badge-Active { background: #e8f9f0; color: #0f9d6c; }
-.status-badge-Completed { background: #f1f3f8; color: var(--ink-dim); }
-.status-badge-Cancelled { background: #fdecec; color: var(--danger); }
-.status-badge-Available { background: #e8f9f0; color: #0f9d6c; }
-.status-badge-Booked { background: #eaf1ff; color: var(--primary); }
-.status-badge-OnRental { background: #fff6e6; color: #b7791f; }
-.status-badge-Maintenance { background: #fdecec; color: var(--danger); }
-.status-badge-Inactive { background: #f1f3f8; color: var(--ink-faint); }
+.status-badge-Confirmed { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-Active { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Completed { background: #F1EDE6; color: var(--ink-dim); }
+.status-badge-Cancelled { background: #FBECEA; color: var(--danger); }
+.status-badge-Available { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Booked { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-OnRental { background: #FDF0D5; color: #8A5A00; }
+.status-badge-Maintenance { background: #FBECEA; color: var(--danger); }
+.status-badge-Inactive { background: #F1EDE6; color: var(--ink-faint); }
 
 /* ---------- Booking detail ---------- */
 .booking-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
@@ -311,7 +317,7 @@ button { font-family: inherit; }
 .timeline-list li:last-child { border-left-color: transparent; padding-bottom: 0; }
 .timeline-list li::before {
   content: ''; position: absolute; left: -5px; top: 2px; width: 8px; height: 8px;
-  border-radius: 50%; background: var(--primary);
+  border-radius: 50%; background: var(--accent);
 }
 .timeline-list .t-event { font-weight: 600; display: block; }
 .timeline-list .t-time { font-size: 0.75rem; color: var(--ink-faint); }
