@@ -24,7 +24,11 @@ function config(?string $key = null): mixed
     }
 
     if ($config === null) {
-        $path = __DIR__ . '/../config.php';
+        // NITESHA_CONFIG points a local test instance at its own database and
+        // its own settings, so running one never involves touching — or risking
+        // a stray write to — the config.php the live panel reads. The variable
+        // is not set on the server, where the path below is the only one.
+        $path = getenv('NITESHA_CONFIG') ?: __DIR__ . '/../config.php';
         if (!is_file($path)) {
             http_response_code(500);
             exit('Not set up yet. Open install.php in your browser to get started.');

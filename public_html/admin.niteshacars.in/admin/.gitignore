@@ -1,0 +1,6 @@
+# The live panel's settings — it holds the database password.
+config.php
+
+# Everything the local test site creates: its own config, its database
+# credentials, uploaded files, server logs and pids.
+tools/.test-site/

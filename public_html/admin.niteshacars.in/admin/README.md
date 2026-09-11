@@ -90,9 +90,61 @@ The only unauthenticated endpoint is `api/enquiry-submit.php`. It can create an
 enquiry and nothing else, and is guarded by an origin allowlist, a honeypot,
 and a per-address hourly limit.
 
-## Tests
+## A test site on your own machine
+
+The panel needs PHP and MySQL to do anything at all, so there is a script that
+puts a complete copy in front of you:
 
 ```bash
+bash tools/test-site.sh
+```
+
+It starts MariaDB, makes a `niteshacars_test` database, loads the schema, fills
+it with a fleet and a few months of trading, and serves the panel at
+<http://127.0.0.1:8080>. Sign in as `admin@niteshacars.test` with
+`TestAdmin2026!`. There is an account for every role — `manager@`, `accounts@`,
+`auditor@` and `staff@` at the same domain — so what each one is allowed to do
+can be checked by signing in as them rather than reasoning about it.
+
+| | |
+|---|---|
+| `bash tools/test-site.sh` | set it up if needed, then serve it |
+| `bash tools/test-site.sh test` | reseed and run every suite against it |
+| `bash tools/test-site.sh reset` | throw the data away and seed it again |
+| `bash tools/test-site.sh stop` | stop the server |
+| `bash tools/test-site.sh status` | is it running, and on what |
+
+`TEST_PORT`, `TEST_DB`, `TEST_ADMIN_EMAIL` and `TEST_ADMIN_PASSWORD` override
+the defaults. On a machine without MariaDB, install it first —
+`sudo apt-get install -y mariadb-server`, or `brew install mariadb`.
+
+**It cannot reach the live database.** The test instance keeps its settings in
+`tools/.test-site/config.php` and is handed them through `NITESHA_CONFIG`; the
+server reads `config.php` and never has that variable set. Nothing under
+`tools/.test-site/` is committed.
+
+The seed is written to give every screen something to show, and the dates move
+with the calendar, so there is always a booking on rent, one overdue, one
+going out today and one next week. It also includes the awkward cases worth
+looking at: a rental that went over its KM allowance, a deposit partly kept for
+damage, a cancelled booking whose advance was reversed rather than deleted, an
+expense typed in wrong and corrected, and a vehicle re-priced after a booking
+was already taken on the old rate.
+
+`tools/test-enquiry-form.html` stands in for the booking form on the public
+site, so the one unauthenticated endpoint can be exercised from a browser the
+way a visitor reaches it.
+
+## Tests
+
+`bash tools/test-site.sh test` runs all of the below against a freshly seeded
+database, which is what they assume. To run one on its own, export
+`NITESHA_CONFIG` first — several shell out to the PHP tools beside them, which
+would otherwise read `config.php`:
+
+```bash
+export NITESHA_CONFIG="$PWD/tools/.test-site/config.php"
+
 php tools/test-money.php                       # money arithmetic
 php tools/test-auth.php <dsn> <user> <pass>    # sign-in, roles, numbering
 bash tools/test-api.sh       <url> <email> <password>
@@ -111,6 +163,10 @@ node tools/test-install-ui.js <url> <db-name> <db-user>   # on a spare database
 freezing, double-booking, the KM audit trail, the enquiry defences, expense
 corrections and voiding, and the booking, enquiry and finance flows driven
 through a real browser.
+
+The browser-driven ones need Playwright (`npm install -D playwright &&
+npx playwright install chromium`). Without it they report themselves skipped
+rather than failing, since a missing tool is not a broken panel.
 
 ## Brand
 

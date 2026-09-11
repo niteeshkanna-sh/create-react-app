@@ -1,8 +1,20 @@
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
-const OUT = '/tmp/claude-0/-home-user-create-react-app/2bef9a0e-33a4-54b1-b399-5284c26b2d0b/scratchpad';
-const BASE = 'http://127.0.0.1:8210';
-const EMAIL = 'admin@niteshacars.in';
-const PASSWORD = 'secret-passphrase-1';
+const { playwright, launchOptions } = require('./playwright');
+const { chromium } = playwright();
+const os = require('os');
+
+// Taken from the command line like every other suite, so this runs against
+// whichever instance is in front of you rather than one particular machine.
+//
+//   node tools/test-ui.js <base-url> <email> <password>
+const BASE = process.argv[2] || 'http://127.0.0.1:8210';
+const EMAIL = process.argv[3];
+const PASSWORD = process.argv[4];
+const OUT = process.env.TEST_OUTPUT_DIR || os.tmpdir();
+
+if (!EMAIL || !PASSWORD) {
+  console.error('usage: node tools/test-ui.js <base-url> <email> <password>');
+  process.exit(1);
+}
 
 let pass = 0, fail = 0;
 const ok  = (l) => { pass++; console.log(`  ok    ${l}`); };
@@ -10,7 +22,7 @@ const bad = (l, d) => { fail++; console.log(`  FAIL  ${l}${d ? ' — ' + d : ''}
 const is  = (l, a, b) => (String(a) === String(b) ? ok(l) : bad(l, `expected ${b}, got ${a}`));
 
 (async () => {
-  const br = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
+  const br = await chromium.launch(launchOptions());
   const ctx = await br.newContext({ viewport: { width: 1400, height: 1000 } });
   const p = await ctx.newPage();
   const errs = [];
@@ -33,7 +45,12 @@ const is  = (l, a, b) => (String(a) === String(b) ? ok(l) : bad(l, `expected ${b
   await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), p.click('button[type="submit"]')]);
   is('lands on the dashboard', new URL(p.url()).pathname, '/dashboard.php');
   const who = await p.locator('.who').innerText().catch(() => '');
-  who.includes('Test Admin') ? ok('signed-in name shown') : bad('signed-in name shown', who);
+  // Whose name it is depends on who the suite was handed, so what is checked
+  // is that a name was resolved and rendered — not the email falling through,
+  // which is what a broken session lookup looks like.
+  who.trim() !== '' && !who.includes('@')
+    ? ok('signed-in name shown')
+    : bad('signed-in name shown', who || '(nothing)');
   who.toLowerCase().includes('super') ? ok('role shown') : bad('role shown', who);
 
   console.log('\n-- fleet loads from the database --');

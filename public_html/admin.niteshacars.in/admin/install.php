@@ -16,7 +16,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/src/db.php';
 
-const CONFIG_PATH    = __DIR__ . '/config.php';
+// Where the settings are written. NITESHA_CONFIG moves it, which is how the
+// installer can be driven end to end by tools/test-install-ui.js without the
+// run overwriting the settings the live panel is using. The variable is not
+// set on a server, where this is config.php beside this file, as it always was.
+define('CONFIG_PATH', getenv('NITESHA_CONFIG') ?: __DIR__ . '/config.php');
 const MIN_PHP        = '8.1';
 const MIN_PASSWORD   = 10;
 

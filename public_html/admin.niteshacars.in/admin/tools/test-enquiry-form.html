@@ -1,0 +1,158 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enquiry form — test fixture</title>
+<!--
+  A stand-in for the booking form on niteshacars.in, so the one public,
+  unauthenticated endpoint can be exercised from a browser the way a real
+  visitor would reach it — origin check, honeypot, rate limit and all.
+
+  Served by tools/test-site.sh only. It is not part of the panel.
+-->
+<style>
+  :root { --navy:#0A0E20; --gold:#F5A500; --deep:#B36B00; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px 16px; background:var(--navy); color:#fff;
+         font:15px/1.5 Poppins, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:560px; margin:0 auto; background:#fff; color:#1b2030;
+         border-radius:14px; padding:28px; }
+  h1 { margin:0 0 4px; font-size:22px; }
+  p.lede { margin:0 0 22px; color:#5b6472; font-size:14px; }
+  label { display:block; margin:14px 0 5px; font-weight:600; font-size:13px; }
+  input, textarea, select { width:100%; padding:10px 12px; border:1px solid #d6dae2;
+         border-radius:8px; font:inherit; color:inherit; background:#fff; }
+  textarea { min-height:82px; resize:vertical; }
+  .row { display:flex; gap:12px; }
+  .row > div { flex:1; min-width:0; }
+  /* The honeypot. Hidden from people, filled in by most bots. */
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  button { margin-top:22px; width:100%; padding:12px; border:0; border-radius:8px;
+           background:var(--gold); color:var(--navy); font:inherit; font-weight:700;
+           cursor:pointer; }
+  button[disabled] { opacity:.6; cursor:default; }
+  #result { margin-top:16px; padding:12px 14px; border-radius:8px; font-size:14px;
+            display:none; white-space:pre-wrap; }
+  #result.ok  { display:block; background:#e8f5ec; color:#1b5e34; }
+  #result.bad { display:block; background:#fdecec; color:#a02020; }
+  .hint { margin-top:20px; font-size:12.5px; color:#5b6472; border-top:1px solid #eceef2; padding-top:14px; }
+  .hint code { background:#f4f5f8; padding:1px 5px; border-radius:4px; }
+  @media (max-width:480px) { .row { flex-direction:column; gap:0; } main { padding:20px; } }
+</style>
+
+<main>
+  <h1>Enquire about a vehicle</h1>
+  <p class="lede">The public form, pointed at this test site's enquiry endpoint.
+     What you send here lands in the panel's Enquiries tab.</p>
+
+  <form id="enquiry">
+    <label for="name">Name</label>
+    <input id="name" name="name" required autocomplete="name">
+
+    <div class="row">
+      <div>
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" required inputmode="tel" autocomplete="tel"
+               placeholder="9845012233">
+      </div>
+      <div>
+        <label for="email">Email <span style="font-weight:400;color:#8a93a3">(optional)</span></label>
+        <input id="email" name="email" type="email" autocomplete="email">
+      </div>
+    </div>
+
+    <label for="vehicle_id">Vehicle</label>
+    <select id="vehicle_id" name="vehicle_id">
+      <option value="">No preference</option>
+    </select>
+
+    <div class="row">
+      <div>
+        <label for="start_date">From</label>
+        <input id="start_date" name="start_date" type="date">
+      </div>
+      <div>
+        <label for="return_date">Until</label>
+        <input id="return_date" name="return_date" type="date">
+      </div>
+    </div>
+
+    <label for="pickup_location">Pickup</label>
+    <input id="pickup_location" name="pickup_location" placeholder="Indiranagar">
+
+    <label for="message">Anything else</label>
+    <textarea id="message" name="message"></textarea>
+
+    <div class="hp" aria-hidden="true">
+      <label for="website">Leave this empty</label>
+      <input id="website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    <button type="submit">Send enquiry</button>
+  </form>
+
+  <div id="result" role="status"></div>
+
+  <p class="hint">
+    The endpoint only accepts posts from an origin listed in
+    <code>public_site_origin</code>, discards anything that fills in the hidden
+    field, and refuses more than five an hour from one address. To try the
+    limit and then carry on, run
+    <code>php tools/clear-enquiry-throttle.php</code>.
+  </p>
+</main>
+
+<script>
+  const form   = document.getElementById('enquiry');
+  const result = document.getElementById('result');
+  const button = form.querySelector('button');
+
+  // The fleet is not public, so the list is a convenience for testing: the ids
+  // come from the seed and the endpoint ignores one it does not recognise.
+  for (const [id, label] of [
+    [1, 'Swift VXi'], [2, 'Baleno Zeta'], [3, 'Brezza ZXi'], [4, 'Creta SX'],
+    [5, 'Innova Crysta'], [6, 'Fronx Delta'], [7, 'Tiago EV'],
+  ]) {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = label;
+    document.getElementById('vehicle_id').append(option);
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    button.disabled = true;
+    result.className = '';
+
+    const payload = Object.fromEntries(
+      [...new FormData(form).entries()].filter(([, value]) => value !== '')
+    );
+
+    try {
+      const response = await fetch('/api/enquiry-submit.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        result.className = 'ok';
+        result.textContent = body.enquiry_number
+          ? `Thank you — your enquiry is ${body.enquiry_number}. We will call you back.`
+          : 'Accepted. (No number came back — that is what a honeypot hit looks like from outside.)';
+        form.reset();
+      } else {
+        result.className = 'bad';
+        result.textContent = [
+          body.error || `Refused with ${response.status}.`,
+          ...Object.values(body.fields || {}),
+        ].join('\n');
+      }
+    } catch (error) {
+      result.className = 'bad';
+      result.textContent = 'Could not reach the endpoint: ' + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>

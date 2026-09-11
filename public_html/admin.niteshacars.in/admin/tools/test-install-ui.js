@@ -5,7 +5,8 @@
  *   node tools/test-install-ui.js http://127.0.0.1:8210 <db-name> <db-user>
  */
 
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { playwright, launchOptions } = require('./playwright');
+const { chromium } = playwright();
 
 const BASE = process.argv[2] || 'http://127.0.0.1:8210';
 const DB   = process.argv[3] || 'nitesha_install';
@@ -20,7 +21,7 @@ const has = (l, text, needle) =>
     ? ok(l) : bad(l, `"${needle}" not in view`));
 
 (async () => {
-  const br = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
+  const br = await chromium.launch(launchOptions());
   const p = await (await br.newContext({ viewport: { width: 900, height: 1200 } })).newPage();
   const errs = [];
   p.on('pageerror', e => errs.push(String(e)));

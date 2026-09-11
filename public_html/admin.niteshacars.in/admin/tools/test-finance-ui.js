@@ -6,7 +6,8 @@
  *   node tools/test-finance-ui.js http://127.0.0.1:8210 admin@example.com password
  */
 
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { playwright, launchOptions } = require('./playwright');
+const { chromium } = playwright();
 
 const BASE = process.argv[2] || 'http://127.0.0.1:8210';
 const EMAIL = process.argv[3];
@@ -22,7 +23,7 @@ const has = (l, text, needle) =>
 const rupees = (text) => Number(String(text).replace(/[^0-9.-]/g, '')) || 0;
 
 (async () => {
-  const br = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
+  const br = await chromium.launch(launchOptions());
   const p = await (await br.newContext({ viewport: { width: 1400, height: 1200 } })).newPage();
 
   const errs = [];
