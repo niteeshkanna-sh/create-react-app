@@ -38,109 +38,34 @@ export interface Car {
 }
 
 export const cars: Car[] = [
-  {
-    id: 'brezza',
-    brand: 'Maruti Suzuki',
-    name: 'Vitara Brezza',
-    bodyType: 'SUV',
-    fuel: 'Petrol',
-    transmission: 'Manual',
-    seats: 5,
-    year: 2022,
-    rateDaily: 2400,
-    rateWeekly: 2100,
-    rateMonthly: 1800,
-    kmLimitPerDay: 200,
-    extraKmRate: 12,
-    deposit: 5000,
-    image: '/car-brezza.avif',
-    available: true,
-  },
-  {
-    id: 'swift',
-    brand: 'Maruti Suzuki',
-    name: 'Swift',
-    bodyType: 'Hatchback',
-    fuel: 'Petrol',
-    transmission: 'Manual',
-    seats: 5,
-    year: 2021,
-    rateDaily: 1600,
-    rateWeekly: 1400,
-    rateMonthly: 1200,
-    kmLimitPerDay: 200,
-    extraKmRate: 9,
-    deposit: 3000,
-    available: true,
-  },
-  {
-    id: 'city',
-    brand: 'Honda',
-    name: 'City',
-    bodyType: 'Sedan',
-    fuel: 'Petrol',
-    transmission: 'Automatic',
-    seats: 5,
-    year: 2023,
-    rateDaily: 2800,
-    rateWeekly: 2500,
-    rateMonthly: 2200,
-    kmLimitPerDay: 250,
-    extraKmRate: 14,
-    deposit: 6000,
-    available: true,
-  },
-  {
-    id: 'innova',
-    brand: 'Toyota',
-    name: 'Innova Crysta',
-    bodyType: 'MUV',
-    fuel: 'Diesel',
-    transmission: 'Manual',
-    seats: 7,
-    year: 2022,
-    rateDaily: 3800,
-    rateWeekly: 3400,
-    rateMonthly: 3000,
-    kmLimitPerDay: 250,
-    extraKmRate: 16,
-    deposit: 8000,
-    available: true,
-  },
-  {
-    id: 'baleno',
-    brand: 'Maruti Suzuki',
-    name: 'Baleno',
-    bodyType: 'Hatchback',
-    fuel: 'Petrol',
-    transmission: 'Automatic',
-    seats: 5,
-    year: 2023,
-    rateDaily: 1900,
-    rateWeekly: 1700,
-    rateMonthly: 1500,
-    kmLimitPerDay: 200,
-    extraKmRate: 10,
-    deposit: 4000,
-    available: false,
-  },
-  {
-    id: 'nexon-ev',
-    brand: 'Tata',
-    name: 'Nexon EV',
-    bodyType: 'SUV',
-    fuel: 'Electric',
-    transmission: 'Automatic',
-    seats: 5,
-    year: 2024,
-    rateDaily: 3200,
-    rateWeekly: 2900,
-    rateMonthly: 2600,
-    kmLimitPerDay: 180,
-    extraKmRate: 13,
-    deposit: 7000,
-    available: true,
-  },
+  // Empty on purpose. The site previously shipped invented vehicles, which
+  // meant customers could enquire about cars that do not exist.
+  //
+  // Add the real fleet here and it appears immediately -- the listing, the
+  // body-type filters and the enquiry form's car picker all read from this
+  // array, and all of them handle an empty fleet on their own. Every push to
+  // main redeploys.
+  //
+  // Shape one like this:
+  //
+  // {
+  //   id: 'swift-01',
+  //   brand: 'Maruti Suzuki',
+  //   name: 'Swift',
+  //   bodyType: 'Hatchback',
+  //   fuel: 'Petrol',
+  //   transmission: 'Manual',
+  //   seats: 5,
+  //   year: 2021,
+  //   rateDaily: 1600,
+  //   rateWeekly: 1400,      // optional, per day
+  //   rateMonthly: 1200,     // optional, per day
+  //   kmLimitPerDay: 200,
+  //   extraKmRate: 9,
+  //   deposit: 3000,
+  //   image: '/swift.webp',  // optional, put the file in my-app/public/
+  //   available: true,
+  // },
 ];
 
 /** Rupee formatting, Indian digit grouping, no decimals. */

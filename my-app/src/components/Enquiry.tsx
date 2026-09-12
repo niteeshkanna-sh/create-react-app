@@ -136,6 +136,7 @@ export function Enquiry({ selectedCar, onCarChange }: EnquiryProps) {
             ) : null}
           </div>
 
+          {cars.length === 0 ? null : (
           <div>
             <label className={label} htmlFor="car">
               Car you're interested in
@@ -155,6 +156,7 @@ export function Enquiry({ selectedCar, onCarChange }: EnquiryProps) {
               ))}
             </select>
           </div>
+          )}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
@@ -183,7 +185,9 @@ export function Enquiry({ selectedCar, onCarChange }: EnquiryProps) {
 
           <div>
             <label className={label} htmlFor="message">
-              Anything else?
+              {cars.length === 0
+                ? 'What kind of car do you need?'
+                : 'Anything else?'}
             </label>
             <textarea id="message" name="message" rows={3} className={`mt-1.5 ${field}`} />
           </div>
