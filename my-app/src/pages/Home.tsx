@@ -4,6 +4,7 @@ import { HowItWorks } from '../components/HowItWorks';
 import { AreasServed } from '../components/AreasServed';
 import { Services } from '../components/Services';
 import { Highlights } from '../components/Highlights';
+import { WhyUs } from '../components/WhyUs';
 
 export function Home() {
   return (
@@ -11,6 +12,7 @@ export function Home() {
       <Hero />
       <Services />
       <Highlights />
+      <WhyUs />
       <HowItWorks />
       <AreasServed />
 
