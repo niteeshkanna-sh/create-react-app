@@ -103,7 +103,7 @@ export function Header() {
             </button>
 
             {servicesOpen ? (
-              <ul className="absolute top-full left-0 mt-2 w-52 overflow-hidden rounded-[14px] border border-line bg-white py-1.5 shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
+              <ul data-menu="" className="absolute top-full left-0 mt-2 w-52 overflow-hidden rounded-[14px] border border-line bg-white py-1.5 shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
                 {services.map((s) => (
                   <li key={s.to}>
                     <NavLink
@@ -161,6 +161,7 @@ export function Header() {
         <nav
           id="mobile-nav"
           aria-label="Main"
+          data-menu=""
           className="border-t border-line/70 bg-sand px-5 pb-4 lg:hidden"
         >
           <ul className="grid gap-1 pt-2">

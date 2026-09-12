@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { PageHeader } from './PageHeader';
 import { AreasServed } from '../components/AreasServed';
+import { Reveal } from '../components/Reveal';
 
 export interface ServiceSection {
   heading: string;
@@ -32,11 +33,11 @@ export function ServicePage({ title, intro, sections, points, cta }: ServicePage
 
       <section className="mx-auto max-w-3xl px-5 py-16">
         <div className="space-y-8">
-          {sections.map((s) => (
-            <div key={s.heading}>
+          {sections.map((s, i) => (
+            <Reveal key={s.heading} delay={i * 70}>
               <h2 className="text-xl font-semibold text-navy">{s.heading}</h2>
               <p className="mt-2 leading-relaxed text-ink-dim">{s.body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
 
@@ -53,7 +54,7 @@ export function ServicePage({ title, intro, sections, points, cta }: ServicePage
           </ul>
         ) : null}
 
-        <div className="mt-10 rounded-[14px] border border-line bg-white p-6 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
+        <Reveal className="mt-10 block rounded-[14px] border border-line bg-white p-6 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
           <p className="text-lg font-semibold text-navy">{cta ?? 'Ask us for a quote'}</p>
           <p className="mx-auto mt-2 max-w-md text-ink-dim">
             Tell us your dates and where you are in {seo.site.district} district,
@@ -73,7 +74,7 @@ export function ServicePage({ title, intro, sections, points, cta }: ServicePage
               Call +91 63749 42976
             </a>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <AreasServed />

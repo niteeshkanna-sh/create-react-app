@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Reveal } from './Reveal';
 
 const services = [
   {
@@ -26,16 +27,19 @@ const services = [
 export function Services() {
   return (
     <section className="mx-auto max-w-6xl px-5 py-20">
-      <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-        What we hire
-      </h2>
+      <Reveal>
+        <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl">
+          What we hire
+        </h2>
+      </Reveal>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {services.map((s) => (
+        {services.map((s, i) => (
+          <Reveal key={s.to} delay={i * 80}>
           <Link
-            key={s.to}
             to={s.to}
-            className="group rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(16,24,40,0.08)] transition hover:border-navy/40"
+            data-lift=""
+            className="group flex h-full flex-col rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(16,24,40,0.08)] transition hover:border-navy/40"
           >
             <h3 className="text-lg font-semibold text-navy">{s.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-ink-dim">{s.body}</p>
@@ -46,6 +50,7 @@ export function Services() {
               </span>
             </span>
           </Link>
+          </Reveal>
         ))}
       </div>
     </section>

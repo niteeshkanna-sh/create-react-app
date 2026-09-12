@@ -1,3 +1,5 @@
+import { Reveal } from './Reveal';
+
 const steps = [
   {
     n: '01',
@@ -20,17 +22,19 @@ export function HowItWorks() {
   return (
     <section id="how" className="bg-white py-20">
       <div className="mx-auto max-w-6xl px-5">
-        <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-          How it works
-        </h2>
+        <Reveal>
+          <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl">
+            How it works
+          </h2>
+        </Reveal>
 
         <ol className="mt-10 grid gap-8 sm:grid-cols-3">
-          {steps.map((s) => (
-            <li key={s.n}>
+          {steps.map((s, i) => (
+            <Reveal key={s.n} delay={i * 90} as="li">
               <p className="text-sm font-bold tracking-widest text-gold">{s.n}</p>
               <h3 className="mt-2 text-lg font-semibold text-navy">{s.title}</h3>
               <p className="mt-1.5 leading-relaxed text-ink-dim">{s.body}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
 

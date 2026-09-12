@@ -29,12 +29,16 @@ function ScrollToTop() {
 
 function App() {
   useSeo();
+  const { pathname } = useLocation();
 
   return (
     <>
       <ScrollToTop />
       <Header />
-      <main>
+      {/* Keyed on the path so React remounts on navigation and the entrance
+          animation replays; without the key the DOM is reused and nothing
+          animates. */}
+      <main key={pathname} data-page="">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

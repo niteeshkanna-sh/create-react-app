@@ -19,26 +19,26 @@ export function Hero() {
       />
 
       <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
-        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-wide text-gold uppercase">
+        <p data-hero-item="" style={{ ["--hero-delay" as string]: "40ms" }} className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-wide text-gold uppercase">
           Nagercoil &amp; Kanyakumari district
         </p>
 
-        <h1 className="max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
+        <h1 data-hero-item="" style={{ ["--hero-delay" as string]: "120ms" }} className="max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
           Self drive car &amp; bike rental in Nagercoil
           <span className="block text-gold">and across Kanyakumari district</span>
         </h1>
 
-        <p className="mt-4 text-lg font-medium text-white/80">
+        <p data-hero-item="" style={{ ["--hero-delay" as string]: "200ms" }} className="mt-4 text-lg font-medium text-white/80">
           Take the wheel. We'll handle the rest.
         </p>
 
-        <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
+        <p data-hero-item="" style={{ ["--hero-delay" as string]: "260ms" }} className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
           Self drive cars, bike rental, wedding cars and tourist vehicles with
           a driver — across Nagercoil, Marthandam, Colachel and the whole of
           Kanyakumari district. Transparent rates and a deposit you get back.
         </p>
 
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div data-hero-item="" style={{ ["--hero-delay" as string]: "340ms" }} className="mt-8 flex flex-wrap gap-3">
           <a
             href="#fleet"
             className="rounded-xl bg-gold px-6 py-3 font-semibold text-navy transition hover:bg-gold/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -53,7 +53,7 @@ export function Hero() {
           </a>
         </div>
 
-        <ul className="mt-12 grid gap-3 sm:grid-cols-3">
+        <ul data-hero-item="" style={{ ["--hero-delay" as string]: "420ms" }} className="mt-12 grid gap-3 sm:grid-cols-3">
           {points.map((p) => (
             <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
               <span aria-hidden="true" className="mt-0.5 text-gold">
