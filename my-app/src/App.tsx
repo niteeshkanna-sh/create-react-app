@@ -10,6 +10,7 @@ import { Bikes } from './pages/Bikes';
 import { WeddingCars } from './pages/WeddingCars';
 import { TouristVehicles } from './pages/TouristVehicles';
 import { Nri } from './pages/Nri';
+import { Monthly } from './pages/Monthly';
 import { Tariff } from './pages/Tariff';
 import { Blog } from './pages/Blog';
 import { Contact } from './pages/Contact';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/bikes" element={<Bikes />} />
           <Route path="/wedding-cars" element={<WeddingCars />} />
           <Route path="/tourist-vehicles" element={<TouristVehicles />} />
+          <Route path="/monthly" element={<Monthly />} />
           <Route path="/nri" element={<Nri />} />
           <Route path="/tariff" element={<Tariff />} />
           <Route path="/blog" element={<Blog />} />

@@ -65,6 +65,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/monthly" className="transition hover:text-gold">
+                Monthly rental
+              </Link>
+            </li>
+            <li>
               <Link to="/nri" className="transition hover:text-gold">
                 For NRI visitors
               </Link>

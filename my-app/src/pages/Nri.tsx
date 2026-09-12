@@ -31,7 +31,7 @@ const steps = [
   },
   {
     heading: 'Keep it as long as you need',
-    body: 'Most people visiting family stay for weeks, not days. Our daily rate comes down for longer hires, so a fortnight or a month costs considerably less per day than a weekend. Ask us for the long-stay rate when you enquire.',
+    body: 'Most people visiting family stay for weeks, not days. Our daily rate comes down for longer hires, so a fortnight or a month costs considerably less per day than a weekend. See monthly rental for how that works, and ask us for the long-stay rate when you enquire.',
   },
   {
     heading: 'Drop it back when you leave',

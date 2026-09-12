@@ -23,6 +23,11 @@ const services = [
     body: 'Cars and vans with a driver who knows the district and its roads.',
   },
   {
+    to: '/monthly',
+    title: 'Monthly rental',
+    body: 'Weeks rather than days, at a rate that drops the longer you keep it.',
+  },
+  {
     to: '/nri',
     title: 'Coming from abroad?',
     body: 'Book before you land. Airport pickup and long-stay rates for visiting families.',
@@ -38,7 +43,7 @@ export function Services() {
         </h2>
       </Reveal>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((s, i) => (
           <Reveal key={s.to} delay={i * 80}>
           <Link
