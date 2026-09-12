@@ -1,0 +1,62 @@
+import { Link } from 'react-router-dom';
+import { Reveal } from './Reveal';
+
+/**
+ * Full-bleed photograph band on the home page, sitting between "how it works"
+ * and the areas we cover: you have just read how to book, so this is the
+ * payoff -- the road itself -- before the page goes back to detail.
+ *
+ * The picture is set as a CSS background rather than an <img> on purpose. If
+ * the file is missing the section falls back to the navy beneath it and still
+ * looks deliberate, where an <img> would leave a broken-image icon on a live
+ * page. It is decorative either way: every word here is in the markup.
+ */
+export function OpenRoad() {
+  return (
+    <section className="relative isolate overflow-hidden bg-navy text-white">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[url('/open-road.jpg')] bg-cover bg-center"
+      />
+      <div aria-hidden="true" className="road-scrim absolute inset-0" />
+
+      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
+        <Reveal className="max-w-xl">
+          <p className="eyebrow-gold mb-4 text-[11px]">Self drive</p>
+
+          <h2 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl lg:text-5xl">
+            No driver. No timetable.
+            <span className="block text-gold">Just the road ahead.</span>
+          </h2>
+
+          <p className="mt-5 text-base leading-relaxed text-white/75 sm:text-lg">
+            That is the whole point of self drive. You take the keys, you set
+            the route, and the day belongs to you — a sunrise run down to
+            Kanyakumari, the coast road to Colachel, or a long weekend with no
+            fixed plan at all. Rates and limits are agreed before you leave, so
+            nothing changes on the way back.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              to="/cars"
+              data-lift=""
+              className="rounded-xl bg-gold px-6 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Browse the fleet
+            </Link>
+            <Link
+              to="/contact"
+              data-lift=""
+              className="rounded-xl border border-gold/40 px-6 py-3 font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              Check availability
+            </Link>
+          </div>
+        </Reveal>
+      </div>
+
+      <div aria-hidden="true" className="gold-rule relative" />
+    </section>
+  );
+}

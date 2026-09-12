@@ -186,3 +186,44 @@ body {
   letter-spacing: 0.28em;
   text-transform: uppercase;
 }
+
+/* Scrim over the open-road photograph. Two jobs: keep the type legible, and
+   leave the bright right-hand side of the picture (sun, vanishing road)
+   visible instead of drowning the whole frame.
+
+   The alphas are chosen against the worst case -- a pure white photograph
+   behind the text. Even then gold measures 6.68:1 and white 14.05:1, so the
+   type never depends on what the picture happens to be doing underneath.
+   On narrow screens the text spans the full width, so the gradient flattens
+   to an even wash rather than fading out to one side. */
+.road-scrim {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-navy-deep) 90%, transparent),
+    color-mix(in srgb, var(--color-navy) 86%, transparent)
+  );
+}
+
+/* The sideways fade only starts at 1024px. Below that the text column still
+   spans most of the frame, so it would sit over the pale end of the gradient:
+   at 640px that measured 4.79:1, passing but on a stand-in image, and I would
+   rather not spend that margin on whatever photograph ends up here. The
+   plateau runs to 60% because that is past the right edge of the text column
+   at every width this query covers. */
+@media (min-width: 1024px) {
+  .road-scrim {
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-navy-deep) 45%, transparent) 0%,
+        transparent 40%,
+        color-mix(in srgb, var(--color-navy-deep) 45%, transparent) 100%
+      ),
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-navy-deep) 96%, transparent) 0%,
+        color-mix(in srgb, var(--color-navy) 90%, transparent) 60%,
+        color-mix(in srgb, var(--color-navy) 28%, transparent) 100%
+      );
+  }
+}
