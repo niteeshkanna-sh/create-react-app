@@ -1,70 +1,48 @@
-# Getting Started with Create React App
+# niteshacars
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository holds two separate things, plus the CI that builds them.
 
-## Available Scripts
+| Path | What it is |
+| --- | --- |
+| `my-app/` | A React single-page app (Vite + TypeScript + Tailwind), deployed to GitHub Pages at [niteshacars.in](https://niteshacars.in) |
+| `public_html/` | Static assets and PHP for the niteshacars.in site, including the admin area under `admin.niteshacars.in/` |
 
-In the project directory, you can run:
+## my-app
 
-### `npm start`
+See [`my-app/README.md`](my-app/README.md) for setup, scripts, and layout.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+cd my-app
+npm install
+npm run dev
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Requires Node.js 20.19+ or 22.12+, which is what Vite 8 supports.
 
-### `npm test`
+## Deployment
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Pushes to `main` that touch `my-app/` trigger
+[`.github/workflows/deploy-my-app.yml`](.github/workflows/deploy-my-app.yml),
+which builds the app and publishes it to GitHub Pages. It can also be run by
+hand from the Actions tab.
 
-### `npm run build`
+The custom domain lives in `my-app/public/CNAME`. Vite copies `public/` into
+`dist/` verbatim, so the file lands at the site root where Pages expects it.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## CI
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+[`.github/workflows/node.js.yml`](.github/workflows/node.js.yml) installs,
+lints, and builds `my-app/` on every pull request and push to `main`, across
+Node 20.x and 22.x.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+`public_html/` is PHP and static files, deployed outside this repository, so no
+workflow covers it.
 
-### `npm run eject`
+## History
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This repository began as a fork of
+[facebook/create-react-app](https://github.com/facebook/create-react-app), and
+for a while carried that project's whole monorepo — `packages/`, `docusaurus/`,
+release tasks, integration tests, and its CI. None of it was developed here, and
+its workflows could not pass once the root `package.json` was replaced, so it has
+been removed. `LICENSE` is retained from that lineage.
