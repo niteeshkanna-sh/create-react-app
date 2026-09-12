@@ -78,7 +78,7 @@ export function Highlights() {
                 <div className="flex items-start gap-4">
                   <span
                     aria-hidden="true"
-                    className="grid size-12 shrink-0 place-items-center rounded-xl bg-gold/12 text-2xl"
+                    className="grid size-12 shrink-0 place-items-center rounded-xl bg-gold/20 text-2xl"
                   >
                     {h.icon}
                   </span>

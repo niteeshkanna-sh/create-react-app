@@ -27,7 +27,7 @@ export function AreasServed() {
         <ul className="mt-7 flex flex-wrap gap-2.5">
           {seo.site.areas.map((area, i) => (
             <Reveal key={area} as="li" delay={i * 35}>
-              <span className="inline-block rounded-full border border-line bg-sand px-4 py-1.5 text-sm font-medium text-ink-dim">
+              <span className="inline-block rounded-full border border-line bg-cream px-4 py-1.5 text-sm font-medium text-ink-dim">
                 {area}
               </span>
             </Reveal>

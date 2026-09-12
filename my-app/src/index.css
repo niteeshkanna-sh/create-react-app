@@ -3,14 +3,28 @@
 /* Brand tokens carried over from the admin panel (admin.css :root), so the
    public site and the admin share one palette. */
 @theme {
-  --color-navy: #0a0e20;
+  /* Golden yellow leads. Gold is a surface colour, never text on a light
+     background: #F5A500 on white measures 2.05:1, far under the 4.5:1 needed
+     for body copy. Navy on gold is 9.36:1, so the relationship is inverted --
+     gold behind, navy on top. */
   --color-gold: #f5a500;
-  --color-gold-deep: #b36b00;
+  --color-gold-light: #ffc233;
+  --color-gold-pale: #ffe9b8;
+  /* Darkened from #B36B00, which measured 4.18:1 on white and failed as link
+     text. This is 5.61:1 on cream. */
+  --color-gold-deep: #8a5a00;
+
+  --color-navy: #0a0e20;
   --color-ink: #14100d;
   --color-ink-dim: #5c5348;
   --color-ink-faint: #948b80;
-  --color-sand: #faf8f4;
-  --color-line: #e9e2d8;
+
+  /* Warmer than the old #FAF8F4, so the page reads gold rather than grey. */
+  --color-cream: #fff8ea;
+  --color-sand: #fff8ea;
+  --color-surface: #ffffff;
+  --color-line: #efdfc2;
+
   --color-danger: #b3261e;
   --color-ok: #2f6b4f;
   --color-ok-soft: #e8f4ec;
@@ -27,7 +41,7 @@ html {
 }
 
 body {
-  background: var(--color-sand);
+  background: var(--color-cream);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

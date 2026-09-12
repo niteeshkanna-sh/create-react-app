@@ -67,12 +67,12 @@ export function Header() {
     ].join(' ');
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/70 bg-sand/85 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
         <Link to="/" onClick={closeMenus} className="flex items-center gap-2.5">
           <span
             aria-hidden="true"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-navy text-base font-bold text-gold"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gold text-base font-bold text-navy"
           >
             N
           </span>
@@ -113,7 +113,7 @@ export function Header() {
                       onClick={closeMenus}
                       className={({ isActive }) =>
                         `block px-4 py-2 text-sm font-medium transition ${
-                          isActive ? 'bg-navy text-white' : 'text-ink-dim hover:bg-sand hover:text-navy'
+                          isActive ? 'bg-navy text-white' : 'text-ink-dim hover:bg-cream hover:text-navy'
                         }`
                       }
                     >
@@ -164,7 +164,7 @@ export function Header() {
           id="mobile-nav"
           aria-label="Main"
           data-menu=""
-          className="border-t border-line/70 bg-sand px-5 pb-4 lg:hidden"
+          className="border-t border-line bg-cream px-5 pb-4 lg:hidden"
         >
           <ul className="grid gap-1 pt-2">
             {[links[0], links[1], ...services, ...links.slice(2)].map((l) => (
