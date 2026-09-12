@@ -6,7 +6,7 @@ export function Cars() {
     <>
       <PageHeader
         title="Our cars"
-        intro="Hatchbacks, sedans and SUVs for self-drive hire. Every car lists its KM limit, extra-KM rate and deposit, so there is nothing to discover later."
+        intro="Hatchbacks, sedans, SUVs and 7 seater vehicles for self-drive hire. Every car lists its KM limit, extra-KM rate and deposit, so there is nothing to discover later."
       />
       <Fleet />
     </>

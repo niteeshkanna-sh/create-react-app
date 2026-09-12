@@ -31,3 +31,120 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
+
+/* ---------------------------------------------------------------------------
+   Motion.
+
+   Everything here animates only `opacity` and `transform`. Those are handled
+   by the compositor, so they do not trigger layout or paint and stay at 60fps
+   on a mid-range phone -- which matters, because animating `height`, `top` or
+   `margin` is what makes a site feel cheap on the hardware most visitors have.
+
+   The whole file is wrapped so that anyone who has asked their system to
+   reduce motion gets none of it. That is an accessibility requirement, not a
+   nicety: for some people this kind of movement causes nausea.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 18px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale3d(0.96, 0.96, 1);
+    }
+    to {
+      opacity: 1;
+      transform: scale3d(1, 1, 1);
+    }
+  }
+
+  @keyframes drop-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -6px, 0) scale3d(0.98, 0.98, 1);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+    }
+  }
+
+  /* Scroll reveal. Elements start hidden and are released by the observer in
+     useReveal, so nothing pops in before it is actually on screen. */
+  [data-reveal] {
+    opacity: 0;
+  }
+
+  [data-reveal].is-visible {
+    animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* Route change: the new page fades up as it mounts. */
+  [data-page] {
+    animation: fade-up 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  [data-menu] {
+    animation: drop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  [data-hero-item] {
+    animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--hero-delay, 0ms);
+  }
+
+  /* Cards lift slightly on hover. transform only, so no reflow. */
+  [data-lift] {
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.25s ease;
+  }
+
+  [data-lift]:hover {
+    transform: translate3d(0, -3px, 0);
+  }
+
+  /* Buttons acknowledge the press. */
+  a,
+  button {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.12s ease;
+  }
+
+  a:active,
+  button:active {
+    transform: scale3d(0.985, 0.985, 1);
+  }
+}
+
+/* Reduced motion: show everything, move nothing. Without this the reveal rule
+   above would leave content permanently invisible. */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+  }
+}

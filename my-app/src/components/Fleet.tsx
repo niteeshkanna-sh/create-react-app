@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { inr, type BodyType } from '../data/cars';
 import { useFleet } from '../lib/useFleet';
+import { Reveal } from './Reveal';
 
 type Filter = 'All' | BodyType;
 const filters: Filter[] = ['All', 'Hatchback', 'Sedan', 'SUV', 'MUV'];
@@ -81,12 +82,13 @@ export function Fleet() {
         </div>
       ) : (
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((car) => {
+        {shown.map((car, i) => {
           const label = `${car.brand} ${car.name}`;
           return (
+            <Reveal key={car.id} delay={i * 70}>
             <article
-              key={car.id}
-              className="flex flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]"
+              data-lift=""
+              className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]"
             >
               <div className="relative aspect-[16/10] bg-sand">
                 {car.image ? (
@@ -166,6 +168,7 @@ export function Fleet() {
                 </Link>
               </div>
             </article>
+            </Reveal>
           );
         })}
       </div>

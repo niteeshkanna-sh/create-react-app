@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { HowItWorks } from '../components/HowItWorks';
+import { AreasServed } from '../components/AreasServed';
+import { Services } from '../components/Services';
+import { Highlights } from '../components/Highlights';
+import { WhyUs } from '../components/WhyUs';
 
 export function Home() {
   return (
     <>
       <Hero />
+      <Services />
+      <Highlights />
+      <WhyUs />
       <HowItWorks />
+      <AreasServed />
 
       <section className="mx-auto max-w-6xl px-5 py-20">
         <div className="rounded-[14px] border border-line bg-white p-8 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)] sm:p-12">

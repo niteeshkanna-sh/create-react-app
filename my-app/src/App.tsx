@@ -6,6 +6,11 @@ import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { About } from './pages/About';
 import { Cars } from './pages/Cars';
+import { Bikes } from './pages/Bikes';
+import { WeddingCars } from './pages/WeddingCars';
+import { TouristVehicles } from './pages/TouristVehicles';
+import { Nri } from './pages/Nri';
+import { Monthly } from './pages/Monthly';
 import { Tariff } from './pages/Tariff';
 import { Blog } from './pages/Blog';
 import { Contact } from './pages/Contact';
@@ -26,16 +31,25 @@ function ScrollToTop() {
 
 function App() {
   useSeo();
+  const { pathname } = useLocation();
 
   return (
     <>
       <ScrollToTop />
       <Header />
-      <main>
+      {/* Keyed on the path so React remounts on navigation and the entrance
+          animation replays; without the key the DOM is reused and nothing
+          animates. */}
+      <main key={pathname} data-page="">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/cars" element={<Cars />} />
+          <Route path="/bikes" element={<Bikes />} />
+          <Route path="/wedding-cars" element={<WeddingCars />} />
+          <Route path="/tourist-vehicles" element={<TouristVehicles />} />
+          <Route path="/monthly" element={<Monthly />} />
+          <Route path="/nri" element={<Nri />} />
           <Route path="/tariff" element={<Tariff />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
