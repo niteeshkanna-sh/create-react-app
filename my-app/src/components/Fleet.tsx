@@ -1,15 +1,13 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { cars, inr, type BodyType } from '../data/cars';
 
 type Filter = 'All' | BodyType;
 const filters: Filter[] = ['All', 'Hatchback', 'Sedan', 'SUV', 'MUV'];
 
-interface FleetProps {
-  onEnquire: (carLabel: string) => void;
-}
-
-export function Fleet({ onEnquire }: FleetProps) {
+export function Fleet() {
   const [filter, setFilter] = useState<Filter>('All');
+  const empty = cars.length === 0;
   const shown = filter === 'All' ? cars : cars.filter((c) => c.bodyType === filter);
 
   return (
@@ -20,10 +18,13 @@ export function Fleet({ onEnquire }: FleetProps) {
             Our fleet
           </h2>
           <p className="mt-2 max-w-lg text-ink-dim">
-            Rates shown are per day. Longer hires bring the daily rate down.
+            {empty
+              ? 'We are updating our vehicle listing. Call us or send an enquiry and we will tell you what is free for your dates.'
+              : 'Rates shown are per day. Longer hires bring the daily rate down.'}
           </p>
         </div>
 
+        {empty ? null : (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by body type">
           {filters.map((f) => {
             const active = f === filter;
@@ -44,8 +45,34 @@ export function Fleet({ onEnquire }: FleetProps) {
             );
           })}
         </div>
+        )}
       </div>
 
+      {empty ? (
+        <div className="mt-10 rounded-[14px] border border-line bg-white p-10 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
+          <p className="text-lg font-semibold text-navy">
+            Ask us what's available
+          </p>
+          <p className="mx-auto mt-2 max-w-md text-ink-dim">
+            Our current vehicles are not listed here yet. Tell us your dates and
+            what you need, and we will come back with the options and the rate.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <a
+              href="/contact"
+              className="rounded-xl bg-navy px-5 py-2.5 font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              Send an enquiry
+            </a>
+            <a
+              href="tel:+916374942976"
+              className="rounded-xl border border-line px-5 py-2.5 font-semibold text-ink-dim transition hover:border-navy/40 hover:text-navy"
+            >
+              Call +91 63749 42976
+            </a>
+          </div>
+        </div>
+      ) : (
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((car) => {
           const label = `${car.brand} ${car.name}`;
@@ -124,18 +151,18 @@ export function Fleet({ onEnquire }: FleetProps) {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => onEnquire(label)}
-                  className="mt-5 w-full rounded-xl bg-navy px-4 py-2.5 font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                <Link
+                  to={`/contact?car=${encodeURIComponent(label)}`}
+                  className="mt-5 block w-full rounded-xl bg-navy px-4 py-2.5 text-center font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                 >
                   Enquire about this car
-                </button>
+                </Link>
               </div>
             </article>
           );
         })}
       </div>
+      )}
     </section>
   );
 }

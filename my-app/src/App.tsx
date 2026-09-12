@@ -1,29 +1,43 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
-import { Hero } from './components/Hero';
-import { Fleet } from './components/Fleet';
-import { HowItWorks } from './components/HowItWorks';
-import { Enquiry } from './components/Enquiry';
 import { Footer } from './components/Footer';
+import { Home } from './pages/Home';
+import { About } from './pages/About';
+import { Cars } from './pages/Cars';
+import { Tariff } from './pages/Tariff';
+import { Blog } from './pages/Blog';
+import { Contact } from './pages/Contact';
+import { NotFound } from './pages/NotFound';
+
+/**
+ * A browser restores scroll position on navigation, which on a client-side
+ * router means a new page can open halfway down. Reset on every path change,
+ * but leave hash links alone so #anchors still work.
+ */
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    if (!hash) window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  return null;
+}
 
 function App() {
-  // Clicking "Enquire" on a car preselects it in the form below, so the
-  // choice is not lost on the way down the page.
-  const [selectedCar, setSelectedCar] = useState('');
-
-  function enquireAbout(car: string) {
-    setSelectedCar(car);
-    document.getElementById('enquire')?.scrollIntoView({ behavior: 'smooth' });
-  }
-
   return (
     <>
+      <ScrollToTop />
       <Header />
       <main>
-        <Hero />
-        <Fleet onEnquire={enquireAbout} />
-        <HowItWorks />
-        <Enquiry selectedCar={selectedCar} onCarChange={setSelectedCar} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/cars" element={<Cars />} />
+          <Route path="/tariff" element={<Tariff />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </main>
       <Footer />
     </>
