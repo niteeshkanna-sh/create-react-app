@@ -3,23 +3,25 @@
 /* Brand tokens carried over from the admin panel (admin.css :root), so the
    public site and the admin share one palette. */
 @theme {
-  /* Golden yellow leads. Gold is a surface colour, never text on a light
-     background: #F5A500 on white measures 2.05:1, far under the 4.5:1 needed
-     for body copy. Navy on gold is 9.36:1, so the relationship is inverted --
-     gold behind, navy on top. */
-  --color-gold: #f5a500;
-  --color-gold-light: #ffc233;
-  --color-gold-pale: #ffe9b8;
-  /* Darkened from #B36B00, which measured 4.18:1 on white and failed as link
-     text. This is 5.61:1 on cream. */
+  /* Taken from the logo: metallic gold on near-black, not the flatter #F5A500
+     used before. These read well on dark and badly on light -- #D4AF37 is
+     9.11:1 on navy but 1.99:1 on cream -- so gold belongs on dark surfaces,
+     and light sections use navy or gold-deep for text. */
+  --color-gold: #d4af37;
+  --color-gold-light: #f0d060;
+  --color-gold-mid: #c9a227;
+  --color-bronze: #c8873a;
+  /* The only gold dark enough to be read on a light background. */
   --color-gold-deep: #8a5a00;
 
+  /* The logo bar's near-black, slightly bluer than pure black. */
   --color-navy: #0a0e20;
+  --color-navy-deep: #070a16;
+
   --color-ink: #14100d;
   --color-ink-dim: #5c5348;
   --color-ink-faint: #948b80;
 
-  /* Warmer than the old #FAF8F4, so the page reads gold rather than grey. */
   --color-cream: #fff8ea;
   --color-sand: #fff8ea;
   --color-surface: #ffffff;
@@ -161,4 +163,26 @@ body {
   [data-reveal] {
     opacity: 1;
   }
+}
+
+/* The gold rule that runs under the logo bar. A gradient rather than a flat
+   fill, so it catches the light the way the metallic lettering does. */
+.gold-rule {
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--color-bronze) 0%,
+    var(--color-gold-light) 25%,
+    var(--color-gold) 50%,
+    var(--color-gold-light) 75%,
+    var(--color-bronze) 100%
+  );
+}
+
+/* "PREMIUM RENTALS" — wide-tracked gold caps above the name. */
+.eyebrow-gold {
+  color: var(--color-gold-light);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
 }

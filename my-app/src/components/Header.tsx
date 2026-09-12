@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
+import { Logo } from './Logo';
 
 const services = [
   { to: '/cars', label: 'Self-drive cars' },
@@ -21,7 +22,7 @@ const links = [
 
 /** Gold dot over the current page, as on the old site. */
 const activeDot =
-  "before:absolute before:-top-1.5 before:left-1/2 before:size-1.5 before:-translate-x-1/2 before:rounded-full before:bg-gold before:content-['']";
+  "before:absolute before:-top-1.5 before:left-1/2 before:size-1.5 before:-translate-x-1/2 before:rounded-full before:bg-gold-light before:content-['']";
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -63,23 +64,13 @@ export function Header() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     [
       'relative py-1 text-sm font-semibold transition',
-      isActive ? `text-navy ${activeDot}` : 'text-ink-dim hover:text-navy',
+      isActive ? `text-gold-light ${activeDot}` : 'text-white/70 hover:text-gold-light',
     ].join(' ');
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur">
+    <header className="sticky top-0 z-50 bg-navy-deep">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-        <Link to="/" onClick={closeMenus} className="flex items-center gap-2.5">
-          <span
-            aria-hidden="true"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gold text-base font-bold text-navy"
-          >
-            N
-          </span>
-          <span className="text-base leading-tight font-semibold tracking-tight text-navy sm:text-lg">
-            {seo.site.name}
-          </span>
-        </Link>
+        <Logo onClick={closeMenus} />
 
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Main">
           <NavLink to="/" end onClick={closeMenus} className={linkClass}>
@@ -95,7 +86,7 @@ export function Header() {
               onClick={() => setServicesOpen((s) => !s)}
               aria-expanded={servicesOpen}
               className={`relative flex items-center gap-1 py-1 text-sm font-semibold transition ${
-                onServicePage ? `text-navy ${activeDot}` : 'text-ink-dim hover:text-navy'
+                onServicePage ? `text-gold-light ${activeDot}` : 'text-white/70 hover:text-gold-light'
               }`}
             >
               Services
@@ -113,7 +104,7 @@ export function Header() {
                       onClick={closeMenus}
                       className={({ isActive }) =>
                         `block px-4 py-2 text-sm font-medium transition ${
-                          isActive ? 'bg-navy text-white' : 'text-ink-dim hover:bg-cream hover:text-navy'
+                          isActive ? 'bg-navy text-gold-light' : 'text-ink-dim hover:bg-cream hover:text-navy'
                         }`
                       }
                     >
@@ -135,7 +126,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <a
             href={`tel:${seo.site.phone}`}
-            className="hidden rounded-xl bg-navy px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:block"
+            className="hidden rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:block"
           >
             Call us
           </a>
@@ -145,7 +136,7 @@ export function Header() {
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            className="rounded-xl border border-line p-2.5 text-navy transition hover:border-navy/40 lg:hidden"
+            className="rounded-xl border border-white/20 p-2.5 text-gold-light transition hover:border-gold/60 lg:hidden"
           >
             <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
             <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none">
@@ -164,7 +155,7 @@ export function Header() {
           id="mobile-nav"
           aria-label="Main"
           data-menu=""
-          className="border-t border-line bg-cream px-5 pb-4 lg:hidden"
+          className="border-t border-white/10 bg-navy-deep px-5 pb-4 lg:hidden"
         >
           <ul className="grid gap-1 pt-2">
             {[links[0], links[1], ...services, ...links.slice(2)].map((l) => (
@@ -175,7 +166,7 @@ export function Header() {
                   onClick={closeMenus}
                   className={({ isActive }) =>
                     `block rounded-xl px-3 py-2.5 font-medium transition ${
-                      isActive ? 'bg-navy text-white' : 'text-ink-dim hover:bg-white'
+                      isActive ? 'bg-gold text-navy' : 'text-white/75 hover:bg-white/10'
                     }`
                   }
                 >
@@ -194,6 +185,8 @@ export function Header() {
           </ul>
         </nav>
       ) : null}
+
+      <div className="gold-rule" />
     </header>
   );
 }
