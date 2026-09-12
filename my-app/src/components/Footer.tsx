@@ -24,13 +24,13 @@ export function Footer() {
           </h2>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
-              <a href="tel:+919000000000" className="transition hover:text-gold">
-                +91 90000 00000
+              <a href="tel:+916374942976" className="transition hover:text-gold">
+                +91 63749 42976
               </a>
             </li>
             <li>
-              <a href="mailto:hello@niteshacars.in" className="transition hover:text-gold">
-                hello@niteshacars.in
+              <a href="mailto:niteshacars045@gmail.com" className="transition hover:text-gold">
+                niteshacars045@gmail.com
               </a>
             </li>
           </ul>

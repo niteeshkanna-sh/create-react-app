@@ -33,7 +33,7 @@ export function Header() {
         </nav>
 
         <a
-          href="tel:+919000000000"
+          href="tel:+916374942976"
           className="rounded-xl bg-navy px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
           Call us
