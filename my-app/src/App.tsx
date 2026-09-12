@@ -1,33 +1,33 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import { Header } from './components/Header';
+import { Hero } from './components/Hero';
+import { Fleet } from './components/Fleet';
+import { HowItWorks } from './components/HowItWorks';
+import { Enquiry } from './components/Enquiry';
+import { Footer } from './components/Footer';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Clicking "Enquire" on a car preselects it in the form below, so the
+  // choice is not lost on the way down the page.
+  const [selectedCar, setSelectedCar] = useState('');
+
+  function enquireAbout(car: string) {
+    setSelectedCar(car);
+    document.getElementById('enquire')?.scrollIntoView({ behavior: 'smooth' });
+  }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-slate-950 px-6 text-slate-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          my-app
-        </h1>
-        <p className="mt-3 text-slate-400">
-          React + TypeScript + Vite + Tailwind CSS
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setCount((c) => c + 1)}
-        className="rounded-lg bg-indigo-500 px-5 py-2.5 font-medium text-white transition hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
-      >
-        Count is {count}
-      </button>
-
-      <p className="text-sm text-slate-500">
-        Edit <code className="text-slate-300">src/App.tsx</code> and save to
-        test HMR.
-      </p>
-    </main>
-  )
+    <>
+      <Header />
+      <main>
+        <Hero />
+        <Fleet onEnquire={enquireAbout} />
+        <HowItWorks />
+        <Enquiry selectedCar={selectedCar} onCarChange={setSelectedCar} />
+      </main>
+      <Footer />
+    </>
+  );
 }
 
-export default App
+export default App;
