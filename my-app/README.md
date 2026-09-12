@@ -36,3 +36,16 @@ my-app/
     ├── App.tsx       # Root component
     └── index.css     # Tailwind entry
 ```
+
+## Deployment
+
+Deployed to GitHub Pages at <https://niteshacars.in> by
+`.github/workflows/deploy-my-app.yml`, which builds this directory and
+publishes `dist/`.
+
+It runs on pushes to `main` that touch `my-app/`, and can also be started
+by hand from the Actions tab (Run workflow).
+
+`public/CNAME` holds the custom domain. Vite copies `public/` into `dist/`
+verbatim, so the file lands at the site root where Pages expects it.
+Removing it reverts the site to the default `*.github.io` address.
