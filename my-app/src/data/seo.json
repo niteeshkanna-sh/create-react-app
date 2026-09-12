@@ -1,0 +1,47 @@
+{
+  "site": {
+    "name": "Nitesha Cars",
+    "origin": "https://niteshacars.in",
+    "phone": "+916374942976",
+    "email": "niteshacars045@gmail.com",
+    "locale": "en_IN"
+  },
+  "routes": [
+    {
+      "path": "/",
+      "title": "Nitesha Cars — Self-drive car rental",
+      "description": "Self-drive car hire by the day, week or month. Clear KM limits, transparent extra-KM rates and refundable deposits, stated upfront.",
+      "priority": "1.0"
+    },
+    {
+      "path": "/about",
+      "title": "About us — Nitesha Cars",
+      "description": "Who we are and how self-drive hire works with us: what you need to bring, how deposits are handled, and how rates are set.",
+      "priority": "0.6"
+    },
+    {
+      "path": "/cars",
+      "title": "Our cars — Nitesha Cars",
+      "description": "Hatchbacks, sedans and SUVs available for self-drive hire. Every car lists its daily rate, KM allowance, extra-KM rate and deposit.",
+      "priority": "0.9"
+    },
+    {
+      "path": "/tariff",
+      "title": "Tariff and rates — Nitesha Cars",
+      "description": "Daily, weekly and monthly rates for every car, with KM limits, extra-KM charges and refundable deposits. No booking fee.",
+      "priority": "0.9"
+    },
+    {
+      "path": "/blog",
+      "title": "Blog — Nitesha Cars",
+      "description": "Road trip routes, driving tips and news about our fleet.",
+      "priority": "0.4"
+    },
+    {
+      "path": "/contact",
+      "title": "Contact us — Nitesha Cars",
+      "description": "Call, email or send an enquiry. Tell us your dates and we will confirm what is available and what it costs.",
+      "priority": "0.8"
+    }
+  ]
+}

@@ -76,3 +76,35 @@ sent and enquiries will link to the vehicle record.
 
 A honeypot field named `website` is included and kept visually hidden, matching
 what the endpoint expects.
+
+## Where the fleet comes from
+
+The site fetches `https://admin.niteshacars.in/admin/api/public-vehicles.php`,
+which returns only vehicles whose status is `Available`, and only public-safe
+columns. Adding a car in the admin panel puts it on the site; setting one to
+Maintenance takes it off. No code change, no deploy.
+
+`src/data/cars.ts` is the fallback used when that request fails — offline, a
+CORS rejection, or the endpoint not uploaded yet. It is empty, so the site
+degrades to its "ask us what's available" state rather than showing an error.
+
+The endpoint must be uploaded to the server; it lives in this repo at
+`public_html/admin.niteshacars.in/admin/api/public-vehicles.php`.
+
+## SEO
+
+`src/data/seo.json` is the single source of per-route titles and descriptions.
+It feeds two things:
+
+- `scripts/prerender-seo.mjs`, which runs after each build and writes a
+  directory per route (`dist/about/index.html` and so on) with that route's
+  title, description, canonical and `og:` tags baked into the HTML. This is
+  what crawlers and link previews read — WhatsApp, Facebook and X do not run
+  JavaScript, so tags set at runtime never reach them.
+- `src/lib/useSeo.ts`, which updates the same tags on client-side navigation,
+  since the app never re-requests HTML after boot.
+
+The script also writes `sitemap.xml`. `public/robots.txt` points at it.
+
+`index.html` carries `AutoRental` structured data — the business name, phone
+and email — which is what local search results are built from.
