@@ -1,4 +1,5 @@
 import { Enquiry } from '../components/Enquiry';
+import { AreasServed } from '../components/AreasServed';
 import { PageHeader } from './PageHeader';
 
 export function Contact() {
@@ -38,6 +39,7 @@ export function Contact() {
       </section>
 
       <Enquiry />
+      <AreasServed />
     </>
   );
 }
