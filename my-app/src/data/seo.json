@@ -56,6 +56,12 @@
       "priority": "0.9"
     },
     {
+      "path": "/nri",
+      "title": "Car Rental for NRI Visitors — Nagercoil & Kanyakumari",
+      "description": "Book a car or bike before you land. Airport pickup from Trivandrum, long-stay rates and WhatsApp booking for families visiting Kanyakumari from abroad.",
+      "priority": "0.9"
+    },
+    {
       "path": "/tariff",
       "title": "Rental Tariff & Rates — Nagercoil, Kanyakumari",
       "description": "Daily, weekly and monthly rates for self drive cars, bikes, wedding cars and tourist vehicles across Kanyakumari district. No booking fee.",

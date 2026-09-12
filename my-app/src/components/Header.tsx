@@ -7,6 +7,7 @@ const services = [
   { to: '/bikes', label: 'Bike rental' },
   { to: '/wedding-cars', label: 'Wedding cars' },
   { to: '/tourist-vehicles', label: 'Tourist vehicles' },
+  { to: '/nri', label: 'For NRI visitors' },
 ];
 
 const links = [

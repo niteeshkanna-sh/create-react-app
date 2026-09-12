@@ -65,6 +65,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/nri" className="transition hover:text-gold">
+                For NRI visitors
+              </Link>
+            </li>
+            <li>
               <a href="#how" className="transition hover:text-gold">
                 How it works
               </a>
