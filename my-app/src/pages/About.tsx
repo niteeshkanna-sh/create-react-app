@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import seo from '../data/seo.json';
 import { PageHeader } from './PageHeader';
 
 /**
@@ -12,20 +13,36 @@ export function About() {
     <>
       <PageHeader
         title="About us"
-        intro="Nitesha Cars rents cars for self-drive hire, by the day, the week or the month."
+        intro="NiteSha Cars & Bikes rents self drive cars, two-wheelers, wedding cars and tourist vehicles across Kanyakumari district."
       />
 
       <section className="mx-auto max-w-3xl px-5 py-16">
         <div className="space-y-5 leading-relaxed text-ink-dim">
           <p>
-            We hire cars to people who would rather drive themselves — for a
-            weekend away, a family trip, or a month between vehicles.
+            We are based in {seo.site.city} and work across the whole of{' '}
+            {seo.site.district} district. Four things, under one roof:{' '}
+            <Link to="/cars" className="font-medium text-navy hover:text-gold-deep">
+              self drive cars
+            </Link>{' '}
+            for people who would rather drive themselves,{' '}
+            <Link to="/bikes" className="font-medium text-navy hover:text-gold-deep">
+              bikes
+            </Link>{' '}
+            for getting around town,{' '}
+            <Link to="/wedding-cars" className="font-medium text-navy hover:text-gold-deep">
+              wedding cars
+            </Link>{' '}
+            for the day it matters, and{' '}
+            <Link to="/tourist-vehicles" className="font-medium text-navy hover:text-gold-deep">
+              tourist vehicles with a driver
+            </Link>{' '}
+            for sightseeing.
           </p>
           <p>
-            Rates are quoted per day and come down for longer hires. Each car
-            carries a daily KM allowance, a rate for anything beyond it, and a
-            refundable deposit. Those three numbers are listed against every
-            car, so the price you agree is the price you pay.
+            Rates are quoted per day and come down for longer hires. Each
+            vehicle carries a daily KM allowance, a rate for anything beyond it,
+            and a refundable deposit. Those three numbers are listed against
+            every car, so the price you agree is the price you pay.
           </p>
           <p>
             To hire, you need a valid driving licence and a government photo ID.

@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { HowItWorks } from '../components/HowItWorks';
 import { AreasServed } from '../components/AreasServed';
+import { Services } from '../components/Services';
 
 export function Home() {
   return (
     <>
       <Hero />
+      <Services />
       <HowItWorks />
       <AreasServed />
 

@@ -1,12 +1,14 @@
 {
   "site": {
-    "name": "Nitesha Cars",
+    "name": "NiteSha Cars & Bikes",
+    "shortName": "NiteSha",
     "origin": "https://niteshacars.in",
     "phone": "+916374942976",
     "email": "niteshacars045@gmail.com",
     "locale": "en_IN",
     "region": "Tamil Nadu",
     "district": "Kanyakumari",
+    "city": "Nagercoil",
     "areas": [
       "Nagercoil",
       "Kanyakumari",
@@ -25,27 +27,45 @@
   "routes": [
     {
       "path": "/",
-      "title": "Self-Drive Car Rental in Kanyakumari — Nitesha Cars",
-      "description": "Self-drive car hire across Kanyakumari district — Nagercoil, Marthandam, Colachel and Thuckalay. Daily, weekly and monthly rates with clear KM limits.",
+      "title": "Self Drive Car Rental in Nagercoil & Kanyakumari",
+      "description": "Self drive cars, bike rental, wedding cars and tourist vehicles across Kanyakumari district. Daily, weekly and monthly rates. Call +91 63749 42976.",
       "priority": "1.0"
     },
     {
-      "path": "/about",
-      "title": "About Us — Car Rental in Kanyakumari District",
-      "description": "Self-drive car rental serving Kanyakumari district from Nagercoil. What you need to bring, how deposits work, and how our rates are set.",
-      "priority": "0.6"
+      "path": "/cars",
+      "title": "Self Drive Cars in Nagercoil — NiteSha Cars & Bikes",
+      "description": "Hatchbacks, sedans and SUVs for self drive hire in Nagercoil and across Kanyakumari district. Clear KM limits, extra-KM rates and refundable deposits.",
+      "priority": "0.9"
     },
     {
-      "path": "/cars",
-      "title": "Our Cars — Self-Drive Hire in Nagercoil & Kanyakumari",
-      "description": "Hatchbacks, sedans and SUVs for self-drive hire across Kanyakumari district. Every car lists its daily rate, KM allowance, extra-KM rate and deposit.",
+      "path": "/bikes",
+      "title": "Bike Rental in Nagercoil & Kanyakumari — NiteSha",
+      "description": "Two-wheeler and bike rental in Nagercoil, Kanyakumari, Marthandam and Colachel. Hourly, daily and weekly rates for scooters and motorcycles.",
+      "priority": "0.9"
+    },
+    {
+      "path": "/wedding-cars",
+      "title": "Wedding Car Rental in Nagercoil & Kanyakumari",
+      "description": "Decorated wedding cars and premium vehicles for marriages across Kanyakumari district — Nagercoil, Marthandam and Colachel. Book season dates early.",
+      "priority": "0.9"
+    },
+    {
+      "path": "/tourist-vehicles",
+      "title": "Tourist Vehicle Hire with Driver — Kanyakumari",
+      "description": "Cars and vans with driver for sightseeing around Kanyakumari, Nagercoil and Tamil Nadu temple tours. Per-day and per-trip rates for families and groups.",
       "priority": "0.9"
     },
     {
       "path": "/tariff",
-      "title": "Car Rental Tariff & Rates — Kanyakumari District",
-      "description": "Daily, weekly and monthly self-drive car rental rates for Nagercoil, Marthandam, Colachel and across Kanyakumari district. No booking fee.",
-      "priority": "0.9"
+      "title": "Rental Tariff & Rates — Nagercoil, Kanyakumari",
+      "description": "Daily, weekly and monthly rates for self drive cars, bikes, wedding cars and tourist vehicles across Kanyakumari district. No booking fee.",
+      "priority": "0.8"
+    },
+    {
+      "path": "/about",
+      "title": "About Us — Car & Bike Rental in Kanyakumari",
+      "description": "NiteSha Cars & Bikes rents self drive cars, two-wheelers, wedding cars and tourist vehicles across Kanyakumari district from Nagercoil.",
+      "priority": "0.6"
     },
     {
       "path": "/blog",
@@ -55,8 +75,8 @@
     },
     {
       "path": "/contact",
-      "title": "Contact — Car Rental in Nagercoil & Kanyakumari",
-      "description": "Call +91 63749 42976 or send an enquiry. Self-drive car rental across Kanyakumari district, including Nagercoil, Marthandam and Colachel.",
+      "title": "Contact — Car & Bike Rental in Nagercoil",
+      "description": "Call +91 63749 42976 or send an enquiry. Self drive cars, bikes, wedding cars and tourist vehicles across Kanyakumari district.",
       "priority": "0.8"
     }
   ]

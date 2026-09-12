@@ -20,18 +20,22 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
         <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-wide text-gold uppercase">
-          Self-drive car rental · Kanyakumari district
+          Nagercoil &amp; Kanyakumari district
         </p>
 
         <h1 className="max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          Take the wheel.
-          <span className="block text-gold">We'll handle the rest.</span>
+          Self drive car &amp; bike rental in Nagercoil
+          <span className="block text-gold">and across Kanyakumari district</span>
         </h1>
 
+        <p className="mt-4 text-lg font-medium text-white/80">
+          Take the wheel. We'll handle the rest.
+        </p>
+
         <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-          Hatchbacks, sedans and SUVs by the day, week or month, across
-          Kanyakumari district — Nagercoil, Marthandam, Colachel and Thuckalay.
-          Transparent pricing, no hidden charges, and a deposit you get back.
+          Self drive cars, bike rental, wedding cars and tourist vehicles with
+          a driver — across Nagercoil, Marthandam, Colachel and the whole of
+          Kanyakumari district. Transparent rates and a deposit you get back.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">

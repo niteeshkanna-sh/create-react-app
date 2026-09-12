@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import seo from '../data/seo.json';
 
 export function Footer() {
   return (
@@ -12,11 +13,11 @@ export function Footer() {
             >
               N
             </span>
-            <span className="text-lg font-semibold text-white">Nitesha Cars</span>
+            <span className="text-lg font-semibold text-white">{seo.site.name}</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed">
-            Self-drive car rental. Daily, weekly and monthly hires with
-            transparent rates.
+            Self drive cars, bike rental, wedding cars and tourist vehicles
+            across Kanyakumari district.
           </p>
         </div>
 
@@ -45,7 +46,22 @@ export function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/cars" className="transition hover:text-gold">
-                Our fleet
+                Self-drive cars
+              </Link>
+            </li>
+            <li>
+              <Link to="/bikes" className="transition hover:text-gold">
+                Bike rental
+              </Link>
+            </li>
+            <li>
+              <Link to="/wedding-cars" className="transition hover:text-gold">
+                Wedding cars
+              </Link>
+            </li>
+            <li>
+              <Link to="/tourist-vehicles" className="transition hover:text-gold">
+                Tourist vehicles
               </Link>
             </li>
             <li>
@@ -64,7 +80,7 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <p className="mx-auto max-w-6xl px-5 py-5 text-sm">
-          &copy; {new Date().getFullYear()} Nitesha Cars. All rights reserved.
+          &copy; {new Date().getFullYear()} {seo.site.name}. All rights reserved.
         </p>
       </div>
     </footer>
