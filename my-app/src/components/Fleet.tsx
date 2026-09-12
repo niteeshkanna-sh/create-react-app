@@ -90,7 +90,7 @@ export function Fleet() {
               data-lift=""
               className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]"
             >
-              <div className="relative aspect-[16/10] bg-sand">
+              <div className="relative aspect-[16/10] bg-cream">
                 {car.image ? (
                   <img
                     src={car.image}

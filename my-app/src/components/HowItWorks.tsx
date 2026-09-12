@@ -38,7 +38,7 @@ export function HowItWorks() {
           ))}
         </ol>
 
-        <p className="mt-12 rounded-[14px] border border-line bg-sand p-5 text-sm leading-relaxed text-ink-dim">
+        <p className="mt-12 rounded-[14px] border border-line bg-cream p-5 text-sm leading-relaxed text-ink-dim">
           <strong className="font-semibold text-navy">Deposits are refundable.</strong>{' '}
           It is returned after the car comes back, less any extra-KM charges or
           damage. KM limits and extra-KM rates are listed on every car above, so

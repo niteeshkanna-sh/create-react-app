@@ -30,7 +30,7 @@ export function WhyUs() {
   const [open, setOpen] = useState(0);
 
   return (
-    <section className="bg-sand py-20">
+    <section className="bg-cream py-20">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 lg:grid-cols-2 lg:items-center lg:gap-16">
         {/* Photographs */}
         <Reveal>
@@ -45,7 +45,7 @@ export function WhyUs() {
               src="/car-brezza.avif"
               alt="One of our vehicles"
               loading="lazy"
-              className="absolute right-0 bottom-0 aspect-4/3 w-[62%] rounded-[14px] border-4 border-sand object-cover shadow-[0_10px_30px_rgba(16,24,40,0.16)]"
+              className="absolute right-0 bottom-0 aspect-4/3 w-[62%] rounded-[14px] border-4 border-cream object-cover shadow-[0_10px_30px_rgba(16,24,40,0.16)]"
             />
             <div className="absolute bottom-4 left-[6%] sm:bottom-6">
               <CircleBadge />

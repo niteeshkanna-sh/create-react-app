@@ -45,7 +45,7 @@ export function Tariff() {
           <div className="overflow-x-auto rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
             <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-line bg-sand/60 text-xs tracking-wide text-ink-faint uppercase">
+                <tr className="border-b border-line bg-cream/60 text-xs tracking-wide text-ink-faint uppercase">
                   <th scope="col" className="px-5 py-3 font-semibold">Car</th>
                   <th scope="col" className="px-5 py-3 font-semibold">Per day</th>
                   <th scope="col" className="px-5 py-3 font-semibold">Weekly</th>

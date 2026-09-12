@@ -13,6 +13,7 @@ export function PageHeader({ title, intro }: PageHeaderProps) {
           <p className="mt-4 max-w-2xl leading-relaxed text-white/70">{intro}</p>
         ) : null}
       </div>
+      <div className="gold-rule" />
     </section>
   );
 }

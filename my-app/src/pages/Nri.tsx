@@ -98,7 +98,7 @@ export function Nri() {
         </Reveal>
 
         <Reveal delay={80}>
-          <div className="mt-8 rounded-[14px] border border-line bg-sand p-6">
+          <div className="mt-8 rounded-[14px] border border-line bg-cream p-6">
             <h2 className="text-xl font-semibold text-navy">
               Booking a wedding from abroad
             </h2>

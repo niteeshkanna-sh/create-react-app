@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Hero } from '../components/Hero';
 import { HowItWorks } from '../components/HowItWorks';
+import { OpenRoad } from '../components/OpenRoad';
 import { AreasServed } from '../components/AreasServed';
 import { Services } from '../components/Services';
 import { Highlights } from '../components/Highlights';
@@ -14,6 +15,7 @@ export function Home() {
       <Highlights />
       <WhyUs />
       <HowItWorks />
+      <OpenRoad />
       <AreasServed />
 
       <section className="mx-auto max-w-6xl px-5 py-20">

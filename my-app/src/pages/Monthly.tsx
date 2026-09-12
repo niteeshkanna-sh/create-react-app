@@ -111,7 +111,7 @@ export function Monthly() {
         </div>
 
         <Reveal delay={60}>
-          <div className="mt-12 rounded-[14px] border border-line bg-sand p-6">
+          <div className="mt-12 rounded-[14px] border border-line bg-cream p-6">
             <h2 className="text-xl font-semibold text-navy">
               What decides your monthly rate
             </h2>
