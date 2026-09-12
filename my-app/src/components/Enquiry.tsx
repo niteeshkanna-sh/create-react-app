@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { submitEnquiry } from '../lib/enquiry';
 import { cars } from '../data/cars';
 
@@ -8,17 +9,17 @@ type Status =
   | { kind: 'sent'; enquiryNumber: string | null }
   | { kind: 'error'; message: string; fields?: Record<string, string> };
 
-interface EnquiryProps {
-  selectedCar: string;
-  onCarChange: (car: string) => void;
-}
-
 const field =
   'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-ink outline-none transition placeholder:text-ink-faint focus:border-navy focus:ring-2 focus:ring-navy/15';
 const label = 'block text-sm font-medium text-ink-dim';
 
-export function Enquiry({ selectedCar, onCarChange }: EnquiryProps) {
+export function Enquiry() {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+
+  // A car chosen on the fleet page arrives as ?car=..., so the choice
+  // survives the navigation here.
+  const [searchParams] = useSearchParams();
+  const [selectedCar, setSelectedCar] = useState(searchParams.get('car') ?? '');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -145,7 +146,7 @@ export function Enquiry({ selectedCar, onCarChange }: EnquiryProps) {
               id="car"
               name="car"
               value={selectedCar}
-              onChange={(e) => onCarChange(e.target.value)}
+              onChange={(e) => setSelectedCar(e.target.value)}
               className={`mt-1.5 ${field}`}
             >
               <option value="">No preference</option>

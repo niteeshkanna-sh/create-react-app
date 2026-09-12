@@ -1,14 +1,11 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { cars, inr, type BodyType } from '../data/cars';
 
 type Filter = 'All' | BodyType;
 const filters: Filter[] = ['All', 'Hatchback', 'Sedan', 'SUV', 'MUV'];
 
-interface FleetProps {
-  onEnquire: (carLabel: string) => void;
-}
-
-export function Fleet({ onEnquire }: FleetProps) {
+export function Fleet() {
   const [filter, setFilter] = useState<Filter>('All');
   const empty = cars.length === 0;
   const shown = filter === 'All' ? cars : cars.filter((c) => c.bodyType === filter);
@@ -62,7 +59,7 @@ export function Fleet({ onEnquire }: FleetProps) {
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <a
-              href="#enquire"
+              href="/contact"
               className="rounded-xl bg-navy px-5 py-2.5 font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
               Send an enquiry
@@ -154,13 +151,12 @@ export function Fleet({ onEnquire }: FleetProps) {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => onEnquire(label)}
-                  className="mt-5 w-full rounded-xl bg-navy px-4 py-2.5 font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                <Link
+                  to={`/contact?car=${encodeURIComponent(label)}`}
+                  className="mt-5 block w-full rounded-xl bg-navy px-4 py-2.5 text-center font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
                 >
                   Enquire about this car
-                </button>
+                </Link>
               </div>
             </article>
           );
