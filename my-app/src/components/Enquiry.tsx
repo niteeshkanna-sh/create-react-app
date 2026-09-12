@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { submitEnquiry } from '../lib/enquiry';
-import { cars } from '../data/cars';
+import { useFleet } from '../lib/useFleet';
 
 type Status =
   | { kind: 'idle' }
@@ -18,6 +18,9 @@ export function Enquiry() {
 
   // A car chosen on the fleet page arrives as ?car=..., so the choice
   // survives the navigation here.
+  const fleet = useFleet();
+  const cars = fleet.status === 'ready' ? fleet.cars : [];
+
   const [searchParams] = useSearchParams();
   const [selectedCar, setSelectedCar] = useState(searchParams.get('car') ?? '');
 

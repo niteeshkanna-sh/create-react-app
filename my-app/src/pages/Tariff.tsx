@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
-import { cars, inr } from '../data/cars';
+import { inr } from '../data/cars';
+import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
 
 export function Tariff() {
-  const empty = cars.length === 0;
+  const fleet = useFleet();
+  const cars = fleet.status === 'ready' ? fleet.cars : [];
+  const loading = fleet.status === 'loading';
+  const empty = !loading && cars.length === 0;
 
   return (
     <>
@@ -13,7 +17,9 @@ export function Tariff() {
       />
 
       <section className="mx-auto max-w-6xl px-5 py-16">
-        {empty ? (
+        {loading ? (
+          <p className="text-center text-ink-faint">Loading the rate card…</p>
+        ) : empty ? (
           <div className="rounded-[14px] border border-line bg-white p-10 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
             <p className="text-lg font-semibold text-navy">Ask us for a quote</p>
             <p className="mx-auto mt-2 max-w-md text-ink-dim">
