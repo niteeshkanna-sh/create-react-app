@@ -3,23 +3,25 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/http.php';
-require_once __DIR__ . '/../src/content.php';
 
 /**
- * Page content, for the public website's build.
+ * Page content overrides, for the public website's build.
  *
- * Read by my-app's build rather than by a visitor's browser, and that is the
- * whole point. Content fetched at page load would sit behind JavaScript, and
- * the site's ranking rests on the prerendered HTML actually containing the
- * words. Baking it in at build time keeps the copy in the HTML, keeps the
- * site fast, and keeps it up when this server is not.
+ * Returns only what has been edited. The site ships every section's default
+ * copy in my-app/src/content/defaults.json and lays these on top, so there is
+ * no reason to send the defaults back to a caller that already has them --
+ * and doing so was the only thing that made this endpoint depend on
+ * src/content.php and content-defaults.json.
  *
- * Returns defaults with any admin edits laid over them, so the caller gets a
- * complete document either way and never has to merge anything itself.
+ * That dependency mattered more than it looked. Those two files are new, so a
+ * panel updated by hand has this endpoint without them, and it fails on the
+ * require rather than doing anything useful. Reading the table directly keeps
+ * this file standing on db.php and http.php alone, both of which have been on
+ * the server since the panel was installed.
  *
- * Nothing here is secret -- it is the text of a public web page -- but it is
- * still read-only, GET-only and behind the same origin allowlist as the other
- * public endpoints.
+ * Read by the build rather than by a visitor's browser: content fetched at
+ * page load would sit behind JavaScript, and the site's ranking rests on the
+ * prerendered HTML carrying the words.
  */
 
 // ---- CORS: the same allowlist the other public endpoints use ----
@@ -44,9 +46,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json_error('Only GET is supported here.', 405);
 }
 
-// Shorter than the fleet's cache. A build runs rarely, and when someone has
-// just pressed Publish they should not be served a stale copy of their own
-// edit.
+// A build runs rarely, and someone who has just pressed Save should not be
+// served a stale copy of their own edit.
 header('Cache-Control: public, max-age=60');
 
-json_out(['ok' => true, 'content' => content_all()]);
+// The table only exists once 003_content.sql has run. A panel that has not
+// been migrated yet has nothing overridden, which is exactly what an empty
+// result means -- so say so plainly rather than returning a 500 and making
+// the site build fall back for the wrong reason.
+$overrides = [];
+$ready     = true;
+
+try {
+    foreach (fetch_all('SELECT page, section, data FROM content_sections') as $row) {
+        $decoded = json_decode((string) $row['data'], true);
+        if (is_array($decoded)) {
+            $overrides[$row['page']][$row['section']] = $decoded;
+        }
+    }
+} catch (Throwable $e) {
+    $ready = false;
+}
+
+json_out([
+    'ok'        => true,
+    'ready'     => $ready,
+    'overrides' => $overrides === [] ? (object) [] : $overrides,
+]);

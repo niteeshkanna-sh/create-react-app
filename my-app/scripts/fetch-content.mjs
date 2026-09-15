@@ -101,9 +101,19 @@ if (process.env.CONTENT_API !== 'off') {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const body = await res.json();
-    if (!body?.ok || !body?.content) throw new Error('unexpected response shape');
+    if (!body?.ok) throw new Error('unexpected response shape');
 
-    content = merge(defaults, body.content);
+    // The panel sends only what has been edited; the defaults are already
+    // here. It used to send both, which is the only thing that made the
+    // endpoint depend on files a hand-updated panel does not have.
+    content = merge(defaults, body.overrides ?? {});
+
+    if (body.ready === false) {
+      console.warn(
+        'fetch-content: the panel has no content table yet, so nothing can be edited.\n' +
+          '  Open Website content in the admin and press "Set up content storage".',
+      );
+    }
     const edited = Object.entries(content).flatMap(([page, sections]) =>
       Object.keys(sections).filter(
         (s) => JSON.stringify(sections[s]) !== JSON.stringify(defaults[page][s]),
