@@ -64,7 +64,7 @@ comparable.
 
 ## Enquiry form
 
-The form posts to `https://admin.niteshacars.in/admin/api/enquiry-submit.php`.
+The form posts to `https://admin.niteshacars.in/api/enquiry-submit.php`.
 That endpoint needs no sign-in and already allowlists this site's origin for
 CORS via the `public_site_origin` config key.
 
@@ -79,7 +79,7 @@ what the endpoint expects.
 
 ## Where the fleet comes from
 
-The site fetches `https://admin.niteshacars.in/admin/api/public-vehicles.php`,
+The site fetches `https://admin.niteshacars.in/api/public-vehicles.php`,
 which returns only vehicles whose status is `Available`, and only public-safe
 columns. Adding a car in the admin panel puts it on the site; setting one to
 Maintenance takes it off. No code change, no deploy.
@@ -88,8 +88,15 @@ Maintenance takes it off. No code change, no deploy.
 CORS rejection, or the endpoint not uploaded yet. It is empty, so the site
 degrades to its "ask us what's available" state rather than showing an error.
 
-The endpoint must be uploaded to the server; it lives in this repo at
-`public_html/admin.niteshacars.in/admin/api/public-vehicles.php`.
+The endpoint lives in this repo at
+`public_html/admin.niteshacars.in/admin/api/public-vehicles.php` and reaches the
+server through the admin deploy workflow.
+
+Note the two paths are not the same shape. That repo folder maps onto the
+subdomain's document root, so `admin/api/x.php` in git is served at
+`https://admin.niteshacars.in/api/x.php` -- with no `admin` segment. Assuming
+otherwise is what kept the fleet empty: a 404 there is swallowed by the
+fallback below rather than reported.
 
 ## SEO
 
