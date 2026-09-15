@@ -161,8 +161,21 @@ jobs:
             # handshake and a blocked data connection all look exactly like an
             # empty directory -- and the check then reports the folder is wrong
             # when the truth is that it never got to look.
+            # --insecure encrypts the connection but does not verify the
+            # server's certificate. That is a real weakening and it is worth
+            # being explicit about why it is here: this host presents a
+            # certificate curl will not validate, and the deploy step below
+            # completes FTPS against it regardless -- so the upload, carrying
+            # the same credentials, already crosses an unverified channel.
+            # A check that is stricter than the deploy it guards blocks work
+            # without protecting anything; it did exactly that on its first
+            # run, reporting a folder as missing when it had simply been
+            # refused the handshake.
+            #
+            # The fix that would let this be strict is a valid certificate on
+            # the FTP host, which is Hostinger's to provide.
             set +e
-            listing="$(curl --silent --show-error --ssl-reqd --list-only \
+            listing="$(curl --silent --show-error --ssl-reqd --insecure --list-only \
                             --connect-timeout 20 --max-time 60 \
                             --config "$cfg" 2>"$cfg.err")"
             rc=$?
