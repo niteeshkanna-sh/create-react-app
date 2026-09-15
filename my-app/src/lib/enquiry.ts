@@ -13,7 +13,7 @@
  */
 
 const ENDPOINT =
-  'https://admin.niteshacars.in/admin/api/enquiry-submit.php';
+  'https://admin.niteshacars.in/api/enquiry-submit.php';
 
 export interface EnquiryInput {
   name: string;

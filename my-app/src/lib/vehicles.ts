@@ -13,7 +13,7 @@
 import { cars as fallbackCars, type Car } from '../data/cars';
 
 const ENDPOINT =
-  'https://admin.niteshacars.in/admin/api/public-vehicles.php';
+  'https://admin.niteshacars.in/api/public-vehicles.php';
 
 interface ApiVehicle {
   id: string;

@@ -29,7 +29,7 @@ const ADMIN_COPY = join(
 
 const API =
   process.env.CONTENT_API ??
-  'https://admin.niteshacars.in/admin/api/public-content.php';
+  'https://admin.niteshacars.in/api/public-content.php';
 
 const TIMEOUT_MS = 10_000;
 
