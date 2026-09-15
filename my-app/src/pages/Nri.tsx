@@ -53,6 +53,8 @@ export function Nri() {
   return (
     <>
       <PageHeader
+        photo="nri-hero"
+        scene="/nri"
         title="Coming home from abroad?"
         intro={`Arrange a car or bike before you land. We look after families visiting ${seo.site.district} district from the Gulf, Singapore, Malaysia and further afield.`}
       />

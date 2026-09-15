@@ -3,6 +3,7 @@ import seo from '../data/seo.json';
 import { PageHeader } from './PageHeader';
 import { AreasServed } from '../components/AreasServed';
 import { Reveal } from '../components/Reveal';
+import type { SceneName } from '../components/art/scenes';
 
 export interface ServiceSection {
   heading: string;
@@ -17,6 +18,10 @@ interface ServicePageProps {
   points?: string[];
   /** Text on the primary call to action. */
   cta?: string;
+  /** Photo slot for the banner -- a filename in public/photos, no extension. */
+  photo?: string;
+  /** Drawn behind the title until that photograph exists. */
+  scene?: SceneName;
 }
 
 /**
@@ -26,10 +31,10 @@ interface ServicePageProps {
  * separate searches: someone looking for a wedding car is not the person
  * looking to hire a scooter, and a page can only rank for what it is about.
  */
-export function ServicePage({ title, intro, sections, points, cta }: ServicePageProps) {
+export function ServicePage({ title, intro, sections, points, cta, photo, scene }: ServicePageProps) {
   return (
     <>
-      <PageHeader title={title} intro={intro} />
+      <PageHeader title={title} intro={intro} photo={photo} scene={scene} />
 
       <section className="mx-auto max-w-3xl px-5 py-16">
         <div className="space-y-8">

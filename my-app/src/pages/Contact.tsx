@@ -6,6 +6,8 @@ export function Contact() {
   return (
     <>
       <PageHeader
+        photo="contact-hero"
+        scene="coast"
         title="Contact"
         intro="Call us, write to us, or send the form below. Only your name and phone number are needed to start."
       />

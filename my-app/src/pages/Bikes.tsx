@@ -3,6 +3,8 @@ import { ServicePage } from './ServicePage';
 export function Bikes() {
   return (
     <ServicePage
+      photo="bikes-hero"
+      scene="/bikes"
       title="Bike rental in Nagercoil & Kanyakumari"
       intro="Two-wheelers for hire by the hour, the day or the week, across Kanyakumari district."
       cta="Need a bike?"

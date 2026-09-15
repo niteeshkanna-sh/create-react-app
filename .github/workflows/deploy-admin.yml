@@ -10,12 +10,15 @@
 #   FTP_SERVER      ftp.niteshacars.in, or whatever hPanel shows under FTP Accounts
 #   FTP_USERNAME    the FTP account username
 #   FTP_PASSWORD    its password
-#   FTP_REMOTE_DIR  the admin folder's full path on the server, with a trailing
-#                   slash, e.g. /domains/admin.niteshacars.in/public_html/admin/
+#   FTP_REMOTE_DIR  optional. Only needed if more than one copy of the panel
+#                   exists on the server, to say which one is the live one.
 #
-# FTP_REMOTE_DIR is a secret rather than hard-coded here so the path is set on
-# the server side by someone who can see it. Pointing this at the wrong folder
-# would write admin files over the main site.
+# The deploy no longer needs to be told where the panel is: it finds the folder
+# holding config.php and writes there. An FTP path is walked from the account's
+# login directory rather than the filesystem root, so the path hPanel's File
+# Manager shows cannot be used directly -- and getting that translation wrong
+# was never loud, because the deploy action creates directories it cannot find.
+# Three "successful" deploys went into folders nobody served.
 #
 # NOTE: never commit a real RESET_TOKEN in tools/reset-password.php. This
 # repository is public, and the file ships inert on purpose. Set the token by
@@ -64,7 +67,6 @@ jobs:
           [ -n "$FTP_SERVER" ]     || missing="$missing FTP_SERVER"
           [ -n "$FTP_USERNAME" ]   || missing="$missing FTP_USERNAME"
           [ -n "$FTP_PASSWORD" ]   || missing="$missing FTP_PASSWORD"
-          [ -n "$FTP_REMOTE_DIR" ] || missing="$missing FTP_REMOTE_DIR"
 
           if [ -n "$missing" ]; then
             echo "::error::Missing repository secrets:$missing"
@@ -72,14 +74,15 @@ jobs:
             exit 1
           fi
 
-          case "$FTP_REMOTE_DIR" in
-            */) ;;
-            *)
-              echo "::error::FTP_REMOTE_DIR must end with a slash."
-              echo "Example: /domains/admin.niteshacars.in/public_html/admin/"
-              exit 1
-              ;;
-          esac
+          # FTP_REMOTE_DIR is deliberately not in that list. The next step
+          # locates the panel itself; this secret only breaks a tie when there
+          # is more than one copy on the server, and its format does not matter
+          # because it is compared on its tail.
+          if [ -n "$FTP_REMOTE_DIR" ]; then
+            echo "FTP_REMOTE_DIR is set; it will be used only to disambiguate."
+          else
+            echo "FTP_REMOTE_DIR is not set; the panel will be located by config.php."
+          fi
 
           # FTP_SERVER is a bare host -- an IP or a hostname -- and nothing
           # else. hPanel displays it as ftp://1.2.3.4, and pasting that whole
@@ -125,127 +128,21 @@ jobs:
 
           [ "$bad" -eq 0 ] || exit 1
 
-      - name: Make sure that folder really is the panel
+      - name: Find the panel on the server
+        id: panel
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
         run: |
-          # The deploy cannot tell an empty directory from the panel. Pointed at
-          # the wrong path it does not fail -- it writes a second copy of the
-          # whole admin panel into a folder nobody serves, while the real one
-          # carries on working. That happened twice before this check existed,
-          # and the only symptom was a 404 on a page that had just "deployed".
-          #
-          # config.php is the fingerprint. It holds the database password, it is
-          # gitignored, and no deploy has ever written it -- so it exists in
-          # exactly one place: where the panel was really installed.
-          #
-          # Credentials are written to a file rather than passed as arguments,
-          # which would put the password in the process list.
-          cfg="$(mktemp)"
-          trap 'rm -f "$cfg" "$cfg.err"' EXIT
-          listing=""
-
-          # Whether a path is read from the login directory or from the
-          # filesystem root depends on the account, so try both before deciding
-          # the folder is wrong.
-          err=""
-          reached=0
-          for url in "ftp://${FTP_SERVER}/${FTP_REMOTE_DIR#/}" "ftp://${FTP_SERVER}/${FTP_REMOTE_DIR}"; do
-            printf 'user = "%s:%s"\nurl = "%s"\n' "$FTP_USERNAME" "$FTP_PASSWORD" "$url" > "$cfg"
-
-            # curl's exit code and stderr are kept. Discarding them, as the first
-            # version of this check did, makes a refused login, a failed TLS
-            # handshake and a blocked data connection all look exactly like an
-            # empty directory -- and the check then reports the folder is wrong
-            # when the truth is that it never got to look.
-            # --insecure encrypts the connection but does not verify the
-            # server's certificate. That is a real weakening and it is worth
-            # being explicit about why it is here: this host presents a
-            # certificate curl will not validate, and the deploy step below
-            # completes FTPS against it regardless -- so the upload, carrying
-            # the same credentials, already crosses an unverified channel.
-            # A check that is stricter than the deploy it guards blocks work
-            # without protecting anything; it did exactly that on its first
-            # run, reporting a folder as missing when it had simply been
-            # refused the handshake.
-            #
-            # The fix that would let this be strict is a valid certificate on
-            # the FTP host, which is Hostinger's to provide.
-            set +e
-            listing="$(curl --silent --show-error --ssl-reqd --insecure --list-only \
-                            --connect-timeout 20 --max-time 60 \
-                            --config "$cfg" 2>"$cfg.err")"
-            rc=$?
-            set -e
-            [ "$rc" -eq 0 ] && reached=1
-            [ "$rc" -eq 0 ] || err="$(cat "$cfg.err")"
-
-            if printf '%s' "$listing" | grep -qx 'config.php'; then
-              echo "Found config.php. This is the panel."
-              exit 0
-            fi
-          done
-
-          if [ "$reached" -eq 0 ]; then
-            echo "::error::Could not read that folder over FTPS, so whether it is the panel is unknown."
-            echo ""
-            echo "This is not the same as the folder being wrong -- nothing was listed"
-            echo "because the listing itself failed. curl said:"
-            echo ""
-            printf '%s\n' "${err:-(no error text)}" | head -10 | sed 's/^/  /'
-            echo ""
-
-            # Show where the account actually lands. An FTP path is walked from
-            # the login directory, which is not always the filesystem root, so a
-            # path that is correct in File Manager can still be unreachable here.
-            # Printing the login directory turns that from guesswork into a list
-            # of names to compare against. Directory names are not secrets; the
-            # credentials are, and they are not printed.
-            printf 'user = "%s:%s"\nurl = "ftp://%s/"\n' "$FTP_USERNAME" "$FTP_PASSWORD" "$FTP_SERVER" > "$cfg"
-            set +e
-            home_listing="$(curl --silent --show-error --ssl-reqd --insecure --list-only \
-                                 --connect-timeout 20 --max-time 60 \
-                                 --config "$cfg" 2>/dev/null)"
-            home_rc=$?
-            set -e
-
-            if [ "$home_rc" -eq 0 ]; then
-              echo "The FTP account logs in here, and this is what it can see:"
-              echo ""
-              printf '%s\n' "$home_listing" | head -30 | sed 's/^/  /'
-              echo ""
-              echo "FTP_REMOTE_DIR is walked from that directory. Build the path from"
-              echo "these names -- the folder holding config.php -- rather than from the"
-              echo "full filesystem path File Manager displays."
-            else
-              echo "The login directory could not be listed either, so this looks like"
-              echo "an account or connection problem rather than a wrong path."
-            fi
-            echo ""
-            echo "Refusing to deploy on an unverified folder, since deploying into the"
-            echo "wrong one leaves a copy of the panel where nobody serves it."
-            exit 1
-          fi
-
-          echo "::error::FTP_REMOTE_DIR does not contain config.php, so it is not the admin panel."
-          echo ""
-          echo "Deploying here would leave a second copy of the panel in a folder"
-          echo "nobody serves, and the live site would be unchanged."
-          echo ""
-          echo "In hPanel's File Manager, find the folder containing config.php."
-          echo "That file is never deployed, so it exists only where the panel was"
-          echo "installed. That folder is what this secret should name."
-          echo ""
-          if [ -z "$listing" ]; then
-            echo "Nothing could be listed at that path; it may not exist."
-          else
-            echo "What is there instead:"
-            printf '%s\n' "$listing" | head -20 | sed 's/^/  /'
-          fi
-          exit 1
+          # Searches for config.php and prints the folder holding it. See the
+          # script for why that file is the right fingerprint and why the path
+          # cannot simply be configured. Fails if there is not exactly one
+          # answer, rather than picking one -- a wrong choice here is silent.
+          dir="$(.github/scripts/find-panel-dir.sh)"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "Deploying to: $dir"
 
       - name: Deploy over FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -255,7 +152,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./public_html/admin.niteshacars.in/admin/
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          server-dir: ${{ steps.panel.outputs.dir }}
           dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
 
           # Leaves files the action never uploaded alone. Turning this on would
