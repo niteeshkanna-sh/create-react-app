@@ -1,0 +1,109 @@
+# Deploys the PHP admin panel to Hostinger over FTPS.
+#
+# The public site goes to GitHub Pages (deploy-my-app.yml). This is the other
+# half: admin.niteshacars.in runs on Hostinger, which has no connection to this
+# repository, so api/public-vehicles.php only reaches the server through here.
+#
+# Credentials live in repository secrets, never in this file:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#
+#   FTP_SERVER      ftp.niteshacars.in, or whatever hPanel shows under FTP Accounts
+#   FTP_USERNAME    the FTP account username
+#   FTP_PASSWORD    its password
+#   FTP_REMOTE_DIR  the admin folder's full path on the server, with a trailing
+#                   slash, e.g. /domains/admin.niteshacars.in/public_html/admin/
+#
+# FTP_REMOTE_DIR is a secret rather than hard-coded here so the path is set on
+# the server side by someone who can see it. Pointing this at the wrong folder
+# would write admin files over the main site.
+#
+# NOTE: never commit a real RESET_TOKEN in tools/reset-password.php. This
+# repository is public, and the file ships inert on purpose. Set the token by
+# editing the file on the server, or upload it by hand when you need it.
+
+name: Deploy admin panel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Deliberately not triggering on this file. Otherwise merging the
+      # workflow itself fires a real deploy on the spot -- the dry run is
+      # only reachable through workflow_dispatch, so the very first run
+      # would write to the server before anyone had seen what it would do.
+      - 'public_html/admin.niteshacars.in/admin/**'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'List what would change without uploading anything'
+        type: boolean
+        default: true
+
+concurrency:
+  # Two deploys overlapping on one FTP account leaves a half-written panel.
+  group: deploy-admin
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the secrets are set
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+        run: |
+          # Without this the FTP action fails deep inside itself with a
+          # connection error, which reads like the server is down rather than
+          # like a secret was never added.
+          missing=""
+          [ -n "$FTP_SERVER" ]     || missing="$missing FTP_SERVER"
+          [ -n "$FTP_USERNAME" ]   || missing="$missing FTP_USERNAME"
+          [ -n "$FTP_PASSWORD" ]   || missing="$missing FTP_PASSWORD"
+          [ -n "$FTP_REMOTE_DIR" ] || missing="$missing FTP_REMOTE_DIR"
+
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            echo "Add them under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+          case "$FTP_REMOTE_DIR" in
+            */) ;;
+            *)
+              echo "::error::FTP_REMOTE_DIR must end with a slash."
+              echo "Example: /domains/admin.niteshacars.in/public_html/admin/"
+              exit 1
+              ;;
+          esac
+
+      - name: Deploy over FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./public_html/admin.niteshacars.in/admin/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+
+          # Leaves files the action never uploaded alone. Turning this on would
+          # wipe the folder first and take config.php with it -- the panel would
+          # stop with "Not set up yet" and the database credentials on the
+          # server would be gone.
+          dangerous-clean-slate: false
+
+          # Everything below is either untracked on purpose or meaningless on a
+          # web server. config.php is the important one: it holds the live
+          # database password, which is why it is not in git.
+          exclude: |
+            config.php
+            .ftp-deploy-sync-state.json
+            **/.git*
+            **/.git*/**
+            **/.DS_Store
