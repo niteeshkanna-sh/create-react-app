@@ -3,6 +3,8 @@ import { ServicePage } from './ServicePage';
 export function TouristVehicles() {
   return (
     <ServicePage
+      photo="tourist-hero"
+      scene="/tourist-vehicles"
       title="Tourist vehicle hire with driver"
       intro="Cars and vans with an experienced driver, for sightseeing around Kanyakumari and beyond."
       cta="Planning a trip?"

@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { photoFor } from '../../lib/photos';
 import type { SceneName } from './scenes';
 
 /**
@@ -15,10 +16,11 @@ import type { SceneName } from './scenes';
  * frame if one goes missing. They stay sharp on a phone and on a 5K display
  * alike, and they recolour with the theme.
  *
- * Real photography of the actual fleet will beat these on every card it
- * replaces -- these are the floor, not the ceiling. `photo` on <SectionArt>
- * takes a URL and uses it instead, keeping the same frame and overlay, so
- * swapping one card over to a real picture is a one-line change.
+ * Real photography of the actual fleet beats these on every card it replaces,
+ * so they are the floor rather than the ceiling: put a file in public/photos
+ * named after the slot and the build's manifest picks it up, no code change.
+ * A slot with no file keeps its drawing, which is what makes a half-finished
+ * set of photographs still look like a finished site.
  *
  * Every scene is decorative: the heading and copy beside it carry the
  * meaning, so the <svg> is aria-hidden and contributes nothing to the
@@ -410,21 +412,43 @@ const SCENES: Record<SceneName, (props: SceneProps) => React.JSX.Element> = {
 interface SectionArtProps {
   name: SceneName;
   className?: string;
-  /** A real photograph to use instead of the drawing, same frame and overlay. */
+  /** Overrides the manifest. Rarely needed; the filename normally decides. */
   photo?: string;
+  /** Describes the photograph when one is used. A drawing stays decorative. */
+  alt?: string;
+  /** The page's own banner image, which must not wait for a lazy load. */
+  eager?: boolean;
 }
 
-export function SectionArt({ name, className, photo }: SectionArtProps) {
+export function SectionArt({ name, className, photo, alt, eager }: SectionArtProps) {
   // useId keeps each instance's gradient ids unique. Without it, six cards on
   // one page would all define `#metal-` and every scene would paint with
   // whichever definition the browser saw last.
   const uid = useId().replace(/:/g, '');
   const Scene = SCENES[name];
 
-  if (photo) {
+  const src = photo ?? photoFor(name);
+
+  if (src) {
+    // A photograph of the actual vehicle carries information the surrounding
+    // copy does not, so it gets a real alt when the caller supplies one. With
+    // no description it stays decorative rather than being announced as an
+    // unlabelled image.
+    const described = Boolean(alt);
     return (
       <div className={`art-frame ${className ?? ''}`}>
-        <img src={photo} alt="" aria-hidden="true" loading="lazy" className="art-photo" />
+        <img
+          src={src}
+          alt={alt ?? ''}
+          aria-hidden={described ? undefined : true}
+          loading={eager ? 'eager' : 'lazy'}
+          // The banner is the largest thing above the fold; telling the
+          // browser to fetch it first is the difference between the page
+          // painting complete and painting in two stages.
+          fetchPriority={eager ? 'high' : undefined}
+          decoding="async"
+          className="art-photo"
+        />
         <span aria-hidden="true" className="art-sheen" />
       </div>
     );

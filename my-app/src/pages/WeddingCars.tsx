@@ -3,6 +3,8 @@ import { ServicePage } from './ServicePage';
 export function WeddingCars() {
   return (
     <ServicePage
+      photo="wedding-hero"
+      scene="/wedding-cars"
       title="Wedding car rental in Nagercoil & Kanyakumari"
       intro="Decorated cars and premium vehicles for marriages across Kanyakumari district."
       cta="Booking a wedding date?"

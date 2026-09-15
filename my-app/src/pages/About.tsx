@@ -12,6 +12,8 @@ export function About() {
   return (
     <>
       <PageHeader
+        photo="about-hero"
+        scene="coast"
         title="About us"
         intro="NiteSha Cars & Bikes rents self drive cars, two-wheelers, wedding cars and tourist vehicles across Kanyakumari district."
       />

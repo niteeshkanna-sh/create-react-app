@@ -12,6 +12,8 @@ export function Tariff() {
   return (
     <>
       <PageHeader
+        photo="tariff-hero"
+        scene="/cars"
         title="Tariff"
         intro="Rates are per day. Longer hires bring the daily rate down. Every figure below is what you pay — there is no separate booking fee."
       />

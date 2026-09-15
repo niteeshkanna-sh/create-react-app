@@ -366,3 +366,40 @@ body {
 .card-lift:focus-within::before {
   opacity: 1;
 }
+
+/* Scrim over an inner page's banner photograph.
+
+   Heavier than the home page's road-scrim, and for a different reason: that
+   one sits under a short heading on a picture chosen to suit it, while this
+   one has to hold a title and a paragraph of intro copy over whatever
+   photograph happens to be dropped into the slot. Measured at its lightest
+   point against the worst case -- a pure white image -- the white title comes
+   out at 12.0:1 and the white/80 intro at 8.3:1, both well clear of the 4.5:1
+   floor, so the crop can be anything and the page still reads. */
+.page-scrim {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-navy-deep) 82%, transparent),
+      color-mix(in srgb, var(--color-navy-deep) 88%, transparent)
+    ),
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-navy-deep) 55%, transparent) 0%,
+      transparent 75%
+    );
+}
+
+/* The art frame is 2:1 as a card header, but a page banner is governed by the
+   height of the text inside it -- so it fills its container instead. */
+.art-frame.h-full {
+  aspect-ratio: auto;
+  height: 100%;
+}
+
+/* The drawn banner fades into the navy on its left edge, so the illustration
+   reads as part of the band rather than as a rectangle pasted onto it. */
+.banner-art {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+}

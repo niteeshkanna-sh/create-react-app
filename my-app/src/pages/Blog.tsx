@@ -26,6 +26,8 @@ export function Blog() {
   return (
     <>
       <PageHeader
+        photo="blog-hero"
+        scene="coast"
         title="Blog"
         intro="Road trip routes, driving tips, and news about the fleet."
       />
