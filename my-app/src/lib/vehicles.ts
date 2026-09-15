@@ -79,15 +79,41 @@ export type FleetState =
 export async function loadFleet(signal?: AbortSignal): Promise<FleetState> {
   try {
     const response = await fetch(ENDPOINT, { signal });
-    if (!response.ok) throw new Error(String(response.status));
+    if (!response.ok) throw new Error(`the server answered ${response.status}`);
 
     const body: { ok?: boolean; vehicles?: ApiVehicle[] } = await response.json();
-    if (!body.ok || !Array.isArray(body.vehicles)) throw new Error('bad shape');
+    if (!body.ok || !Array.isArray(body.vehicles)) {
+      throw new Error('the response was not the expected { ok, vehicles } shape');
+    }
+
+    if (body.vehicles.length === 0) {
+      // This is the case that used to be indistinguishable from a dead
+      // endpoint, and they need completely different fixes. The endpoint only
+      // returns vehicles whose status is Available and which have a rate card
+      // dated today or earlier, so an empty list is a data question, not a
+      // plumbing one.
+      console.info(
+        '[fleet] The panel answered normally with zero vehicles. Every vehicle is ' +
+          'either not set to Available, or has no rate card dated today or earlier.',
+      );
+    }
 
     return { status: 'ready', cars: body.vehicles.map(toCar), live: true };
-  } catch {
-    // Offline, CORS, a 500, or the endpoint not uploaded yet. Falling back
-    // keeps the page coherent; it never shows a broken listing.
+  } catch (error) {
+    // Offline, CORS, a 500, a certificate the browser rejects, or the endpoint
+    // never uploaded. Falling back keeps the page coherent -- a visitor should
+    // never see a broken listing -- but staying silent about it cost real time
+    // once already: "no cars" looked the same whether the panel had none or
+    // could not be reached at all, and only one of those is a code problem.
+    if ((error as Error)?.name === 'AbortError') {
+      // Navigating away mid-request. Not a fault, so not worth reporting.
+      return { status: 'ready', cars: fallbackCars, live: false };
+    }
+    console.warn(
+      `[fleet] Could not read the vehicle list from ${ENDPOINT} — ` +
+        `${(error as Error)?.message ?? 'unknown error'}. Showing the fallback listing. ` +
+        'Open that URL directly to see what the server actually returns.',
+    );
     return { status: 'ready', cars: fallbackCars, live: false };
   }
 }
