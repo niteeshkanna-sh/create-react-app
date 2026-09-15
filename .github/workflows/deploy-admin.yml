@@ -125,6 +125,60 @@ jobs:
 
           [ "$bad" -eq 0 ] || exit 1
 
+      - name: Make sure that folder really is the panel
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+        run: |
+          # The deploy cannot tell an empty directory from the panel. Pointed at
+          # the wrong path it does not fail -- it writes a second copy of the
+          # whole admin panel into a folder nobody serves, while the real one
+          # carries on working. That happened twice before this check existed,
+          # and the only symptom was a 404 on a page that had just "deployed".
+          #
+          # config.php is the fingerprint. It holds the database password, it is
+          # gitignored, and no deploy has ever written it -- so it exists in
+          # exactly one place: where the panel was really installed.
+          #
+          # Credentials are written to a file rather than passed as arguments,
+          # which would put the password in the process list.
+          cfg="$(mktemp)"
+          trap 'rm -f "$cfg"' EXIT
+          listing=""
+
+          # Whether a path is read from the login directory or from the
+          # filesystem root depends on the account, so try both before deciding
+          # the folder is wrong.
+          for url in "ftp://${FTP_SERVER}/${FTP_REMOTE_DIR#/}" "ftp://${FTP_SERVER}/${FTP_REMOTE_DIR}"; do
+            printf 'user = "%s:%s"\nurl = "%s"\n' "$FTP_USERNAME" "$FTP_PASSWORD" "$url" > "$cfg"
+            listing="$(curl --silent --show-error --ssl-reqd --list-only \
+                            --connect-timeout 20 --max-time 60 \
+                            --config "$cfg" 2>/dev/null || true)"
+            if printf '%s' "$listing" | grep -qx 'config.php'; then
+              echo "Found config.php. This is the panel."
+              exit 0
+            fi
+          done
+
+          echo "::error::FTP_REMOTE_DIR does not contain config.php, so it is not the admin panel."
+          echo ""
+          echo "Deploying here would leave a second copy of the panel in a folder"
+          echo "nobody serves, and the live site would be unchanged."
+          echo ""
+          echo "In hPanel's File Manager, find the folder containing config.php."
+          echo "That file is never deployed, so it exists only where the panel was"
+          echo "installed. That folder is what this secret should name."
+          echo ""
+          if [ -z "$listing" ]; then
+            echo "Nothing could be listed at that path; it may not exist."
+          else
+            echo "What is there instead:"
+            printf '%s\n' "$listing" | head -20 | sed 's/^/  /'
+          fi
+          exit 1
+
       - name: Deploy over FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
