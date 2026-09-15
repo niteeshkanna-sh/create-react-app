@@ -145,22 +145,49 @@ jobs:
           # Credentials are written to a file rather than passed as arguments,
           # which would put the password in the process list.
           cfg="$(mktemp)"
-          trap 'rm -f "$cfg"' EXIT
+          trap 'rm -f "$cfg" "$cfg.err"' EXIT
           listing=""
 
           # Whether a path is read from the login directory or from the
           # filesystem root depends on the account, so try both before deciding
           # the folder is wrong.
+          err=""
+          reached=0
           for url in "ftp://${FTP_SERVER}/${FTP_REMOTE_DIR#/}" "ftp://${FTP_SERVER}/${FTP_REMOTE_DIR}"; do
             printf 'user = "%s:%s"\nurl = "%s"\n' "$FTP_USERNAME" "$FTP_PASSWORD" "$url" > "$cfg"
+
+            # curl's exit code and stderr are kept. Discarding them, as the first
+            # version of this check did, makes a refused login, a failed TLS
+            # handshake and a blocked data connection all look exactly like an
+            # empty directory -- and the check then reports the folder is wrong
+            # when the truth is that it never got to look.
+            set +e
             listing="$(curl --silent --show-error --ssl-reqd --list-only \
                             --connect-timeout 20 --max-time 60 \
-                            --config "$cfg" 2>/dev/null || true)"
+                            --config "$cfg" 2>"$cfg.err")"
+            rc=$?
+            set -e
+            [ "$rc" -eq 0 ] && reached=1
+            [ "$rc" -eq 0 ] || err="$(cat "$cfg.err")"
+
             if printf '%s' "$listing" | grep -qx 'config.php'; then
               echo "Found config.php. This is the panel."
               exit 0
             fi
           done
+
+          if [ "$reached" -eq 0 ]; then
+            echo "::error::Could not read that folder over FTPS, so whether it is the panel is unknown."
+            echo ""
+            echo "This is not the same as the folder being wrong -- nothing was listed"
+            echo "because the listing itself failed. curl said:"
+            echo ""
+            printf '%s\n' "${err:-(no error text)}" | head -10 | sed 's/^/  /'
+            echo ""
+            echo "Refusing to deploy on an unverified folder, since deploying into the"
+            echo "wrong one leaves a copy of the panel where nobody serves it."
+            exit 1
+          fi
 
           echo "::error::FTP_REMOTE_DIR does not contain config.php, so it is not the admin panel."
           echo ""
