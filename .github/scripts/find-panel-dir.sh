@@ -162,8 +162,18 @@ matches_hint() {
 if [ "${#found[@]}" -eq 0 ]; then
   echo "::error::Could not find the admin panel on the server." >&2
   echo "" >&2
-  echo "Nothing within $max_depth levels of the FTP account's login directory" >&2
-  echo "contains config.php, so there is no folder here that is the panel." >&2
+  echo "Searched $listings directories, $max_depth levels out from the FTP" >&2
+  echo "account's login directory. None contains config.php, so there is no" >&2
+  echo "folder reachable from here that is the panel." >&2
+  # Whether the search ran out of budget changes what this result means: a
+  # completed search proves the panel is not reachable, a truncated one only
+  # says it was not found yet. Reporting "not found" for both would be the
+  # same class of mistake as reporting a failed listing as an empty folder.
+  if [ "$truncated" -eq 1 ]; then
+    echo "" >&2
+    echo "The search stopped early at its $max_listings-directory limit, so this" >&2
+    echo "is not proof the panel is absent -- only that it was not found yet." >&2
+  fi
   if [ -n "$list_err" ]; then
     echo "" >&2
     echo "curl reported at least one error while looking:" >&2
