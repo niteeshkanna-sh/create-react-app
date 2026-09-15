@@ -15,8 +15,15 @@ export function useSeo() {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    // Static hosts serve directory URLs with a trailing slash: GitHub Pages
+    // redirects /cars to /cars/. seo.json and the sitemap store the bare form,
+    // so an exact match fails for anyone arriving from search or refreshing --
+    // React Router still matches and renders the right page, which is what
+    // made this invisible on screen while the title said "Page not found".
+    const path = pathname.replace(/\/+$/, '') || '/';
+
     const route =
-      seo.routes.find((r) => r.path === pathname) ??
+      seo.routes.find((r) => r.path === path) ??
       ({
         title: `Page not found — ${seo.site.name}`,
         description: '',
@@ -32,11 +39,11 @@ export function useSeo() {
     setMeta('meta[name="description"]', 'content', route.description);
     setMeta('meta[property="og:title"]', 'content', route.title);
     setMeta('meta[property="og:description"]', 'content', route.description);
-    setMeta('meta[property="og:url"]', 'content', seo.site.origin + pathname);
+    setMeta('meta[property="og:url"]', 'content', seo.site.origin + path);
 
     const canonical = document.head.querySelector<HTMLLinkElement>(
       'link[rel="canonical"]',
     );
-    if (canonical) canonical.href = seo.site.origin + pathname;
+    if (canonical) canonical.href = seo.site.origin + path;
   }, [pathname]);
 }
