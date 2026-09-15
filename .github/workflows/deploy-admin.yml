@@ -197,6 +197,34 @@ jobs:
             echo ""
             printf '%s\n' "${err:-(no error text)}" | head -10 | sed 's/^/  /'
             echo ""
+
+            # Show where the account actually lands. An FTP path is walked from
+            # the login directory, which is not always the filesystem root, so a
+            # path that is correct in File Manager can still be unreachable here.
+            # Printing the login directory turns that from guesswork into a list
+            # of names to compare against. Directory names are not secrets; the
+            # credentials are, and they are not printed.
+            printf 'user = "%s:%s"\nurl = "ftp://%s/"\n' "$FTP_USERNAME" "$FTP_PASSWORD" "$FTP_SERVER" > "$cfg"
+            set +e
+            home_listing="$(curl --silent --show-error --ssl-reqd --insecure --list-only \
+                                 --connect-timeout 20 --max-time 60 \
+                                 --config "$cfg" 2>/dev/null)"
+            home_rc=$?
+            set -e
+
+            if [ "$home_rc" -eq 0 ]; then
+              echo "The FTP account logs in here, and this is what it can see:"
+              echo ""
+              printf '%s\n' "$home_listing" | head -30 | sed 's/^/  /'
+              echo ""
+              echo "FTP_REMOTE_DIR is walked from that directory. Build the path from"
+              echo "these names -- the folder holding config.php -- rather than from the"
+              echo "full filesystem path File Manager displays."
+            else
+              echo "The login directory could not be listed either, so this looks like"
+              echo "an account or connection problem rather than a wrong path."
+            fi
+            echo ""
             echo "Refusing to deploy on an unverified folder, since deploying into the"
             echo "wrong one leaves a copy of the panel where nobody serves it."
             exit 1
