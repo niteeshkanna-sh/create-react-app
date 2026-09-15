@@ -27,8 +27,11 @@ on:
   push:
     branches: [main]
     paths:
+      # Deliberately not triggering on this file. Otherwise merging the
+      # workflow itself fires a real deploy on the spot -- the dry run is
+      # only reachable through workflow_dispatch, so the very first run
+      # would write to the server before anyone had seen what it would do.
       - 'public_html/admin.niteshacars.in/admin/**'
-      - '.github/workflows/deploy-admin.yml'
   workflow_dispatch:
     inputs:
       dry_run:
