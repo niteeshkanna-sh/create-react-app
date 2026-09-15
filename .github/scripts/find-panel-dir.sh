@@ -106,6 +106,7 @@ names() {
 # own subfolders are not more panels.
 queue=("")
 found=()
+map=()
 depth=0
 truncated=0
 
@@ -127,6 +128,20 @@ while [ "$depth" -le "$max_depth" ] && [ "${#queue[@]}" -gt 0 ]; do
       [ -z "$list_err" ] && list_err="$(cat "$cfg.err" 2>/dev/null)"
       continue
     fi
+
+    # A map of what was actually seen. "Not found" on its own says nothing
+    # about whether the search was in the right neighbourhood; a directory
+    # holding index.php and the panel's own subfolders is worth knowing about
+    # even when config.php is missing from it, because that combination means
+    # the files are there and only the one gitignored file is not.
+    marks=""
+    printf '%s\n' "$out" | grep -q ' index\.php$'  && marks="$marks index.php"
+    for sub in api src sql tools; do
+      names "$out" d | grep -qx "$sub" && marks="$marks $sub/"
+    done
+    marks="${marks# }"
+    file_count="$(names "$out" f | grep -c . || true)"
+    map+=("${path:-./}|${file_count} files|${marks:-nothing recognisable}")
 
     if names "$out" f | grep -qx 'config.php'; then
       found+=("$path")
@@ -179,6 +194,18 @@ if [ "${#found[@]}" -eq 0 ]; then
     echo "curl reported at least one error while looking:" >&2
     printf '%s\n' "$list_err" | head -5 | sed 's/^/  /' >&2
   fi
+  echo "" >&2
+  echo "Every directory it looked in, and what was in each:" >&2
+  echo "" >&2
+  for entry in "${map[@]}"; do
+    IFS='|' read -r where count marks <<< "$entry"
+    printf '  %-44s %-10s %s\n' "$where" "$count" "$marks" >&2
+  done
+  echo "" >&2
+  echo "A row listing index.php alongside api/ src/ is this panel's own layout." >&2
+  echo "If one of those appears above, the panel's files are there and only" >&2
+  echo "config.php is missing from it -- which is what a copy made by a deploy" >&2
+  echo "looks like, since config.php is excluded from every upload." >&2
   echo "" >&2
   echo "The account logs in here, and this is what it can see:" >&2
   echo "" >&2
