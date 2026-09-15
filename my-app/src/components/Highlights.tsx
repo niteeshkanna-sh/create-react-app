@@ -1,64 +1,6 @@
 import { Link } from 'react-router-dom';
+import { home } from '../content';
 import { Reveal } from './Reveal';
-
-interface Highlight {
-  to: string;
-  eyebrow: string;
-  title: string;
-  body: string;
-  icon: string;
-  panelTitle: string;
-  points: string[];
-  cta: string;
-}
-
-const highlights: Highlight[] = [
-  {
-    to: '/monthly',
-    icon: '🗓',
-    title: 'Monthly self drive car rental',
-    eyebrow: 'Need a car for weeks, not days?',
-    body: 'Monthly hire across Kanyakumari district for NRI families, work postings and anyone between vehicles. Hatchbacks, sedans, SUVs and 7 seaters, with the daily rate falling the longer you keep it.',
-    panelTitle: 'What decides your monthly rate',
-    points: [
-      'Vehicle type and transmission',
-      'How long you need it',
-      'Season — festival and wedding periods',
-      'Where in the district we deliver',
-    ],
-    cta: 'Ask about monthly rates',
-  },
-  {
-    to: '/nri',
-    icon: '✈',
-    title: 'Coming home from abroad?',
-    eyebrow: 'Sort the car out before you land',
-    body: 'For families flying in from the Gulf, Singapore and Malaysia. Tell us your dates on WhatsApp, and the vehicle is ready when you arrive — no hunting for one after a night flight.',
-    panelTitle: 'How it works for visitors',
-    points: [
-      'Book from abroad, pay when you arrive',
-      'Met at Trivandrum airport',
-      'Long-stay rates for weeks or months',
-      'Licence and document check in advance',
-    ],
-    cta: 'Read the visitor guide',
-  },
-  {
-    to: '/wedding-cars',
-    icon: '💍',
-    title: 'Wedding car rental',
-    eyebrow: 'Book the date before it goes',
-    body: 'Decorated cars for the couple and vehicles for relatives arriving from out of town, across Nagercoil, Marthandam and Colachel. Muhurtham dates fill months ahead.',
-    panelTitle: 'What we arrange',
-    points: [
-      'Decoration in your colours',
-      'Vehicle held for your date',
-      'Extra cars for the family',
-      'Booked together from abroad',
-    ],
-    cta: 'See wedding cars',
-  },
-];
 
 /**
  * The three services worth putting in front of someone on the home page.
@@ -68,10 +10,12 @@ const highlights: Highlight[] = [
  * and should not be skimmed past.
  */
 export function Highlights() {
+  const { items } = home.highlights;
+
   return (
     <section className="bg-navy py-20">
       <div className="mx-auto max-w-6xl space-y-10 px-5">
-        {highlights.map((h, i) => (
+        {items.map((h, i) => (
           <Reveal key={h.to} delay={i * 90}>
             <article className="grid gap-8 rounded-[14px] border border-white/10 bg-white/[0.03] p-7 sm:p-9 lg:grid-cols-[1.15fr_1fr] lg:items-center">
               <div>

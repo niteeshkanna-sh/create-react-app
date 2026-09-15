@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { home } from '../content';
 import { Reveal } from './Reveal';
 
 /**
@@ -12,6 +13,8 @@ import { Reveal } from './Reveal';
  * page. It is decorative either way: every word here is in the markup.
  */
 export function OpenRoad() {
+  const c = home.openRoad;
+
   return (
     <section className="relative isolate overflow-hidden bg-navy text-white">
       <div
@@ -22,35 +25,31 @@ export function OpenRoad() {
 
       <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
         <Reveal className="max-w-xl">
-          <p className="eyebrow-gold mb-4 text-[11px]">Self drive</p>
+          <p className="eyebrow-gold mb-4 text-[11px]">{c.eyebrow}</p>
 
           <h2 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl lg:text-5xl">
-            No driver. No timetable.
-            <span className="block text-gold">Just the road ahead.</span>
+            {c.headingLead}
+            <span className="block text-gold">{c.headingAccent}</span>
           </h2>
 
           <p className="mt-5 text-base leading-relaxed text-white/75 sm:text-lg">
-            That is the whole point of self drive. You take the keys, you set
-            the route, and the day belongs to you — a sunrise run down to
-            Kanyakumari, the coast road to Colachel, or a long weekend with no
-            fixed plan at all. Rates and limits are agreed before you leave, so
-            nothing changes on the way back.
+            {c.body}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/cars"
+              to={c.primaryHref}
               data-lift=""
               className="rounded-xl bg-gold px-6 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              Browse the fleet
+              {c.primaryLabel}
             </Link>
             <Link
-              to="/contact"
+              to={c.secondaryHref}
               data-lift=""
               className="rounded-xl border border-gold/40 px-6 py-3 font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
-              Check availability
+              {c.secondaryLabel}
             </Link>
           </div>
         </Reveal>
