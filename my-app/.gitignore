@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Written by scripts/fetch-content.mjs before every build: the admin panel's
+# copy when it answers, the committed defaults when it does not. Generated, so
+# not tracked -- defaults.json is the version under review.
+src/content/live.json

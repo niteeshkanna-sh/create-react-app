@@ -1,23 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import seo from '../data/seo.json';
+import { home } from '../content';
 import { Reveal } from './Reveal';
 import { CircleBadge } from './CircleBadge';
-
-const items = [
-  {
-    title: 'The price you agree is the price you pay',
-    body: 'Every vehicle carries three numbers before you take it: the daily rate, the kilometres included each day, and what anything beyond that costs. The deposit is stated too, and it comes back when the car does. Nothing is discovered at the end.',
-  },
-  {
-    title: 'Anywhere in the district',
-    body: `We work across the whole of ${seo.site.district} district — Nagercoil, Marthandam, Colachel, Thuckalay and the towns between. Tell us where you are and we will sort out getting the vehicle to you, including the airport if you are flying in.`,
-  },
-  {
-    title: 'One place for the whole trip',
-    body: 'A self drive car for the week, a bike for running about, a decorated car for the wedding, and a driver for the day everyone goes sightseeing. Booked together, with one person to call rather than four.',
-  },
-];
 
 /**
  * Two columns: stacked photographs on one side, an accordion on the other.
@@ -27,6 +12,7 @@ const items = [
  * notion of a group.
  */
 export function WhyUs() {
+  const { badge, heading, intro, items } = home.whyUs;
   const [open, setOpen] = useState(0);
 
   return (
@@ -58,17 +44,15 @@ export function WhyUs() {
           <Reveal>
             <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold tracking-wide text-navy uppercase shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
               <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
-              Why hire from us
+              {badge}
             </p>
 
             <h2 className="mt-6 text-3xl leading-tight font-bold tracking-tight text-navy sm:text-4xl">
-              Straight answers, and a vehicle that turns up
+              {heading}
             </h2>
 
             <p className="mt-5 leading-relaxed text-ink-dim">
-              Hiring a vehicle should not be the complicated part of a trip. We
-              tell you the rate, the limits and the deposit before you take the
-              car, and we bring it to you wherever you are in the district.
+              {intro}
             </p>
           </Reveal>
 

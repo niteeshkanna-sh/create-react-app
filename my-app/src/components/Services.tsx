@@ -1,50 +1,20 @@
 import { Link } from 'react-router-dom';
+import { home } from '../content';
 import { Reveal } from './Reveal';
 
-const services = [
-  {
-    to: '/cars',
-    title: 'Self drive cars',
-    body: 'Hatchbacks, sedans and SUVs by the day, week or month. You drive.',
-  },
-  {
-    to: '/bikes',
-    title: 'Bike rental',
-    body: 'Scooters and motorcycles by the hour, day or week. Helmets included.',
-  },
-  {
-    to: '/wedding-cars',
-    title: 'Wedding cars',
-    body: 'Decorated cars reserved for your date, and vehicles for the family.',
-  },
-  {
-    to: '/tourist-vehicles',
-    title: 'Tourist vehicles',
-    body: 'Cars and vans with a driver who knows the district and its roads.',
-  },
-  {
-    to: '/monthly',
-    title: 'Monthly rental',
-    body: 'Weeks rather than days, at a rate that drops the longer you keep it.',
-  },
-  {
-    to: '/nri',
-    title: 'Coming from abroad?',
-    body: 'Book before you land. Airport pickup and long-stay rates for visiting families.',
-  },
-];
-
 export function Services() {
+  const { heading, items } = home.services;
+
   return (
     <section className="mx-auto max-w-6xl px-5 py-20">
       <Reveal>
         <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-          What we hire
+          {heading}
         </h2>
       </Reveal>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {services.map((s, i) => (
+        {items.map((s, i) => (
           <Reveal key={s.to} delay={i * 80}>
           <Link
             to={s.to}

@@ -1,10 +1,8 @@
-const points = [
-  'Unlimited-choice pickup across the city',
-  'Clear KM limits and deposits, stated upfront',
-  'Daily, weekly and monthly rates',
-];
+import { home } from '../content';
 
 export function Hero() {
+  const h = home.hero;
+
   return (
     <section id="top" className="relative overflow-hidden bg-navy text-white">
       <img
@@ -20,41 +18,39 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
         <p data-hero-item="" style={{ ["--hero-delay" as string]: "40ms" }} className="eyebrow-gold mb-4 inline-flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 px-3.5 py-1.5 text-[11px]">
-          Nagercoil &amp; Kanyakumari district
+          {h.eyebrow}
         </p>
 
         <h1 data-hero-item="" style={{ ["--hero-delay" as string]: "120ms" }} className="max-w-3xl text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          Self drive car &amp; bike rental in Nagercoil
-          <span className="block text-gold">and across Kanyakumari district</span>
+          {h.headingLead}
+          <span className="block text-gold">{h.headingAccent}</span>
         </h1>
 
         <p data-hero-item="" style={{ ["--hero-delay" as string]: "200ms" }} className="mt-4 text-lg font-medium text-white/75">
-          Take the wheel. We'll handle the rest.
+          {h.tagline}
         </p>
 
         <p data-hero-item="" style={{ ["--hero-delay" as string]: "260ms" }} className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-          Self drive cars, bike rental, wedding cars and tourist vehicles with
-          a driver — across Nagercoil, Marthandam, Colachel and the whole of
-          Kanyakumari district. Transparent rates and a deposit you get back.
+          {h.intro}
         </p>
 
         <div data-hero-item="" style={{ ["--hero-delay" as string]: "340ms" }} className="mt-8 flex flex-wrap gap-3">
           <a
-            href="#fleet"
+            href={h.primaryHref}
             className="rounded-xl bg-gold px-6 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Browse the fleet
+            {h.primaryLabel}
           </a>
           <a
-            href="#enquire"
+            href={h.secondaryHref}
             className="rounded-xl border border-gold/40 px-6 py-3 font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
           >
-            Check availability
+            {h.secondaryLabel}
           </a>
         </div>
 
         <ul data-hero-item="" style={{ ["--hero-delay" as string]: "420ms" }} className="mt-12 grid gap-3 sm:grid-cols-3">
-          {points.map((p) => (
+          {h.points.map((p) => (
             <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
               <span aria-hidden="true" className="mt-0.5 text-gold">
                 ✓
