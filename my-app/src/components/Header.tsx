@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { Logo } from './Logo';
+import { SnakeMark } from './SnakeMark';
 
 const services = [
   { to: '/cars', label: 'Self-drive cars' },
@@ -70,7 +71,17 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-navy-deep">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-        <Logo onClick={closeMenus} />
+        {/* The snake sits with the logo rather than alone in the gap before
+            the navigation, where it floated with nothing to belong to.
+            Decorative, so no label and hidden from screen readers --
+            announcing "snake" before the navigation would be noise. Held back
+            until 640px: on a phone the row is already the logo, a call button
+            and the menu, and a fourth thing pushes the business name onto two
+            lines. */}
+        <div className="flex items-center gap-3">
+          <Logo onClick={closeMenus} />
+          <SnakeMark className="hidden size-12 shrink-0 sm:block" />
+        </div>
 
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Main">
           <NavLink to="/" end onClick={closeMenus} className={linkClass}>

@@ -1,18 +1,28 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
+import { photoFor } from '../lib/photos';
 
 /**
  * The lockup from the logo bar: a round badge, then PREMIUM RENTALS in tracked
  * gold caps above the name in white.
  *
- * The badge is drawn rather than an image file, because the artwork has not
- * been supplied yet. Replace the svg with an <img> once it has -- the layout
- * around it will not need to change.
+ * The badge is drawn, and stays drawn only until real artwork exists. Drop a
+ * file named `logo` into public/photos -- logo.png, logo.svg, logo.webp -- and
+ * it takes over the badge on the next build, with nothing here to edit. That
+ * is the same rule the car photographs and the page banners follow, so there
+ * is one thing to remember rather than three.
  */
 export function Logo({ onClick }: { onClick?: () => void }) {
+  const logo = photoFor('logo');
+
   return (
     <Link to="/" onClick={onClick} className="flex items-center gap-3">
-      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.25)]">
+      <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.25)]">
+        {logo ? (
+          // The name is written out beside this, so the badge repeating it
+          // would have a screen reader say the business twice.
+          <img src={logo} alt="" aria-hidden="true" className="size-full object-cover" />
+        ) : (
         <svg viewBox="0 0 40 40" className="size-9" aria-hidden="true">
           <defs>
             <linearGradient id="ns-gold" x1="0" y1="0" x2="1" y2="1">
@@ -45,6 +55,7 @@ export function Logo({ onClick }: { onClick?: () => void }) {
             CARS
           </text>
         </svg>
+        )}
       </span>
 
       <span className="leading-tight">
