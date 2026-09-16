@@ -6,6 +6,7 @@
     "build": "npm --prefix my-app ci && npm --prefix my-app run build",
     "dev": "npm --prefix my-app run dev",
     "lint": "npm --prefix my-app run lint",
-    "preview": "npm --prefix my-app run preview"
+    "preview": "npm --prefix my-app run preview",
+    "publish:site": "npm run build && node scripts/publish-public-html.mjs"
   }
 }

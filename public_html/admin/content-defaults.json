@@ -1,0 +1,134 @@
+{
+  "home": {
+    "hero": {
+      "eyebrow": "Nagercoil & Kanyakumari district",
+      "headingLead": "Self drive car & bike rental in Nagercoil",
+      "headingAccent": "and across Kanyakumari district",
+      "tagline": "Take the wheel. We'll handle the rest.",
+      "intro": "Self drive cars, bike rental, wedding cars and tourist vehicles with a driver — across Nagercoil, Marthandam, Colachel and the whole of Kanyakumari district. Transparent rates and a deposit you get back.",
+      "primaryLabel": "Browse the fleet",
+      "primaryHref": "#fleet",
+      "secondaryLabel": "Check availability",
+      "secondaryHref": "#enquire",
+      "points": [
+        "Unlimited-choice pickup across the city",
+        "Clear KM limits and deposits, stated upfront",
+        "Daily, weekly and monthly rates"
+      ]
+    },
+    "services": {
+      "heading": "What we hire",
+      "items": [
+        { "to": "/cars", "title": "Self drive cars", "body": "Hatchbacks, sedans and SUVs by the day, week or month. You drive." },
+        { "to": "/bikes", "title": "Bike rental", "body": "Scooters and motorcycles by the hour, day or week. Helmets included." },
+        { "to": "/wedding-cars", "title": "Wedding cars", "body": "Decorated cars reserved for your date, and vehicles for the family." },
+        { "to": "/tourist-vehicles", "title": "Tourist vehicles", "body": "Cars and vans with a driver who knows the district and its roads." },
+        { "to": "/monthly", "title": "Monthly rental", "body": "Weeks rather than days, at a rate that drops the longer you keep it." },
+        { "to": "/nri", "title": "Coming from abroad?", "body": "Book before you land. Airport pickup and long-stay rates for visiting families." }
+      ]
+    },
+    "highlights": {
+      "items": [
+        {
+          "to": "/monthly",
+          "icon": "🗓",
+          "title": "Monthly self drive car rental",
+          "eyebrow": "Need a car for weeks, not days?",
+          "body": "Monthly hire across Kanyakumari district for NRI families, work postings and anyone between vehicles. Hatchbacks, sedans, SUVs and 7 seaters, with the daily rate falling the longer you keep it.",
+          "panelTitle": "What decides your monthly rate",
+          "points": [
+            "Vehicle type and transmission",
+            "How long you need it",
+            "Season — festival and wedding periods",
+            "Where in the district we deliver"
+          ],
+          "cta": "Ask about monthly rates"
+        },
+        {
+          "to": "/nri",
+          "icon": "✈",
+          "title": "Coming home from abroad?",
+          "eyebrow": "Sort the car out before you land",
+          "body": "For families flying in from the Gulf, Singapore and Malaysia. Tell us your dates on WhatsApp, and the vehicle is ready when you arrive — no hunting for one after a night flight.",
+          "panelTitle": "How it works for visitors",
+          "points": [
+            "Book from abroad, pay when you arrive",
+            "Met at Trivandrum airport",
+            "Long-stay rates for weeks or months",
+            "Licence and document check in advance"
+          ],
+          "cta": "Read the visitor guide"
+        },
+        {
+          "to": "/wedding-cars",
+          "icon": "💍",
+          "title": "Wedding car rental",
+          "eyebrow": "Book the date before it goes",
+          "body": "Decorated cars for the couple and vehicles for relatives arriving from out of town, across Nagercoil, Marthandam and Colachel. Muhurtham dates fill months ahead.",
+          "panelTitle": "What we arrange",
+          "points": [
+            "Decoration in your colours",
+            "Vehicle held for your date",
+            "Extra cars for the family",
+            "Booked together from abroad"
+          ],
+          "cta": "See wedding cars"
+        }
+      ]
+    },
+    "whyUs": {
+      "badge": "Why hire from us",
+      "heading": "Straight answers, and a vehicle that turns up",
+      "intro": "Hiring a vehicle should not be the complicated part of a trip. We tell you the rate, the limits and the deposit before you take the car, and we bring it to you wherever you are in the district.",
+      "items": [
+        {
+          "title": "The price you agree is the price you pay",
+          "body": "Every vehicle carries three numbers before you take it: the daily rate, the kilometres included each day, and what anything beyond that costs. The deposit is stated too, and it comes back when the car does. Nothing is discovered at the end."
+        },
+        {
+          "title": "Anywhere in the district",
+          "body": "We work across the whole of Kanyakumari district — Nagercoil, Marthandam, Colachel, Thuckalay and the towns between. Tell us where you are and we will sort out getting the vehicle to you, including the airport if you are flying in."
+        },
+        {
+          "title": "One place for the whole trip",
+          "body": "A self drive car for the week, a bike for running about, a decorated car for the wedding, and a driver for the day everyone goes sightseeing. Booked together, with one person to call rather than four."
+        }
+      ]
+    },
+    "howItWorks": {
+      "heading": "How it works",
+      "steps": [
+        { "n": "01", "title": "Pick your car", "body": "Browse the fleet and choose what suits the trip — a hatchback for the city, an SUV for the highway." },
+        { "n": "02", "title": "Send an enquiry", "body": "Tell us your dates. We'll call back to confirm the car is free and agree the rate." },
+        { "n": "03", "title": "Collect and drive", "body": "Bring a valid licence and ID. Pay the deposit, take the keys, and the car is yours." }
+      ],
+      "noteLead": "Deposits are refundable.",
+      "noteBody": "It is returned after the car comes back, less any extra-KM charges or damage. KM limits and extra-KM rates are listed on every car above, so there is nothing to discover later."
+    },
+    "openRoad": {
+      "eyebrow": "Self drive",
+      "headingLead": "No driver. No timetable.",
+      "headingAccent": "Just the road ahead.",
+      "body": "That is the whole point of self drive. You take the keys, you set the route, and the day belongs to you — a sunrise run down to Kanyakumari, the coast road to Colachel, or a long weekend with no fixed plan at all. Rates and limits are agreed before you leave, so nothing changes on the way back.",
+      "primaryLabel": "Browse the fleet",
+      "primaryHref": "/cars",
+      "secondaryLabel": "Check availability",
+      "secondaryHref": "/contact"
+    },
+    "areasServed": {
+      "heading": "Where we hire across Kanyakumari district",
+      "intro": "We serve the whole of Kanyakumari district in Tamil Nadu. Tell us where you are and we will sort out pickup.",
+      "footnoteLead": "Somewhere not listed?",
+      "footnoteLinkLabel": "Ask us",
+      "footnoteTail": "— if it is in the district, we can usually help."
+    },
+    "closingCta": {
+      "heading": "Need a car for your dates?",
+      "body": "Tell us when and what you need. We will confirm what is free and what it costs.",
+      "primaryLabel": "Send an enquiry",
+      "primaryHref": "/contact",
+      "secondaryLabel": "See our cars",
+      "secondaryHref": "/cars"
+    }
+  }
+}
