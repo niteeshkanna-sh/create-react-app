@@ -98,3 +98,45 @@ function sql_statements(string $sql): array
     }
     return $statements;
 }
+
+/**
+ * Applies pending migrations, at most once per sign-in per deploy.
+ *
+ * migrate() on its own is cheap but not free -- a CREATE TABLE IF NOT EXISTS,
+ * a SELECT and a glob every time -- and the panel makes several API calls per
+ * page. This runs it when there is any chance it is needed and skips it
+ * otherwise.
+ *
+ * What decides "any chance" is the newest migration filename. A deploy that
+ * adds one changes that string, so the next request after a deploy applies it
+ * and every request after that skips. No version number to remember to bump.
+ *
+ * This exists because telling someone to "open the Dashboard tab" did not
+ * work: the tabs are switched in JavaScript without loading the page, so the
+ * migration that ran on page load never ran. An instruction that depends on
+ * knowing that is not an instruction, it is a trap.
+ */
+function migrate_if_needed(): ?string
+{
+    $files = glob(dirname(__DIR__) . '/sql/*.sql') ?: [];
+    if ($files === []) {
+        return null;
+    }
+    sort($files);
+    $marker = basename((string) end($files));
+
+    if (($_SESSION['schema_marker'] ?? null) === $marker) {
+        return null;
+    }
+
+    try {
+        migrate();
+        $_SESSION['schema_marker'] = $marker;
+        return null;
+    } catch (Throwable $e) {
+        // The marker is left unset deliberately, so the next request tries
+        // again rather than remembering a failure for the rest of the session.
+        error_log('migrate_if_needed failed: ' . $e->getMessage());
+        return $e->getMessage();
+    }
+}
