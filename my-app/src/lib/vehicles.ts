@@ -11,9 +11,9 @@
  * degrades to the "ask us what's available" state.
  */
 import { cars as fallbackCars, type Car } from '../data/cars';
+import { apiUrl } from './api';
 
-const ENDPOINT =
-  'https://admin.niteshacars.in/api/public-vehicles.php';
+const ENDPOINT = apiUrl('public-vehicles.php');
 
 interface ApiVehicle {
   id: string;

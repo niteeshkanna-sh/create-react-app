@@ -1,10 +1,12 @@
 /**
  * Enquiry submission.
  *
- * Posts to the admin panel's public endpoint. That endpoint needs no sign-in
- * and allowlists this origin for CORS (config 'public_site_origin' lists
- * https://niteshacars.in and the www form), so the browser is allowed to read
- * the reply.
+ * Posts to the admin panel's public endpoint, which needs no sign-in.
+ *
+ * The panel is served from /admin on this same host, so this is a same-origin
+ * request and CORS does not enter into it. The endpoint still sends its
+ * allowlist headers, which cost nothing and keep it usable from elsewhere if
+ * the site is ever split across hosts again.
  *
  * vehicle_id is deliberately NOT sent: the endpoint checks it against the
  * vehicles table, and the ids in src/data/cars.ts are placeholders that do not
@@ -12,8 +14,8 @@
  * `requirements` instead, which is free text.
  */
 
-const ENDPOINT =
-  'https://admin.niteshacars.in/api/enquiry-submit.php';
+import { apiUrl } from './api';
+const ENDPOINT = apiUrl('enquiry-submit.php');
 
 export interface EnquiryInput {
   name: string;
