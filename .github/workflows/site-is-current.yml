@@ -1,0 +1,69 @@
+# Fails when the site committed at the top level is not the current build.
+#
+# Hostinger's Git deployment clones this repository into the document root and
+# runs no build, so whatever sits at the top level IS the website. A change to
+# my-app/ or admin/ that does not also update those files never reaches the
+# server -- and nothing reports a problem. The deploy succeeds, the site keeps
+# serving the previous build, and the only symptom is that the thing you
+# changed is not there.
+#
+# This makes that failure loud. It builds, republishes, and fails if that
+# changed anything -- which means the committed site was stale.
+#
+# It writes nothing back and pushes nothing. The fix is a person running
+# `npm run publish:site` and committing, because a workflow that could commit
+# the fix would also be a workflow that can push to main unattended, which is a
+# far larger permission than catching a stale folder is worth.
+name: Site is current
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: my-app/package-lock.json
+
+      - name: Install
+        working-directory: my-app
+        run: npm ci
+
+      - name: Build
+        working-directory: my-app
+        run: npm run build
+
+      - name: Republish and see whether anything moved
+        run: |
+          node scripts/publish-site.mjs
+
+          if git diff --quiet; then
+            echo "The committed site matches the build."
+            exit 0
+          fi
+
+          echo "::error::The site committed at the top level is not the current build, so these changes will not reach the website."
+          echo ""
+          echo "Hostinger clones this repository into the document root and runs no"
+          echo "build, so the site keeps serving whatever is committed here."
+          echo ""
+          echo "Fix it with:"
+          echo ""
+          echo "    npm run publish:site"
+          echo "    git add -A && git commit"
+          echo ""
+          echo "Out of date:"
+          git diff --name-only | sed 's/^/  /'
+          exit 1
