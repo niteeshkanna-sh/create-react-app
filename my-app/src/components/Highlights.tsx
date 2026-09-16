@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { home } from '../content';
+import { useHome } from '../content';
 import { Reveal } from './Reveal';
 
 /**
@@ -10,6 +10,7 @@ import { Reveal } from './Reveal';
  * and should not be skimmed past.
  */
 export function Highlights() {
+  const home = useHome();
   const { items } = home.highlights;
 
   return (

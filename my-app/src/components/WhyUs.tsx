@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { home } from '../content';
+import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { CircleBadge } from './CircleBadge';
 
@@ -12,6 +12,7 @@ import { CircleBadge } from './CircleBadge';
  * notion of a group.
  */
 export function WhyUs() {
+  const home = useHome();
   const { badge, heading, intro, items } = home.whyUs;
   const [open, setOpen] = useState(0);
 

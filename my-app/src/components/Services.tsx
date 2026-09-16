@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { home } from '../content';
+import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
 import { hasScene } from './art/scenes';
 
 export function Services() {
+  const home = useHome();
   const { heading, items } = home.services;
 
   return (

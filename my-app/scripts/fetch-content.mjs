@@ -1,6 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+// The same rules the browser applies, so a build and a live page can never
+// disagree about which of the panel's edits are safe to show.
+import { mergeContent } from '../src/content/merge.mjs';
 
 /**
  * Bakes the site's editable copy into the build.
@@ -65,39 +68,6 @@ try {
   // The admin tree is not always checked out beside the app; that is fine.
 }
 
-/**
- * Only sections the site knows about, and only when the shape still matches.
- *
- * An override is written by a form, but it arrives here over the network from
- * a server that could be mid-deploy or mid-migration. Anything that does not
- * look like the default it replaces is dropped in favour of that default, so
- * one malformed row cannot empty a section of the live site.
- */
-function merge(base, incoming) {
-  if (!incoming || typeof incoming !== 'object') return base;
-
-  const out = structuredClone(base);
-  for (const [page, sections] of Object.entries(base)) {
-    for (const section of Object.keys(sections)) {
-      const candidate = incoming?.[page]?.[section];
-      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-        continue;
-      }
-      const expected = Object.keys(sections[section]);
-      const got = Object.keys(candidate);
-      const missing = expected.filter((k) => !got.includes(k));
-      if (missing.length > 0) {
-        console.warn(
-          `fetch-content: ${page}.${section} is missing ${missing.join(', ')} — keeping the shipped copy`,
-        );
-        continue;
-      }
-      out[page][section] = candidate;
-    }
-  }
-  return out;
-}
-
 let content = defaults;
 let source = 'defaults (no fetch attempted)';
 
@@ -115,7 +85,8 @@ if (process.env.CONTENT_API !== 'off') {
     // The panel sends only what has been edited; the defaults are already
     // here. It used to send both, which is the only thing that made the
     // endpoint depend on files a hand-updated panel does not have.
-    content = merge(defaults, body.overrides ?? {});
+    content = mergeContent(defaults, body.overrides ?? {},
+      (message) => console.warn(`fetch-content: ${message}`));
 
     if (body.ready === false) {
       console.warn(
