@@ -216,6 +216,24 @@ function install(array $form): array
     return [];
 }
 
+/**
+ * Did the visitor arrive over HTTPS?
+ *
+ * Behind a proxy that terminates TLS -- which is how this host works -- PHP
+ * sees a plain HTTP request and $_SERVER['HTTPS'] is unset, so asking PHP
+ * alone gives the wrong answer for every visitor on the secure site.
+ */
+function request_is_https(): bool
+{
+    if ((($_SERVER['HTTPS'] ?? '') !== '') && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+    if (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https') {
+        return true;
+    }
+    return strtolower((string) ($_SERVER['REQUEST_SCHEME'] ?? '')) === 'https';
+}
+
 function build_config(array $form): array
 {
     $origins = array_values(array_filter(array_map(
@@ -237,8 +255,17 @@ function build_config(array $form): array
         'public_site_origin' => $origins,
         // Hostinger serves these domains over HTTPS, and the session cookie
         // carries the sign-in, so it should never travel in the clear.
-        'https_only'         => (($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off'),
-        'session_minutes'    => 120,
+        // $_SERVER['HTTPS'] alone is not enough on this host. Hostinger
+        // terminates TLS upstream, so PHP can be handed a plain HTTP request
+        // for a visitor who arrived over HTTPS -- the site's own .htaccess
+        // says exactly this about %{HTTPS} and redirects on X-Forwarded-Proto
+        // instead. Getting it wrong here decides whether the session cookie
+        // carries the Secure flag, so it is worth reading both.
+        'https_only'         => request_is_https(),
+        // The panel reads session_idle_minutes. This wrote session_minutes, so
+        // the value was ignored and a hardcoded fallback was doing the work --
+        // which means changing it here had no effect at all.
+        'session_idle_minutes' => 120,
     ];
 }
 
