@@ -81,6 +81,27 @@ ErrorDocument 404 /404.html
   Require all denied
 </FilesMatch>
 
+# FilesMatch above matches file NAMES, which is not enough for a directory:
+# a request for /.git/config has a filename of "config" and sails straight
+# past it. This blocks the paths instead.
+#
+# It is here because a .git directory was found in the web root of this very
+# server. A served .git is not a tidiness problem -- standard tooling
+# reconstructs the entire repository from it, and this repository's history
+# contains a database password. The directory should not be on a web server at
+# all; this is the second line of defence for the day it comes back.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule (^|/)\.(git|svn|hg|env|ssh)(/|$) - [F,L]
+</IfModule>
+
+# Source and build files are not content either. None of these should ever
+# reach a web root, but naming them costs nothing and a stray upload is
+# exactly how they arrive.
+<FilesMatch "(^|\.)(env|sql|log|bak|orig|ini)$|^(package(-lock)?\.json|composer\.(json|lock)|.*\.config\.(js|ts|mjs|cjs))$">
+  Require all denied
+</FilesMatch>
+
 # The directory listing is off by default on most hosts, but not all, and an
 # open listing of the web root is a map of everything on the server.
 Options -Indexes
