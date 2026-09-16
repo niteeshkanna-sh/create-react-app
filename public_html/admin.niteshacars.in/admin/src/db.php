@@ -15,6 +15,58 @@ function config_set(array $values): void
     $GLOBALS['__config_override'] = $values;
 }
 
+/**
+ * Finds config.php.
+ *
+ * It used to be one fixed path, next to the panel. That stopped working when
+ * the host began deploying this repository by building it: the build output is
+ * the document root and it is recreated from scratch every time, so anything
+ * written beside the panel is erased on the next push. Keeping the file there
+ * would mean re-uploading the database password after every deploy.
+ *
+ * So the panel looks outward instead. A directory named nitesha-config,
+ * anywhere above the panel, holds the file; being outside the document root it
+ * survives deploys and cannot be fetched over HTTP even if a rule is
+ * misconfigured, which is where a database password belongs anyway.
+ *
+ * The old location is still checked first, so an install that predates this
+ * keeps working untouched.
+ *
+ * Returns null when there is nothing to load; the caller decides what to say.
+ */
+function config_path(): ?string
+{
+    $explicit = getenv('NITESHA_CONFIG');
+    if (is_string($explicit) && $explicit !== '' && is_file($explicit)) {
+        return $explicit;
+    }
+
+    // Beside the panel: how this has always worked, and still right for an
+    // install that is uploaded rather than built.
+    $beside = __DIR__ . '/../config.php';
+    if (is_file($beside)) {
+        return $beside;
+    }
+
+    // Then upwards. Six levels is past the account root on every layout this
+    // has run on, and stopping at the filesystem root keeps it terminating on
+    // any layout it has not.
+    $dir = dirname(__DIR__);
+    for ($i = 0; $i < 6; $i++) {
+        $candidate = $dir . '/nitesha-config/config.php';
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+        $parent = dirname($dir);
+        if ($parent === $dir) {
+            break;
+        }
+        $dir = $parent;
+    }
+
+    return null;
+}
+
 function config(?string $key = null): mixed
 {
     static $config = null;
@@ -24,8 +76,8 @@ function config(?string $key = null): mixed
     }
 
     if ($config === null) {
-        $path = __DIR__ . '/../config.php';
-        if (!is_file($path)) {
+        $path = config_path();
+        if ($path === null) {
             http_response_code(500);
             exit('Not set up yet. Open install.php in your browser to get started.');
         }
