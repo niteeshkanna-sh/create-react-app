@@ -313,18 +313,41 @@ function table_has_column(string $table, string $column): bool
     static $cache = [];
     $key = $table . '.' . $column;
 
-    if (!array_key_exists($key, $cache)) {
-        // The table name cannot be a bound parameter, so it is checked against
-        // a pattern rather than trusted -- these are always literals in this
-        // codebase, and the day one is not is the day this matters.
-        if (!preg_match('/^[a-z_]+$/', $table)) {
-            return false;
-        }
-        try {
-            $cache[$key] = fetch_one("SHOW COLUMNS FROM `$table` LIKE ?", [$column]) !== null;
-        } catch (Throwable $e) {
-            $cache[$key] = false;
-        }
+    if (array_key_exists($key, $cache)) {
+        return $cache[$key];
     }
+
+    // information_schema rather than SHOW COLUMNS.
+    //
+    // "SHOW COLUMNS FROM `t` LIKE ?" looks like the obvious way to ask, and it
+    // cannot work here: this connection uses real prepared statements
+    // (ATTR_EMULATE_PREPARES is false) and MySQL does not accept a placeholder
+    // in a SHOW statement. It throws, every time, for every column.
+    //
+    // That was the first version, and the catch below turned the broken query
+    // into a confident "no". So the photograph upload refused with "the
+    // database has not been updated" on a database where the column existed,
+    // and the public site quietly served NULL for every photograph. An
+    // exception that becomes a plausible answer is worse than one that
+    // escapes, which is why the failure is logged now rather than only caught.
+    //
+    // This is an ordinary SELECT, so it prepares, and both names bind as
+    // parameters -- nothing is interpolated into the SQL at all.
+    try {
+        $row = fetch_one(
+            'SELECT 1 AS present
+               FROM information_schema.columns
+              WHERE table_schema = DATABASE()
+                AND table_name = ?
+                AND column_name = ?
+              LIMIT 1',
+            [$table, $column]
+        );
+        $cache[$key] = $row !== null;
+    } catch (Throwable $e) {
+        error_log("table_has_column($table.$column) failed: " . $e->getMessage());
+        $cache[$key] = false;
+    }
+
     return $cache[$key];
 }
