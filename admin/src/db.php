@@ -295,3 +295,36 @@ function next_number(string $prefix, ?int $year = null): string
 
     return sprintf('%s-%d-%04d', $prefix, $year, $next);
 }
+
+/**
+ * Is this column on this table yet?
+ *
+ * Migrations only run when someone opens the panel, and the public website
+ * asks for the fleet whether or not anyone has signed in today. So between a
+ * deploy that adds a column and an admin next loading the dashboard, a query
+ * naming that column would fail -- and the failure would land on the public
+ * site's car listing, for a change made entirely inside the panel.
+ *
+ * Asked once per request and remembered, so a page reading several vehicles
+ * does not ask several times.
+ */
+function table_has_column(string $table, string $column): bool
+{
+    static $cache = [];
+    $key = $table . '.' . $column;
+
+    if (!array_key_exists($key, $cache)) {
+        // The table name cannot be a bound parameter, so it is checked against
+        // a pattern rather than trusted -- these are always literals in this
+        // codebase, and the day one is not is the day this matters.
+        if (!preg_match('/^[a-z_]+$/', $table)) {
+            return false;
+        }
+        try {
+            $cache[$key] = fetch_one("SHOW COLUMNS FROM `$table` LIKE ?", [$column]) !== null;
+        } catch (Throwable $e) {
+            $cache[$key] = false;
+        }
+    }
+    return $cache[$key];
+}
