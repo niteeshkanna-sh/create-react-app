@@ -492,6 +492,10 @@ button { font-family: inherit; }
 }
 .install-checks li.ok::before { content: '✓'; color: #2F6B4F; }
 .install-checks li.no::before { content: '✕'; color: #B3261E; }
+/* Not a failure -- the install worked -- but the result needs acting on
+   before the next deploy, so it cannot look like the passing rows. */
+.install-checks li.warn::before { content: '!'; color: #8A5A00; font-weight: 800; }
+.install-checks li.warn { color: var(--ink); }
 .install-checks li span { display: block; color: var(--ink-dim); font-size: 0.8rem; }
 .install-errors {
   background: #FDECEA; border: 1px solid #F3C4BF; border-radius: 10px;

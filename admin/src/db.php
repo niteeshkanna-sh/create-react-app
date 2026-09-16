@@ -67,6 +67,64 @@ function config_path(): ?string
     return null;
 }
 
+/**
+ * What the panel shows when it cannot find its configuration.
+ *
+ * This used to be one sentence of plain text on a 500. It is technically
+ * accurate and it is a dead end: it does not say which file is missing, where
+ * the panel looked, or that the database itself is untouched -- and it is the
+ * first thing an owner sees after a deploy wipes the config, which is a moment
+ * where "not set up yet" reads like the data is gone.
+ *
+ * The paths are the ones config_path() actually searched, computed rather than
+ * described, so the instructions cannot drift away from the code. Nothing here
+ * is a secret: no credentials are read at this point, because the file that
+ * would hold them is the one that is missing.
+ */
+function config_missing_page(): never
+{
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    header('X-Robots-Tag: noindex, nofollow');
+
+    $panel  = dirname(__DIR__);
+    $above  = dirname($panel, 2) . '/nitesha-config';
+    $e      = static fn (string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+       . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+       . '<title>Panel not configured</title>'
+       . '<style>'
+       . 'body{margin:0;padding:32px 16px;background:#FAF7F2;color:#1A2233;'
+       . 'font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}'
+       . 'main{max-width:640px;margin:0 auto;background:#fff;border:1px solid #E7E0D6;'
+       . 'border-radius:14px;padding:24px}'
+       . 'h1{font-size:1.3rem;margin:0 0 8px}p{margin:0 0 12px}'
+       . 'code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem;'
+       . 'background:#FAF7F2;padding:2px 5px;border-radius:5px;word-break:break-all}'
+       . 'ol{margin:0 0 12px;padding-left:20px}li{margin-bottom:6px}'
+       . '.note{color:#5C5348;font-size:.92rem}'
+       . 'a.btn{display:inline-block;margin-top:8px;background:#E8A317;color:#1A2233;'
+       . 'text-decoration:none;font-weight:700;padding:10px 18px;border-radius:10px}'
+       . '</style></head><body><main>'
+       . '<h1>The panel cannot find its configuration</h1>'
+       . '<p><code>config.php</code> holds the database details. It is deliberately not '
+       . 'part of the deploy, so a rebuild of the website folder never overwrites it '
+       . '&mdash; but that also means a rebuild cannot put it back.</p>'
+       . '<p class="note"><strong>Your data is not affected.</strong> Bookings, vehicles '
+       . 'and enquiries live in the database, which this file only points at.</p>'
+       . '<p>Two places were checked:</p><ol>'
+       . '<li><code>' . $e($panel . '/config.php') . '</code></li>'
+       . '<li><code>' . $e($above . '/config.php') . '</code> &mdash; the better one, '
+       . 'because it sits above the website folder where a deploy cannot reach it</li>'
+       . '</ol>'
+       . '<p>The installer will write it for you, in the second place, and will not '
+       . 'touch an existing account if one is already in the database.</p>'
+       . '<p><a class="btn" href="install.php">Open the installer</a></p>'
+       . '</main></body></html>';
+    exit;
+}
+
 function config(?string $key = null): mixed
 {
     static $config = null;
@@ -78,8 +136,7 @@ function config(?string $key = null): mixed
     if ($config === null) {
         $path = config_path();
         if ($path === null) {
-            http_response_code(500);
-            exit('Not set up yet. Open install.php in your browser to get started.');
+            config_missing_page();
         }
         $config = require $path;
     }
