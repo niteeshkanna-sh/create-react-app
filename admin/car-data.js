@@ -37,6 +37,9 @@ function toPanelShape(v) {
     kmLimitPerDay: v.km_limit_per_day,
     extraKmRate: v.extra_km_rate,
     securityDeposit: v.security_deposit,
+    // Read-only here. Photographs are uploaded through their own endpoint,
+    // because saving a vehicle sends JSON and a file cannot travel in it.
+    photo: v.photo || null,
   };
 }
 
@@ -80,6 +83,18 @@ async function saveVehicle(car) {
   const result = await api.vehicles.save(toApiShape(car));
   await refreshVehicles();
   return result.vehicle;
+}
+
+/**
+ * Uploads or removes a vehicle's photograph.
+ *
+ * Kept apart from saveVehicle because it needs a vehicle id, and a vehicle
+ * being created does not have one until the save returns. The form does both
+ * in order so that is invisible to whoever is filling it in.
+ */
+async function saveVehiclePhoto(vehicleId, file) {
+  await api.vehicles.photo(vehicleId, file);
+  await refreshVehicles();
 }
 
 /**

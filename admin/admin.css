@@ -132,6 +132,16 @@ button { font-family: inherit; }
 .panel-header-link:hover { color: var(--primary); }
 .panel-header p { color: var(--ink-dim); font-size: 0.84rem; }
 
+/* ---------- Vehicle photograph ---------- */
+.photo-field { display: flex; flex-direction: column; gap: 8px; }
+.photo-preview { display: flex; align-items: center; gap: 10px; }
+.photo-preview img {
+  width: 104px; aspect-ratio: 16 / 10; object-fit: cover;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--bg);
+}
+.field-note { color: var(--ink-dim); font-size: 0.8rem; }
+.admin-car-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* ---------- Car admin grid ---------- */
 .car-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 .car-admin-card {

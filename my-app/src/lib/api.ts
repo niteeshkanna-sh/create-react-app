@@ -16,5 +16,19 @@
 const base = import.meta.env.VITE_API_BASE ?? '/admin';
 
 export function apiUrl(endpoint: string): string {
-  return `${base.replace(/\/+$/, '')}/api/${endpoint.replace(/^\/+/, '')}`;
+  return `${panelUrl('')}/api/${endpoint.replace(/^\/+/, '')}`;
+}
+
+/**
+ * A path relative to the panel itself rather than its api/ folder.
+ *
+ * Vehicle photographs come back from the API as `photo.php?f=...`, which is
+ * relative to the panel. Used as-is in an <img> it would resolve against the
+ * page instead -- /cars/photo.php on the fleet page -- and every photograph
+ * would 404 on some pages and work on others, which is the kind of bug that
+ * looks like a caching problem for a day.
+ */
+export function panelUrl(path: string): string {
+  const root = base.replace(/\/+$/, '');
+  return path === '' ? root : `${root}/${path.replace(/^\/+/, '')}`;
 }

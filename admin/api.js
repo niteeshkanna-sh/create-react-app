@@ -56,6 +56,53 @@ async function apiRequest(url, { method = 'GET', body = null } = {}) {
   return payload;
 }
 
+/**
+ * The same handling as apiRequest, for a request carrying a file.
+ *
+ * apiRequest sets Content-Type and JSON-encodes the body, and both are wrong
+ * for an upload: the browser has to set the multipart boundary itself, so the
+ * header must be left alone entirely.
+ */
+async function apiUpload(url, formData) {
+  formData.append('csrf_token', CSRF_TOKEN);
+
+  let response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+      credentials: 'same-origin',
+      body: formData,
+    });
+  } catch {
+    throw new ApiError('Could not reach the server. Check your connection.', 0);
+  }
+
+  if (response.status === 401) {
+    window.location.href = 'index.php';
+    throw new ApiError('Signed out', 401);
+  }
+
+  let payload = {};
+  try {
+    payload = await response.json();
+  } catch {
+    // An upload larger than the server accepts is often refused before PHP
+    // runs, so the reply is the host's HTML error page rather than our JSON.
+    throw new ApiError(
+      response.status === 413
+        ? 'That image is larger than the server will accept. Try one under about 5 MB.'
+        : 'The server returned an unreadable response.',
+      response.status,
+    );
+  }
+
+  if (!response.ok) {
+    throw new ApiError(payload.error || 'Something went wrong.', response.status, payload.fields);
+  }
+  return payload;
+}
+
 const api = {
   vehicles: {
     list: (includeInactive = false) =>
@@ -64,6 +111,16 @@ const api = {
       apiRequest('api/vehicles.php?action=save', { method: 'POST', body: vehicle }),
     retire: (id, reason) =>
       apiRequest('api/vehicles.php?action=retire', { method: 'POST', body: { id, reason } }),
+    photo: (id, file) => {
+      const form = new FormData();
+      form.append('vehicle_id', String(id));
+      if (file) {
+        form.append('photo', file);
+      } else {
+        form.append('remove', '1');
+      }
+      return apiUpload('api/vehicle-photo.php', form);
+    },
   },
 
   bookings: {

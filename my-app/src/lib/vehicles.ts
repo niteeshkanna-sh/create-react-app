@@ -11,7 +11,7 @@
  * degrades to the "ask us what's available" state.
  */
 import { cars as fallbackCars, type Car } from '../data/cars';
-import { apiUrl } from './api';
+import { apiUrl, panelUrl } from './api';
 
 const ENDPOINT = apiUrl('public-vehicles.php');
 
@@ -20,6 +20,7 @@ interface ApiVehicle {
   brand: string;
   name: string;
   bodyType: string;
+  photo: string | null;
   fuel: string;
   transmission: string;
   seats: number;
@@ -68,6 +69,9 @@ function toCar(v: ApiVehicle): Car {
     kmLimitPerDay: v.kmLimitPerDay,
     extraKmRate: v.extraKmRate,
     deposit: v.deposit,
+    // Uploaded in the panel. carPhoto() prefers this over anything matched by
+    // filename, so a photograph attached to the vehicle always wins.
+    image: v.photo ? panelUrl(v.photo) : undefined,
     available: true, // the endpoint only returns Available vehicles
   };
 }
