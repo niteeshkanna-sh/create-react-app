@@ -123,6 +123,13 @@ button { font-family: inherit; }
   display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0;
 }
 .panel-header h2 { font-size: 1.15rem; margin-bottom: 0; }
+/* A quiet link rather than a second button: it sits beside "+ Add Vehicle",
+   and two filled buttons would compete for the same glance. */
+.panel-header-link {
+  align-self: center; font-size: 0.85rem; font-weight: 600;
+  color: var(--ink-dim); text-decoration: underline; text-underline-offset: 3px;
+}
+.panel-header-link:hover { color: var(--primary); }
 .panel-header p { color: var(--ink-dim); font-size: 0.84rem; }
 
 /* ---------- Car admin grid ---------- */

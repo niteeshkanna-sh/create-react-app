@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { inr, type BodyType } from '../data/cars';
+import { carPhoto } from '../lib/carPhoto';
 import { useFleet } from '../lib/useFleet';
+import { SectionArt } from './art/SectionArt';
 import { Reveal } from './Reveal';
 
 type Filter = 'All' | BodyType;
@@ -84,6 +86,7 @@ export function Fleet() {
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((car, i) => {
           const label = `${car.brand} ${car.name}`;
+          const photo = carPhoto(car);
           return (
             <Reveal key={car.id} delay={i * 70}>
             <article
@@ -91,21 +94,16 @@ export function Fleet() {
               className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]"
             >
               <div className="relative aspect-[16/10] bg-cream">
-                {car.image ? (
-                  <img
-                    src={car.image}
-                    alt={label}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div
-                    aria-hidden="true"
-                    className="grid h-full w-full place-items-center text-5xl font-bold text-line"
-                  >
-                    {car.brand.charAt(0)}
-                  </div>
-                )}
+                {/* No photograph yet falls through to the drawing the rest of
+                    the site uses, not a grey initial: a card with a picture on
+                    it reads as a vehicle for hire, and a card with a letter on
+                    it reads as a page that failed to load. */}
+                <SectionArt
+                  name="/cars"
+                  className="h-full"
+                  photo={photo}
+                  alt={photo ? label : undefined}
+                />
                 <span
                   className={`absolute top-3 right-3 rounded-full px-2.5 py-1 text-xs font-semibold ${
                     car.available
