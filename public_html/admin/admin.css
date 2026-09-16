@@ -1,0 +1,580 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+/* NiteSha palette — same navy and gold as the public site, but kept flat and
+   dense: this is an operational tool, not a marketing page (spec Part 43). */
+:root {
+  --primary: #0A0E20;      /* brand navy — buttons, active states, links */
+  --accent: #F5A500;       /* brand gold — highlights and key figures */
+  --accent-deep: #B36B00;  /* gold that stays legible as text on white */
+  --danger: #B3261E;
+  --ink: #14100D;
+  --ink-dim: #5C5348;
+  --ink-faint: #948B80;
+  --bg: #FAF8F4;
+  --surface: #ffffff;
+  --border: #E9E2D8;
+  --radius: 14px;
+  --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+  --font: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: 9px; font-weight: 600; cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  padding: 11px 20px; font-size: 0.9rem;
+}
+.btn-sm { padding: 8px 14px; font-size: 0.8rem; }
+.btn-block { width: 100%; }
+/* Gold pill with near-black text — matches "Book Now" on the public site
+   and clears contrast, which gold-on-white text would not. */
+.btn-primary { background: var(--accent); color: #14100D; }
+.btn-primary:hover { background: #FFB829; transform: translateY(-1px); }
+.btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover { background: var(--bg); }
+.btn-ghost { background: var(--bg); color: var(--ink-dim); }
+.btn-ghost:hover { background: var(--border); }
+.btn-danger { background: #FBECEA; color: var(--danger); }
+.btn-danger:hover { background: #F7DAD6; }
+
+/* ---------- Login ---------- */
+.login-screen {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(55% 45% at 15% 10%, rgba(245, 165, 0, 0.14), transparent 70%),
+    radial-gradient(45% 45% at 90% 20%, rgba(10, 14, 32, 0.08), transparent 70%),
+    var(--bg);
+  padding: 24px;
+}
+.login-card {
+  background: #fff; border: 1px solid var(--border); border-radius: 20px;
+  box-shadow: var(--shadow); padding: 40px; width: 100%; max-width: 380px; text-align: center;
+}
+.login-logo { font-weight: 800; font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.login-card h1 { font-size: 1.4rem; margin-bottom: 8px; }
+.login-note { font-size: 0.8rem; color: var(--ink-faint); margin-bottom: 24px; line-height: 1.5; }
+.login-card form { text-align: left; }
+.login-card label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-dim); margin-bottom: 6px; }
+.login-card input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 0.95rem; margin-bottom: 6px; outline: none;
+}
+.login-card input:focus { border-color: var(--primary); }
+.login-error { color: var(--danger); font-size: 0.82rem; min-height: 1.4em; margin-bottom: 10px; }
+.login-hint { margin-top: 18px; font-size: 0.78rem; color: var(--ink-faint); }
+.login-hint code { background: var(--bg); padding: 2px 6px; border-radius: 6px; font-weight: 600; color: var(--ink); }
+.back-link { display: inline-block; margin-top: 18px; font-size: 0.85rem; color: var(--primary); }
+
+/* ---------- Dashboard shell ---------- */
+.admin-header { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+.admin-header-inner {
+  max-width: 1100px; margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+.logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--primary);
+  border: 1.5px solid var(--accent);
+}
+.admin-tag {
+  font-size: 0.7rem; font-weight: 700; background: var(--ink); color: #fff;
+  padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.admin-header-actions { display: flex; gap: 10px; }
+
+.admin-body { max-width: 1100px; margin: 0 auto; padding: 28px 24px 8px; }
+
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-tab {
+  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
+  padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 0.88rem; cursor: pointer;
+  flex-shrink: 0; white-space: nowrap;
+}
+.admin-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tab-icon { vertical-align: -2px; margin-right: 4px; }
+.tab-count {
+  display: inline-block; margin-left: 4px; background: rgba(255,255,255,0.2);
+  padding: 1px 7px; border-radius: 999px; font-size: 0.72rem;
+}
+.admin-tab:not(.active) .tab-count { background: var(--bg); color: var(--ink-dim); }
+
+.panel-header {
+  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px;
+}
+/* Heading and description on one line. They were stacked, which cost a whole
+   line of height at the top of every panel for a sentence that is context
+   rather than content. */
+.panel-header > div {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0;
+}
+.panel-header h2 { font-size: 1.15rem; margin-bottom: 0; }
+/* A quiet link rather than a second button: it sits beside "+ Add Vehicle",
+   and two filled buttons would compete for the same glance. */
+.panel-header-link {
+  align-self: center; font-size: 0.85rem; font-weight: 600;
+  color: var(--ink-dim); text-decoration: underline; text-underline-offset: 3px;
+}
+.panel-header-link:hover { color: var(--primary); }
+.panel-header p { color: var(--ink-dim); font-size: 0.84rem; }
+
+/* ---------- Car admin grid ---------- */
+.car-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.car-admin-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; display: flex; flex-direction: column; gap: 10px;
+}
+.admin-car-thumb {
+  background: linear-gradient(135deg, #FFF3DC, #FBEFE0); border-radius: 10px;
+  padding: 8px; margin: -4px -4px 2px;
+}
+.admin-car-thumb svg { width: 100%; height: auto; display: block; }
+.car-admin-card .row1 { display: flex; align-items: center; gap: 10px; }
+.car-admin-card .name { font-weight: 700; font-size: 0.95rem; flex: 1; }
+.car-admin-card .meta { font-size: 0.8rem; color: var(--ink-dim); display: flex; gap: 10px; flex-wrap: wrap; }
+.car-admin-card .price { font-weight: 800; color: var(--accent-deep); font-size: 1.05rem; }
+.car-admin-card .actions { display: flex; gap: 8px; margin-top: 4px; }
+.car-admin-card .actions .btn { flex: 1; }
+
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--ink-faint);
+  background: #fff; border: 1px dashed var(--border); border-radius: var(--radius);
+}
+
+/* ---------- Dashboard stats ---------- */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 10px; margin-bottom: 18px;
+}
+.stat-grid-3 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: 16px; }
+.stat-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 11px 13px; display: flex; flex-direction: column; gap: 3px;
+}
+/* --ink-faint measures 3.35:1 on white, under the 4.5:1 needed for text this
+   small, and it was already being used at 0.78rem. Shrinking it further would
+   have made a failing contrast worse, so the label moves to --ink-dim at
+   7.54:1. */
+.stat-label { font-size: 0.72rem; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+/* margin-top:auto: grid stretches every card in a row to the tallest one, so a
+   label that wraps to two lines ("Security deposit refunded") left its
+   neighbours' numbers floating mid-card. Pinning the value to the bottom lines
+   the numbers up across the row again. */
+.stat-value {
+  font-size: 1.15rem; font-weight: 800; color: var(--ink);
+  font-variant-numeric: tabular-nums; margin-top: auto;
+}
+.stat-card-income .stat-value { color: #2F6B4F; }
+.stat-card-expense .stat-value { color: var(--danger); }
+.stat-card-balance .stat-value { color: var(--primary); }
+
+.dashboard-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dashboard-col h3 { font-size: 0.95rem; margin-bottom: 8px; }
+
+/* ---------- Finance ---------- */
+.finance-form {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 2fr auto; gap: 12px; align-items: end;
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 24px;
+}
+.finance-form .field-group { margin-bottom: 0; }
+.txn-note-group { min-width: 0; }
+
+.transaction-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.transaction-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.transaction-category { font-weight: 700; }
+.transaction-note { font-size: 0.85rem; color: var(--ink-dim); }
+.transaction-time { font-size: 0.75rem; color: var(--ink-faint); }
+.transaction-right { display: flex; align-items: center; gap: 14px; }
+.transaction-amount { font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.transaction-amount.income { color: #2F6B4F; }
+.transaction-amount.expense { color: var(--danger); }
+.transaction-delete {
+  background: var(--bg); color: var(--ink-faint); border: none; border-radius: 8px;
+  width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem;
+}
+.transaction-delete:hover { background: #FBECEA; color: var(--danger); }
+
+/* ---------- Inquiries ---------- */
+.inquiry-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+  gap: 16px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.inquiry-info { display: flex; flex-direction: column; gap: 2px; }
+.inquiry-name { font-weight: 700; }
+.inquiry-detail { font-size: 0.85rem; color: var(--ink-dim); }
+.inquiry-time { font-size: 0.75rem; color: var(--ink-faint); white-space: nowrap; }
+
+.storage-note {
+  max-width: 1100px; margin: 24px auto 40px; padding: 0 24px;
+  font-size: 0.8rem; color: var(--ink-faint); line-height: 1.5;
+}
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(16,24,40,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+}
+.modal {
+  background: #fff; border-radius: 18px; padding: 28px; width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(16,24,40,0.25);
+}
+.modal h3 { margin-bottom: 18px; font-size: 1.2rem; }
+.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.field-group { margin-bottom: 14px; }
+.field-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-dim); margin-bottom: 6px; }
+.field-group input, .field-group select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
+  font-size: 0.9rem; outline: none; font-family: inherit;
+}
+.field-group input:focus, .field-group select:focus { border-color: var(--primary); }
+.color-input { padding: 4px !important; height: 40px; cursor: pointer; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+
+/* ---------- Dashboard: rental overview ---------- */
+.dashboard-subheading { font-size: 0.95rem; margin: 2px 0 10px; }
+/* Was a fixed four columns. Auto-fill lets a wide screen show more and a
+   narrow one fewer, without a breakpoint for each size. */
+.stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); }
+.stat-card-deposit .stat-value { color: #8A5A00; }
+
+/* ---------- Wide/tall modal variants ---------- */
+.modal-wide { max-width: 720px; }
+.modal-tall { max-height: 92vh; }
+.modal-row-4 { grid-template-columns: repeat(4, 1fr); }
+.modal-section-label {
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--ink-faint); margin: 18px 0 10px;
+}
+.modal-section-label:first-of-type { margin-top: 4px; }
+.field-hint { font-size: 0.85rem; color: var(--ink-dim); margin: -6px 0 14px; }
+.field-hint strong { color: var(--ink); }
+.booking-number-preview { font-size: 0.85rem; color: var(--accent-deep); font-weight: 700; margin-bottom: 14px; }
+.booking-conflict-error {
+  color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
+}
+.proof-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.proof-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+
+/* ---------- Bookings ---------- */
+.booking-filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
+.filter-chip {
+  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
+  padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 0.82rem; cursor: pointer;
+  flex-shrink: 0; white-space: nowrap;
+}
+.filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.booking-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap; cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.booking-card:hover { box-shadow: var(--shadow); }
+.booking-card-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.booking-card-number { font-weight: 800; color: var(--accent-deep); font-size: 0.92rem; }
+.booking-card-customer { font-weight: 700; }
+.booking-card-meta { font-size: 0.82rem; color: var(--ink-dim); }
+.booking-card-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.booking-card-balance { text-align: right; }
+.booking-card-balance .amount { font-weight: 800; font-variant-numeric: tabular-nums; }
+.booking-card-balance .label { display: block; font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; }
+
+.status-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.72rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+}
+.status-badge-Confirmed { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-Active { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Completed { background: #F1EDE6; color: var(--ink-dim); }
+.status-badge-Cancelled { background: #FBECEA; color: var(--danger); }
+.status-badge-Available { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Booked { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-OnRental { background: #FDF0D5; color: #8A5A00; }
+.status-badge-Maintenance { background: #FBECEA; color: var(--danger); }
+.status-badge-Inactive { background: #F1EDE6; color: var(--ink-faint); }
+
+/* Schedule chip — derived from the booking dates, shown under the recorded
+   status so a booking that is past its start time stops looking dormant. */
+.status-stack { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.sched-chip {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.sched-neutral { background: #F1EDE6; color: var(--ink-dim); }
+.sched-due     { background: #FDF0D5; color: #8A5A00; }
+.sched-live    { background: #E8F4EC; color: #2F6B4F; }
+.sched-late    { background: #FBECEA; color: var(--danger); }
+
+/* In the detail header the chip sits inline beside the status badge. */
+.booking-detail-header .sched-chip { margin-left: 6px; vertical-align: 2px; }
+
+/* ---------- Booking detail ---------- */
+.booking-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.booking-detail-header h3 { margin: 0; }
+.detail-section {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 14px;
+}
+.detail-section-title {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-weight: 700; margin-bottom: 12px;
+}
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 20px; }
+.detail-field { display: flex; flex-direction: column; gap: 2px; }
+.detail-field .k { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.03em; }
+.detail-field .v { font-weight: 600; font-size: 0.92rem; }
+.detail-empty { color: var(--ink-faint); font-size: 0.88rem; }
+
+.payment-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+}
+.payment-row:last-child { border-bottom: none; }
+.payment-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.timeline-list { list-style: none; padding: 0; margin: 0; }
+.timeline-list li {
+  position: relative; padding: 0 0 16px 22px; font-size: 0.88rem; border-left: 2px solid var(--border);
+}
+.timeline-list li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.timeline-list li::before {
+  content: ''; position: absolute; left: -5px; top: 2px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--accent);
+}
+.timeline-list .t-event { font-weight: 600; display: block; }
+.timeline-list .t-time { font-size: 0.75rem; color: var(--ink-faint); }
+
+/* ---------- Reports ---------- */
+.report-tabs { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; }
+.report-tab {
+  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
+  padding: 9px 16px; border-radius: 999px; font-weight: 600; font-size: 0.82rem; cursor: pointer;
+  flex-shrink: 0; white-space: nowrap;
+}
+.report-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.report-filters {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: end; background: #fff;
+  border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+}
+.report-filters .field-group { margin-bottom: 0; min-width: 160px; }
+.report-export-row { display: flex; gap: 10px; margin-bottom: 18px; }
+.report-results { overflow-x: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); }
+.report-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.report-table th, .report-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.report-table th { background: var(--bg); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-faint); }
+.report-table tfoot td { font-weight: 700; background: var(--bg); }
+
+@media print {
+  .header, .admin-tabs, .panel-header .btn, .report-tabs, .report-filters, .report-export-row,
+  .booking-filters, .admin-header, .storage-note, .wa-float, .mobile-footer-nav { display: none !important; }
+  body { background: #fff; }
+  .report-results { border: none; }
+}
+
+@media (max-width: 900px) {
+  .stat-grid, .stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .dashboard-cols { grid-template-columns: 1fr; }
+  .finance-form { grid-template-columns: 1fr 1fr; }
+  .finance-form button { grid-column: span 2; }
+  .modal-row-4 { grid-template-columns: 1fr 1fr; }
+  .booking-card { flex-direction: column; align-items: flex-start; }
+  .booking-card-right { width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 560px) {
+  .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
+  .admin-header-inner { flex-direction: column; gap: 10px; align-items: flex-start; }
+  .stat-grid, .stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+  .stat-grid-3 { grid-template-columns: 1fr; }
+  .finance-form { grid-template-columns: 1fr; }
+  .finance-form button { grid-column: span 1; }
+  .report-filters .field-group { min-width: 0; flex: 1 1 100%; }
+}
+
+/* Signed-in identity in the admin header. */
+.who { font-size: 0.85rem; color: var(--ink-dim); display: flex; align-items: center; gap: 8px; }
+.who-role {
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--amber-wash, #FFF3DC); color: var(--accent-deep); padding: 3px 8px; border-radius: 999px;
+}
+.logout-form { display: inline; margin: 0; }
+@media (max-width: 560px) { .who { display: none; } }
+
+/* A voided payment stays listed — the record of what was entered is part of
+   the trail — but is clearly no longer counted. */
+.payment-row.payment-void { opacity: 0.6; }
+.payment-row.payment-void .amount { text-decoration: line-through; }
+.payment-row em {
+  font-style: normal; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--ink-faint); margin-left: 6px;
+}
+.payment-row .btn { margin-left: 10px; }
+
+/* ---------- Enquiries ---------- */
+.enquiry-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.enquiry-toolbar input[type="search"] {
+  flex: 1 1 260px; min-width: 200px; padding: 10px 14px;
+  border: 1px solid var(--border); border-radius: 9px; font: inherit; font-size: 0.9rem; outline: none;
+}
+.enquiry-toolbar input[type="search"]:focus { border-color: var(--primary); }
+.enquiry-filters { display: flex; gap: 8px; overflow-x: auto; }
+
+.enquiry-card {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap; cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.enquiry-card:hover { box-shadow: var(--shadow); }
+.enquiry-card .row { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.enquiry-card .num { font-weight: 800; color: var(--accent-deep); font-size: 0.9rem; }
+.enquiry-card .enquiry-name { font-weight: 700; color: var(--ink); font-size: 1rem; }
+.enquiry-card .meta { font-size: 0.82rem; color: var(--ink-dim); }
+.enquiry-card .right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+.status-badge-New       { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-Contacted { background: #EAF0F8; color: #3A5A8A; }
+.status-badge-Pending   { background: #FDF0D5; color: #8A5A00; }
+.status-badge-Accepted  { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Converted { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Rejected  { background: #FBECEA; color: var(--danger); }
+
+.enquiry-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.enquiry-notes {
+  white-space: pre-wrap; font-size: 0.88rem; color: var(--ink-dim);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+}
+
+/* ---- first-run installer ------------------------------------------------ */
+.install-card { max-width: 460px; text-align: left; }
+.install-card h1 { text-align: center; }
+.install-note { font-size: 0.86rem; color: var(--ink-dim); line-height: 1.5; margin: 10px 0; }
+.install-note code {
+  background: #FFF8EE; padding: 2px 6px; border-radius: 5px;
+  font-size: 0.85em; color: var(--accent-deep);
+}
+.install-heading {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-dim); margin: 22px 0 2px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.install-checks { list-style: none; margin: 14px 0; padding: 0; }
+.install-checks li {
+  font-size: 0.86rem; padding: 7px 0 7px 26px; position: relative;
+  border-bottom: 1px solid var(--border);
+}
+.install-checks li:last-child { border-bottom: 0; }
+.install-checks li::before {
+  position: absolute; left: 0; top: 6px; font-weight: 800;
+}
+.install-checks li.ok::before { content: '✓'; color: #2F6B4F; }
+.install-checks li.no::before { content: '✕'; color: #B3261E; }
+/* Not a failure -- the install worked -- but the result needs acting on
+   before the next deploy, so it cannot look like the passing rows. */
+.install-checks li.warn::before { content: '!'; color: #8A5A00; font-weight: 800; }
+.install-checks li.warn { color: var(--ink); }
+.install-checks li span { display: block; color: var(--ink-dim); font-size: 0.8rem; }
+.install-errors {
+  background: #FDECEA; border: 1px solid #F3C4BF; border-radius: 10px;
+  padding: 12px 14px; margin: 14px 0;
+}
+.install-errors p { color: #B3261E; font-size: 0.86rem; margin: 4px 0; }
+
+/* ---- Finance: expenses and breakdowns ----------------------------------- */
+.finance-range {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.finance-range label { font-size: 0.82rem; color: var(--ink-dim); font-weight: 600; }
+.finance-range input[type="date"] {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px;
+  font-family: var(--font); font-size: 0.86rem; background: var(--surface); color: var(--ink);
+}
+.stat-foot {
+  display: block; font-size: 0.75rem; color: var(--ink-dim); margin-top: 4px; min-height: 1em;
+}
+.finance-deposit-note {
+  font-size: 0.82rem; color: var(--ink-dim); margin: 12px 0 4px;
+}
+.finance-deposit-note:empty { display: none; }
+
+.finance-breakdowns {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; margin: 20px 0;
+}
+.finance-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.finance-panel h3 {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ink-dim); margin-bottom: 12px;
+}
+.breakdown-row {
+  display: grid; grid-template-columns: 1fr 70px auto; align-items: center;
+  gap: 10px; padding: 6px 0; font-size: 0.84rem;
+}
+.breakdown-label { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.breakdown-bar { background: #F1EBE1; border-radius: 4px; height: 6px; overflow: hidden; }
+.breakdown-bar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.breakdown-value { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.panel-header-sub {
+  margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.panel-header-sub h3 { font-size: 1rem; }
+.finance-toggle {
+  font-size: 0.82rem; color: var(--ink-dim); display: flex; align-items: center; gap: 6px;
+}
+
+.expense-card {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+}
+.expense-card.is-voided { opacity: 0.6; }
+.expense-card.is-voided .expense-amount { text-decoration: line-through; }
+.expense-card .row { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.expense-card .num { font-weight: 800; color: var(--accent-deep); font-size: 0.82rem; }
+.expense-what { font-weight: 700; color: var(--ink); font-size: 0.95rem; }
+.expense-card .meta { font-size: 0.8rem; color: var(--ink-dim); }
+.expense-card .meta.corrects { color: var(--accent-deep); }
+.expense-card .meta.reason { font-style: italic; }
+.expense-card .right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;
+}
+.expense-amount { font-weight: 800; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.expense-actions { display: flex; gap: 10px; margin-top: 2px; }
+.link-btn {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-family: var(--font); font-size: 0.78rem; font-weight: 600;
+  color: var(--accent-deep); text-decoration: underline;
+}
+.link-btn.danger { color: var(--danger); }
+
+@media (max-width: 560px) {
+  .expense-card { flex-direction: column; }
+  .expense-card .right { align-items: flex-start; }
+}
