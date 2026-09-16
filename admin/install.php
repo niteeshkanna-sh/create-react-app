@@ -170,17 +170,46 @@ function install(array $form): array
         return ['Setting up the tables failed: ' . $e->getMessage()];
     }
 
+    // The config is written before the account, and that order matters.
+    //
+    // It used to be the other way round, which broke the one case this file is
+    // now most often opened for: a database that still holds everything, and a
+    // config.php that a deploy erased. create_user() then failed on the
+    // duplicate email, returned early, and write_config() never ran -- so the
+    // panel stayed dead and the installer sent you round the same loop with no
+    // way out. Writing the config first means a problem creating an account is
+    // a problem creating an account, not a panel that will not start.
+    if (!write_config($config)) {
+        return ['The database details work, but config.php could not be written to '
+              . h(dirname(install_config_path())) . '. Create it there by hand '
+              . 'from config.sample.php, using the details above.'];
+    }
+
+    // An account already in this database is the signal that the database is
+    // not new -- so this is a reconnection, not an installation, and making a
+    // second Super Admin would be wrong.
+    $existingUsers = 0;
+    try {
+        $existingUsers = (int) (fetch_one('SELECT COUNT(*) AS n FROM users')['n'] ?? 0);
+    } catch (Throwable $e) {
+        // A fresh database that has only just been migrated; treat it as empty.
+    }
+
+    if ($existingUsers > 0) {
+        $GLOBALS['__applied']  = $applied;
+        $GLOBALS['__reconnect'] = true;
+        return [];
+    }
+
     try {
         require_once __DIR__ . '/src/audit.php';
         require_once __DIR__ . '/src/auth.php';
         create_user($form['admin_name'], $form['admin_email'], $password, 'super_admin');
     } catch (Throwable $e) {
-        return ['Creating your account failed: ' . $e->getMessage()];
-    }
-
-    if (!write_config($config)) {
-        return ['Everything else worked, but config.php could not be written. '
-              . 'Create it by hand from config.sample.php, using the details above.'];
+        return ['The settings were saved, but creating your account failed: '
+              . $e->getMessage() . ' If you already have an account in this database, '
+              . 'reload this page -- the panel is configured now and should let you '
+              . 'sign in with it.'];
     }
 
     $GLOBALS['__applied'] = $applied;
@@ -306,13 +335,19 @@ function page(string $title, string $body): void
 // ---------------------------------------------------------------------------
 if ($done) {
     $applied = $GLOBALS['__applied'] ?? [];
-    page('Ready', '
-      <p class="install-note">The panel is set up. Sign in with the account you
-      just made.</p>
+    page('Ready',
+      '<p class="install-note">The panel is set up. '
+      . (empty($GLOBALS['__reconnect'])
+          ? 'Sign in with the account you just made.'
+          : 'Your existing data and accounts were already there and were left alone.')
+      . '</p>
       <ul class="install-checks">'
       . ($applied === [] ? '' : '<li class="ok">Tables created (' . h(implode(', ', $applied)) . ')</li>')
-      . '<li class="ok">Your Super Admin account was created</li>
-         <li class="ok">config.php was written to <code>'
+      . (empty($GLOBALS['__reconnect'])
+          ? '<li class="ok">Your Super Admin account was created</li>'
+          : '<li class="ok">This database already had accounts in it, so no new one was
+             made &mdash; sign in with the one you already use</li>')
+      . '<li class="ok">config.php was written to <code>'
       . h((string) ($GLOBALS['__config_written_to'] ?? 'the panel folder')) . '</code></li>'
       . (str_contains((string) ($GLOBALS['__config_written_to'] ?? ''), 'nitesha-config')
           ? ''
