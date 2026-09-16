@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/migrate.php';
 
 /**
  * Shared plumbing for the JSON endpoints.
@@ -60,6 +61,13 @@ function api_guard(string $ability, bool $writes = false): array
     if ($user === null) {
         json_error('Not signed in', 401);
     }
+
+    // Bring the schema up to date here rather than relying on someone loading
+    // a particular page. Every endpoint in the panel comes through this, so a
+    // deploy that adds a column has it created by the first action taken after
+    // it, whatever that action is.
+    migrate_if_needed();
+
     if (!role_can((string) $user['role_slug'], $ability)) {
         audit_log('permission_denied', 'api', null, null, null, null, $ability,
             (int) $user['id'], $user['name']);

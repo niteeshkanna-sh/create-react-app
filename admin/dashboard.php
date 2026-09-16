@@ -11,24 +11,10 @@ $me = require_login();
 
 // Apply any migration that has not run yet.
 //
-// They used to run only from install.php, which refuses once an account
-// exists, or from a button on the content page that nobody has a reason to
-// press. So a deploy could add a column and nothing would ever create it: the
-// code shipped, the database did not, and the first sign was a feature failing
-// with a SQL error. That happened -- the vehicle photograph column was added
-// and never existed.
-//
-// migrate() records what it has applied and skips those, so the cost here is
-// one small SELECT per dashboard load. A failure is reported rather than
-// thrown: a migration that cannot run is worth knowing about, and it is not a
-// reason to refuse to show a panel that otherwise works.
-$migrationError = null;
-try {
-    migrate();
-} catch (Throwable $e) {
-    error_log('migrate on dashboard load failed: ' . $e->getMessage());
-    $migrationError = $e->getMessage();
-}
+// api_guard does this too, so by the time anything is saved the schema is
+// current whatever route was taken. Here as well because this is the page that
+// can show a failure, rather than turning it into a failed API call.
+$migrationError = migrate_if_needed();
 
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');

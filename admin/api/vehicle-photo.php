@@ -23,12 +23,16 @@ if ($vehicleId <= 0) {
     json_error('Which vehicle this belongs to was not sent.', 422);
 }
 
-// A clear sentence rather than a SQL error, for the window between a deploy
-// adding the column and the migration that creates it having run. Loading the
-// dashboard applies it, which is what the message says to do.
+// api_guard above applies any pending migration, so reaching this means one
+// genuinely failed rather than simply not having run yet.
+//
+// The previous message here said to open the Dashboard tab. That was a trap:
+// the tabs switch in JavaScript without loading the page, so following the
+// instruction exactly could never have helped.
 if (!table_has_column('vehicles', 'photo_file')) {
-    json_error('The database has not been updated for photographs yet. '
-             . 'Open the Dashboard tab once and try again.', 503);
+    json_error('The database could not be updated to store photographs. '
+             . 'Reload the page; if this keeps happening the database user may '
+             . 'not be allowed to change tables.', 503);
 }
 
 $vehicle = fetch_one('SELECT id, name, photo_file FROM vehicles WHERE id = ?', [$vehicleId]);
