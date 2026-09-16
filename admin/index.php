@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/src/csrf.php';
+require_once __DIR__ . '/src/assets.php';
 
 // Already signed in — go straight through.
 if (current_user() !== null) {
@@ -44,7 +45,7 @@ header('Referrer-Policy: same-origin');
   <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="<?= asset('admin.css') ?>">
 </head>
 <body>
 

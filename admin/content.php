@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/src/csrf.php';
+require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/content.php';
 require_once __DIR__ . '/src/migrate.php';
 require_once __DIR__ . '/src/audit.php';
@@ -105,7 +106,7 @@ function field_input(string $name, array $spec, mixed $value): void
   <title>Website content — NiteSha Cars</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>" />
-  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="<?= asset('admin.css') ?>" />
   <style>
     .c-wrap { max-width: 56rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
     .c-top { display: flex; flex-wrap: wrap; gap: 1rem; align-items: baseline; justify-content: space-between; margin-bottom: 1.25rem; }
