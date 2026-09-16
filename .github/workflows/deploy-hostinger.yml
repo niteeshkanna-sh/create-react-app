@@ -116,8 +116,14 @@ jobs:
             exit 1
           fi
 
-          echo "Login directory is not the panel. Deploying the site here:"
-          printf '%s\n' "$listing" | head -20 | sed 's/^/  /'
+          # Sorted and shown in full rather than the first 20 in whatever
+          # order the server felt like. A truncated, unsorted listing of a
+          # directory with dozens of entries answers no question you actually
+          # have -- it cost a round trip to work that out.
+          echo "Login directory is not the panel. It currently holds:"
+          printf '%s\n' "$listing" | grep -vx '\.' | sort | sed 's/^/  /'
+          echo ""
+          echo "(the website's files are written here, alongside whatever else is above)"
 
       - name: Deploy over FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
