@@ -21,7 +21,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const source = join(dirname(root), 'public_html', 'admin.niteshacars.in', 'admin');
+const source = join(dirname(root), 'admin');
 const target = join(root, 'dist', 'admin');
 
 // Never ship these. The test tooling is not a security boundary, but it is

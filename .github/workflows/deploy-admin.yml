@@ -149,7 +149,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          local-dir: ./public_html/admin.niteshacars.in/admin/
+          local-dir: ./admin/
           server-dir: ${{ steps.panel.outputs.dir }}
           dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
 
