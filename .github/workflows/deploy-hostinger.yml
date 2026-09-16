@@ -103,7 +103,27 @@ jobs:
           set -e
 
           if [ "$rc" -ne 0 ]; then
-            echo "::error::Could not list the FTP login directory, so the target is unverified."
+            # curl exit 67 is specifically "the server rejected the login", and
+            # saying so is worth the six lines: the generic message sent two
+            # runs chasing the wrong thing, because "could not list the
+            # directory" reads like a network or path problem when it is
+            # actually a username and password the host no longer accepts.
+            if [ "$rc" -eq 67 ]; then
+              echo "::error::The FTP server rejected the username and password."
+              echo ""
+              echo "The three secrets are set, they are just no longer valid --"
+              echo "an account renamed, deleted, or its password changed."
+              echo ""
+              echo "  1. hPanel -> Files -> FTP Accounts: note the hostname and"
+              echo "     username, and set a new password if you do not have it."
+              echo "  2. Check the account's directory is the website root, the"
+              echo "     folder holding index.html. This deploy writes to"
+              echo "     wherever the account lands when it logs in."
+              echo "  3. Update FTP_SERVER, FTP_USERNAME and FTP_PASSWORD under"
+              echo "     Settings -> Secrets and variables -> Actions."
+            else
+              echo "::error::Could not list the FTP login directory, so the target is unverified."
+            fi
             sed 's/^/  /' "$cfg.err" | head -5
             exit 1
           fi
@@ -148,41 +168,6 @@ jobs:
             .ftp-deploy-sync-state.json
             photos/README.md
 
-      - name: Write the panel's config.php
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          # Placing this by hand was the last manual step, and it never
-          # succeeded: two directories called admin/ look identical in a file
-          # browser, and the copy kept landing in the one the server does not
-          # serve. Generating it removes the step rather than documenting it
-          # better.
-          missing=""
-          [ -n "$DB_NAME" ]     || missing="$missing DB_NAME"
-          [ -n "$DB_USER" ]     || missing="$missing DB_USER"
-          [ -n "$DB_PASSWORD" ] || missing="$missing DB_PASSWORD"
-          if [ -n "$missing" ]; then
-            echo "::error::Missing database secrets:$missing"
-            echo ""
-            echo "Add them under Settings -> Secrets and variables -> Actions."
-            echo "The values are in the existing config.php on the server."
-            exit 1
-          fi
-
-          .github/scripts/write-admin-config.sh \
-            admin/config.php
-
-          # Proves it parses before it is uploaded. A config.php with a syntax
-          # error takes the whole panel down and says nothing about why.
-          if command -v php >/dev/null 2>&1; then
-            php -l admin/config.php
-          else
-            echo "No php on the runner; skipping the syntax check."
-          fi
-
       - name: Deploy the admin panel to /admin
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -212,11 +197,21 @@ jobs:
           # above would make each run think the other's files had vanished.
           state-name: .ftp-deploy-admin-state.json
 
-          # config.php is no longer excluded: it is generated from secrets a
-          # step above, so the deploy is now the only thing that writes it.
-          # Editing it on the server will not survive the next run.
+          # config.php is excluded, and this deploy no longer generates one.
+          #
+          # It used to: the file was written from DB_* secrets and uploaded
+          # beside the panel. That was reasonable when the panel's config could
+          # only live there, and it is now actively harmful. The panel reads
+          # nitesha-config/config.php from above the document root precisely so
+          # that a deploy cannot reach it -- but config_path() checks beside
+          # the panel FIRST, so an uploaded copy silently wins over the real
+          # one. A stale secret would then take the admin offline with
+          # "Database unavailable" on a deploy that only meant to change the
+          # website, and the working config would still be sitting there
+          # untouched and ignored.
           exclude: |
             **/.git*
             **/.git*/**
             **/.DS_Store
+            config.php
             .ftp-deploy-admin-state.json

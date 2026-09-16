@@ -237,6 +237,29 @@ body {
    reason -- the row height is decided by CSS, never by the asset.
 --------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------
+   The snake in the header turns slowly on its own centre. 18 seconds is slow
+   enough that it reads as drift rather than a spinner -- a fast rotation next
+   to the logo looks like something loading, which is the opposite of the
+   impression a header is for.
+--------------------------------------------------------------------------- */
+
+@keyframes snake-turn {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.snake-mark {
+  transform-origin: 50% 50%;
+  animation: snake-turn 18s linear infinite;
+}
+
+/* Continuous rotation is exactly the kind of motion that triggers nausea for
+   some people, and it never stops on its own. Honour the system setting. */
+@media (prefers-reduced-motion: reduce) {
+  .snake-mark { animation: none; }
+}
+
 .art-frame {
   position: relative;
   overflow: hidden;

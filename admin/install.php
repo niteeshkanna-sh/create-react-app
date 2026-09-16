@@ -17,7 +17,50 @@ declare(strict_types=1);
 require_once __DIR__ . '/src/db.php';
 require_once __DIR__ . '/src/migrate.php';
 
-const CONFIG_PATH    = __DIR__ . '/config.php';
+/**
+ * Where a new config.php should be written.
+ *
+ * It used to be __DIR__ . '/config.php', beside the panel. That is inside the
+ * document root, and the document root is rebuilt from scratch on every
+ * deploy -- so the installer's own output was erased by the next publish, and
+ * the panel came back reporting it had never been set up. It happened, and it
+ * took the admin down.
+ *
+ * config() looks for nitesha-config/config.php in each directory above the
+ * panel, so a file one level above the document root is found and is out of
+ * reach of anything that rewrites the site. That is where this writes.
+ *
+ * Beside the panel stays as the fallback for hosting where the parent
+ * directory cannot be written, because a panel that works until the next
+ * deploy beats a panel that never starts. install_config_path() says which
+ * one was used so the last screen can be honest about it.
+ */
+function install_config_dir_preferred(): string
+{
+    // __DIR__ is <docroot>/admin, so this is the directory holding the
+    // document root -- above everything a deploy replaces.
+    return dirname(__DIR__, 2) . '/nitesha-config';
+}
+
+function install_config_path(): string
+{
+    // An existing config wins wherever it is: rewriting a working install's
+    // settings into a second file would leave two, and config() would pick
+    // whichever it reached first.
+    $existing = config_path();
+    if ($existing !== null) {
+        return $existing;
+    }
+
+    $preferred = install_config_dir_preferred();
+    if (is_dir($preferred) || @mkdir($preferred, 0750, true) || is_dir($preferred)) {
+        if (is_writable($preferred)) {
+            return $preferred . '/config.php';
+        }
+    }
+
+    return __DIR__ . '/config.php';
+}
 const MIN_PHP        = '8.1';
 const MIN_PASSWORD   = 10;
 
@@ -39,9 +82,10 @@ $done   = false;
 // The presence of config.php is not enough — a half-finished attempt leaves
 // one behind. What settles it is whether anyone can sign in.
 // ---------------------------------------------------------------------------
-if (is_file(CONFIG_PATH)) {
+$existingConfig = config_path();
+if ($existingConfig !== null) {
     try {
-        $existing = require CONFIG_PATH;
+        $existing = require $existingConfig;
         config_set(is_array($existing) ? $existing : []);
         $n = (int) (fetch_one('SELECT COUNT(*) AS n FROM users')['n'] ?? 0);
         if ($n > 0) {
@@ -126,17 +170,46 @@ function install(array $form): array
         return ['Setting up the tables failed: ' . $e->getMessage()];
     }
 
+    // The config is written before the account, and that order matters.
+    //
+    // It used to be the other way round, which broke the one case this file is
+    // now most often opened for: a database that still holds everything, and a
+    // config.php that a deploy erased. create_user() then failed on the
+    // duplicate email, returned early, and write_config() never ran -- so the
+    // panel stayed dead and the installer sent you round the same loop with no
+    // way out. Writing the config first means a problem creating an account is
+    // a problem creating an account, not a panel that will not start.
+    if (!write_config($config)) {
+        return ['The database details work, but config.php could not be written to '
+              . h(dirname(install_config_path())) . '. Create it there by hand '
+              . 'from config.sample.php, using the details above.'];
+    }
+
+    // An account already in this database is the signal that the database is
+    // not new -- so this is a reconnection, not an installation, and making a
+    // second Super Admin would be wrong.
+    $existingUsers = 0;
+    try {
+        $existingUsers = (int) (fetch_one('SELECT COUNT(*) AS n FROM users')['n'] ?? 0);
+    } catch (Throwable $e) {
+        // A fresh database that has only just been migrated; treat it as empty.
+    }
+
+    if ($existingUsers > 0) {
+        $GLOBALS['__applied']  = $applied;
+        $GLOBALS['__reconnect'] = true;
+        return [];
+    }
+
     try {
         require_once __DIR__ . '/src/audit.php';
         require_once __DIR__ . '/src/auth.php';
         create_user($form['admin_name'], $form['admin_email'], $password, 'super_admin');
     } catch (Throwable $e) {
-        return ['Creating your account failed: ' . $e->getMessage()];
-    }
-
-    if (!write_config($config)) {
-        return ['Everything else worked, but config.php could not be written. '
-              . 'Create it by hand from config.sample.php, using the details above.'];
+        return ['The settings were saved, but creating your account failed: '
+              . $e->getMessage() . ' If you already have an account in this database, '
+              . 'reload this page -- the panel is configured now and should let you '
+              . 'sign in with it.'];
     }
 
     $GLOBALS['__applied'] = $applied;
@@ -158,7 +231,9 @@ function build_config(array $form): array
             'password' => (string) $form['db_pass'],
             'charset'  => 'utf8mb4',
         ],
-        'storage_path'       => dirname(__DIR__) . '/nitesha-storage',
+        // Above the document root for the same reason config.php is: anything
+        // inside it is temporary, because a deploy rebuilds it.
+        'storage_path'       => dirname(__DIR__, 2) . '/nitesha-storage',
         'public_site_origin' => $origins,
         // Hostinger serves these domains over HTTPS, and the session cookie
         // carries the sign-in, so it should never travel in the clear.
@@ -169,20 +244,36 @@ function build_config(array $form): array
 
 function write_config(array $config): bool
 {
+    $target = install_config_path();
+
     $php = "<?php\n\n// Written by install.php. Holds the database password —\n"
          . "// keep it out of version control and off any public URL.\n\n"
          . 'return ' . var_export($config, true) . ";\n";
 
-    if (@file_put_contents(CONFIG_PATH, $php) === false) {
+    $dir = dirname($target);
+    if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
         return false;
     }
-    @chmod(CONFIG_PATH, 0640);
+
+    if (@file_put_contents($target, $php) === false) {
+        return false;
+    }
+    @chmod($target, 0640);
+
+    $GLOBALS['__config_written_to'] = $target;
     return true;
 }
 
 function environment_checks(): array
 {
-    $writable = is_writable(__DIR__);
+    // The directory that matters is the one write_config() will use, which is
+    // normally above the document root -- not this one. Checking __DIR__ told
+    // people the install would work when the file was going somewhere else
+    // entirely.
+    $target  = install_config_path();
+    $dir     = dirname($target);
+    $writable = is_dir($dir) ? is_writable($dir) : is_writable(dirname($dir));
+    $aboveRoot = $dir !== __DIR__;
     return [
         ['label' => 'PHP ' . MIN_PHP . ' or newer',
          'ok'    => version_compare(PHP_VERSION, MIN_PHP, '>='),
@@ -192,10 +283,13 @@ function environment_checks(): array
          'note'  => extension_loaded('pdo_mysql') ? 'Available' : 'Enable it in hPanel → PHP Configuration'],
         ['label' => 'JSON support',
          'ok'    => extension_loaded('json'), 'note' => ''],
-        ['label' => 'This folder is writable',
+        ['label' => 'Somewhere to keep config.php',
          'ok'    => $writable,
-         'note'  => $writable ? 'config.php can be written for you'
-                              : 'You will need to create config.php by hand'],
+         'note'  => !$writable
+             ? 'You will need to create ' . $dir . '/config.php by hand'
+             : ($aboveRoot
+                 ? 'Will be written to ' . $dir . ', above the website folder, where a deploy cannot erase it'
+                 : 'Will be written beside the panel. A deploy that rebuilds the website folder will erase it')],
         ['label' => 'sql/ files present',
          'ok'    => (glob(__DIR__ . '/sql/*.sql') ?: []) !== [],
          'note'  => 'The table definitions'],
@@ -241,13 +335,27 @@ function page(string $title, string $body): void
 // ---------------------------------------------------------------------------
 if ($done) {
     $applied = $GLOBALS['__applied'] ?? [];
-    page('Ready', '
-      <p class="install-note">The panel is set up. Sign in with the account you
-      just made.</p>
+    page('Ready',
+      '<p class="install-note">The panel is set up. '
+      . (empty($GLOBALS['__reconnect'])
+          ? 'Sign in with the account you just made.'
+          : 'Your existing data and accounts were already there and were left alone.')
+      . '</p>
       <ul class="install-checks">'
       . ($applied === [] ? '' : '<li class="ok">Tables created (' . h(implode(', ', $applied)) . ')</li>')
-      . '<li class="ok">Your Super Admin account was created</li>
-         <li class="ok">config.php was written</li>
+      . (empty($GLOBALS['__reconnect'])
+          ? '<li class="ok">Your Super Admin account was created</li>'
+          : '<li class="ok">This database already had accounts in it, so no new one was
+             made &mdash; sign in with the one you already use</li>')
+      . '<li class="ok">config.php was written to <code>'
+      . h((string) ($GLOBALS['__config_written_to'] ?? 'the panel folder')) . '</code></li>'
+      . (str_contains((string) ($GLOBALS['__config_written_to'] ?? ''), 'nitesha-config')
+          ? ''
+          : '<li class="warn">That is inside the website folder. A deploy that rebuilds the
+             site will erase it and the panel will report it has never been set up. Move it
+             to a folder named <code>nitesha-config</code> above the website folder when you
+             can &mdash; the panel looks there first.</li>')
+      . '
       </ul>
       <p style="margin-top:18px"><a class="btn btn-primary btn-block" href="index.php">Sign in</a></p>
       <p class="install-note" style="margin-top:18px"><strong>One last step:</strong>
