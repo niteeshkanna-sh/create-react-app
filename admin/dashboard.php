@@ -3,10 +3,32 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
+require_once __DIR__ . '/src/migrate.php';
 
 // Anyone reaching this page must already be signed in; require_login sends
 // them to the sign-in form otherwise.
 $me = require_login();
+
+// Apply any migration that has not run yet.
+//
+// They used to run only from install.php, which refuses once an account
+// exists, or from a button on the content page that nobody has a reason to
+// press. So a deploy could add a column and nothing would ever create it: the
+// code shipped, the database did not, and the first sign was a feature failing
+// with a SQL error. That happened -- the vehicle photograph column was added
+// and never existed.
+//
+// migrate() records what it has applied and skips those, so the cost here is
+// one small SELECT per dashboard load. A failure is reported rather than
+// thrown: a migration that cannot run is worth knowing about, and it is not a
+// reason to refuse to show a panel that otherwise works.
+$migrationError = null;
+try {
+    migrate();
+} catch (Throwable $e) {
+    error_log('migrate on dashboard load failed: ' . $e->getMessage());
+    $migrationError = $e->getMessage();
+}
 
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
@@ -26,6 +48,13 @@ header('Referrer-Policy: same-origin');
   <link rel="stylesheet" href="<?= asset('admin.css') ?>" />
 </head>
 <body>
+<?php if ($migrationError !== null): ?>
+  <div class="migration-warning">
+    <strong>The database is not fully up to date.</strong>
+    Some newer features may fail until this is resolved.
+    <span><?= e($migrationError) ?></span>
+  </div>
+<?php endif; ?>
 
   <!-- ===== Dashboard ===== -->
   <div class="dashboard" id="dashboard">

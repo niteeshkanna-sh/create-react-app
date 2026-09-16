@@ -57,11 +57,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 // edit in the panel take long to show up.
 header('Cache-Control: public, max-age=300');
 
+// Named only when it exists. A deploy adds the column, but the migration that
+// creates it does not run until someone opens the panel -- and this endpoint
+// serves the public website in the meantime. Selecting it unconditionally
+// meant a change made inside the admin could empty the fleet on the live site.
+$hasPhoto = table_has_column('vehicles', 'photo_file');
+$photoColumn = $hasPhoto ? 'v.photo_file,' : "NULL AS photo_file,";
+
 $rows = fetch_all(
     "SELECT v.id,
             v.name,
             v.brand,
-            v.photo_file,
+            $photoColumn
             v.body_type,
             v.fuel,
             v.transmission,

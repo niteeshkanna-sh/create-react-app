@@ -23,6 +23,14 @@ if ($vehicleId <= 0) {
     json_error('Which vehicle this belongs to was not sent.', 422);
 }
 
+// A clear sentence rather than a SQL error, for the window between a deploy
+// adding the column and the migration that creates it having run. Loading the
+// dashboard applies it, which is what the message says to do.
+if (!table_has_column('vehicles', 'photo_file')) {
+    json_error('The database has not been updated for photographs yet. '
+             . 'Open the Dashboard tab once and try again.', 503);
+}
+
 $vehicle = fetch_one('SELECT id, name, photo_file FROM vehicles WHERE id = ?', [$vehicleId]);
 if ($vehicle === null) {
     json_error('That vehicle no longer exists.', 404);
