@@ -17,12 +17,12 @@
 name: Deploy site to Hostinger
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'my-app/**'
-      - 'public_html/admin.niteshacars.in/admin/**'
-      - '.github/workflows/deploy-hostinger.yml'
+  # Push triggers are removed. These workflows upload over FTP to a
+  # directory Hostinger's own Git deployment clears on every publish, so
+  # everything they wrote was erased by the next merge -- and each run
+  # left another stray folder behind on the way. They are kept, manual
+  # only, because the login-directory listing is still the one reliable
+  # way to see what is actually on the server.
   workflow_dispatch:
     inputs:
       dry_run:

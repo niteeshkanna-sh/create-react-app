@@ -27,14 +27,12 @@
 name: Deploy admin panel
 
 on:
-  push:
-    branches: [main]
-    paths:
-      # Deliberately not triggering on this file. Otherwise merging the
-      # workflow itself fires a real deploy on the spot -- the dry run is
-      # only reachable through workflow_dispatch, so the very first run
-      # would write to the server before anyone had seen what it would do.
-      - 'public_html/admin.niteshacars.in/admin/**'
+  # Push triggers are removed. These workflows upload over FTP to a
+  # directory Hostinger's own Git deployment clears on every publish, so
+  # everything they wrote was erased by the next merge -- and each run
+  # left another stray folder behind on the way. They are kept, manual
+  # only, because the login-directory listing is still the one reliable
+  # way to see what is actually on the server.
   workflow_dispatch:
     inputs:
       dry_run:
