@@ -8,6 +8,29 @@
 # its contents, which is how the layout of a panel gets mapped.
 Options -Indexes
 
+# Undo the document root's caching rule for this folder.
+#
+# The site's build assets carry a content hash in the filename, so a changed
+# file is a changed URL and the root .htaccess caches every .js and .css for a
+# year as immutable. Correct for those. Fatal for these: admin.js, admin.css,
+# api.js and car-data.js have fixed names, so a browser that has them once
+# would never ask again -- and every change to the panel would reach nobody who
+# had ever used it, with no error and nothing to notice.
+#
+# Revalidated on each load instead. It costs one conditional request per file
+# and it is the difference between shipping a change and appearing to.
+<IfModule mod_expires.c>
+  <FilesMatch "\.(js|css)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 0 seconds"
+  </FilesMatch>
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
 <IfModule mod_authz_core.c>
     # config.php holds the database password. PHP executes it rather than
     # printing it, so this changes nothing while PHP is healthy -- it matters

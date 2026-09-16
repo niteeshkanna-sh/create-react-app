@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/src/csrf.php';
+require_once __DIR__ . '/src/assets.php';
 
 // Anyone reaching this page must already be signed in; require_login sends
 // them to the sign-in form otherwise.
@@ -22,7 +23,7 @@ header('Referrer-Policy: same-origin');
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
-  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="<?= asset('admin.css') ?>" />
 </head>
 <body>
 
@@ -751,9 +752,9 @@ header('Referrer-Policy: same-origin');
     </div>
   </div>
 
-  <script src="api.js"></script>
-  <script src="car-data.js"></script>
-  <script src="booking-data.js"></script>
-  <script src="admin.js"></script>
+  <script src="<?= asset('api.js') ?>"></script>
+  <script src="<?= asset('car-data.js') ?>"></script>
+  <script src="<?= asset('booking-data.js') ?>"></script>
+  <script src="<?= asset('admin.js') ?>"></script>
 </body>
 </html>
