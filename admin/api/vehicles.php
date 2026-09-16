@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/http.php';
+require_once __DIR__ . '/../src/vehicle-photos.php';
 
 /**
  * Vehicles.
@@ -254,6 +255,7 @@ function present_vehicle(array $row): array
         'seats'            => (int) $row['seats'],
         'model_year'       => (int) $row['model_year'],
         'colour'           => $row['colour'],
+        'photo'            => vehicle_photo_url($row['photo_file'] ?? null),
         'status'           => $row['status'],
         'current_km'       => (int) $row['current_km'],
         'rate_daily'       => isset($row['rate_daily']) ? (float) $row['rate_daily'] : 0.0,

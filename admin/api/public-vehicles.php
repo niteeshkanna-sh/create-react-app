@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/http.php';
+require_once __DIR__ . '/../src/vehicle-photos.php';
 
 /**
  * The fleet, for the public website.
@@ -60,6 +61,7 @@ $rows = fetch_all(
     "SELECT v.id,
             v.name,
             v.brand,
+            v.photo_file,
             v.body_type,
             v.fuel,
             v.transmission,
@@ -96,6 +98,9 @@ foreach ($rows as $row) {
         'brand'         => (string) $row['brand'],
         'name'          => (string) $row['name'],
         'bodyType'      => (string) $row['body_type'],
+        // Relative to the panel, which is where the site asks for vehicles, so
+        // it resolves the same way whatever the site is served from.
+        'photo'         => vehicle_photo_url($row['photo_file'] ?? null),
         'fuel'          => (string) $row['fuel'],
         'transmission'  => (string) $row['transmission'],
         'seats'         => (int) $row['seats'],

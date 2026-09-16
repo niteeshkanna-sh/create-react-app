@@ -455,6 +455,23 @@ header('Referrer-Policy: same-origin');
           <input type="number" id="carCurrentKm" required min="0" placeholder="4200" />
         </div>
 
+        <!-- The photograph is uploaded after the vehicle is saved, because it
+             is stored against a vehicle id and a new vehicle has none yet. The
+             form hides that: pick a file, press Save, and both happen. -->
+        <div class="field-group">
+          <label for="carPhoto">Photograph</label>
+          <div class="photo-field">
+            <div class="photo-preview" id="carPhotoPreview" hidden>
+              <img alt="" id="carPhotoPreviewImg" />
+              <button type="button" class="btn btn-danger btn-sm" id="carPhotoRemove">Remove</button>
+            </div>
+            <input type="file" id="carPhoto" accept="image/jpeg,image/png,image/webp,image/avif" />
+            <p class="field-note">Shown on the website's fleet cards. JPG, PNG, WebP or AVIF,
+            up to 6&nbsp;MB. A landscape photo of the whole car works best &mdash; it is
+            cropped to a wide rectangle.</p>
+          </div>
+        </div>
+
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="carModalCancel">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Vehicle</button>

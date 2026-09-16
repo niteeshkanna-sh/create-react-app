@@ -65,7 +65,9 @@ function renderCarAdminGrid() {
 
   wrap.innerHTML = cars.map((car) => `
     <div class="car-admin-card" data-id="${car.id}">
-      <div class="admin-car-thumb">${carIllustrationSVG(car.bodyType, car.color)}</div>
+      <div class="admin-car-thumb">${car.photo
+        ? `<img src="${car.photo}" alt="" loading="lazy">`
+        : carIllustrationSVG(car.bodyType, car.color)}</div>
       <div class="row1">
         <span class="name">${car.name}</span>
         <span class="status-badge status-badge-${car.status.replace(' ', '')}">${car.status}</span>
@@ -148,8 +150,49 @@ function openCarModal(car) {
   document.getElementById('carExtraKmRate').value = car ? car.extraKmRate : '';
   document.getElementById('carSecurityDeposit').value = car ? car.securityDeposit : '';
   document.getElementById('carCurrentKm').value = car ? car.currentKm : 0;
+
+  // Reset by hand: form.reset() clears the file input but not the preview, and
+  // a preview left from the last vehicle edited would be a picture of the
+  // wrong car sitting above the right one's details.
+  photoRemoved = false;
+  document.getElementById('carPhoto').value = '';
+  showCarPhoto(car && car.photo ? car.photo : null);
+
   carModalOverlay.hidden = false;
 }
+
+// Set when Remove is pressed, so Save knows to clear the photograph even
+// though nothing was chosen to replace it.
+let photoRemoved = false;
+
+function showCarPhoto(url) {
+  const preview = document.getElementById('carPhotoPreview');
+  const img = document.getElementById('carPhotoPreviewImg');
+  if (url) {
+    img.src = url;
+    preview.hidden = false;
+  } else {
+    img.removeAttribute('src');
+    preview.hidden = true;
+  }
+}
+
+document.getElementById('carPhotoRemove').addEventListener('click', () => {
+  // Nothing is deleted until Save. Pressing Remove and then Cancel should
+  // leave the vehicle exactly as it was.
+  photoRemoved = true;
+  document.getElementById('carPhoto').value = '';
+  showCarPhoto(null);
+});
+
+// Show the chosen file straight away rather than after saving, so a wrong
+// picture is obvious before it is committed to anything.
+document.getElementById('carPhoto').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  photoRemoved = false;
+  showCarPhoto(URL.createObjectURL(file));
+});
 
 function closeCarModal() {
   carModalOverlay.hidden = true;
@@ -195,7 +238,16 @@ carForm.addEventListener('submit', async (e) => {
   try {
     // The server validates and stores; the panel re-reads rather than
     // guessing what was saved, so what is shown is what is recorded.
-    await saveVehicle(carData);
+    const saved = await saveVehicle(carData);
+
+    // Second, and only now: a photograph is stored against a vehicle id, and a
+    // vehicle being created has none until the save above returns one.
+    const chosen = document.getElementById('carPhoto').files[0] || null;
+    const vehicleId = saved && saved.id ? saved.id : carData.id;
+    if (vehicleId && (chosen || photoRemoved)) {
+      await saveVehiclePhoto(vehicleId, chosen);
+    }
+
     closeCarModal();
     renderCarAdminGrid();
     renderOverview();
