@@ -85,14 +85,27 @@ ErrorDocument 404 /404.html
 # a request for /.git/config has a filename of "config" and sails straight
 # past it. This blocks the paths instead.
 #
-# It is here because a .git directory was found in the web root of this very
-# server. A served .git is not a tidiness problem -- standard tooling
-# reconstructs the entire repository from it, and this repository's history
-# contains a database password. The directory should not be on a web server at
-# all; this is the second line of defence for the day it comes back.
+# A served .git is not a tidiness problem -- standard tooling reconstructs the
+# entire repository from it, and this repository's history contains a database
+# password from before it was moved out.
+#
+# This is no longer a precaution. Hostinger's Git deployment clones the whole
+# repository into the document root, so .git is there on every deploy by
+# design, and cannot be removed without giving up automatic deploys. These
+# rules are what stands between it and the internet, which is also why the
+# password still needs rotating in hPanel rather than being considered handled.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteRule (^|/)\.(git|svn|hg|env|ssh)(/|$) - [F,L]
+
+  # .github is not caught above: the pattern needs a slash or the end of the
+  # path straight after "git", and this has "hub" there instead.
+  RewriteRule (^|/)\.github(/|$) - [F,L]
+
+  # The rest of the repository, which now sits in the web root beside the
+  # site. FilesMatch cannot express these because it matches one filename at a
+  # time, and what needs blocking here is whole trees.
+  RewriteRule ^(my-app|scripts|assets-original)(/|$) - [F,L]
 </IfModule>
 
 # Source and build files are not content either. None of these should ever
@@ -101,6 +114,16 @@ ErrorDocument 404 /404.html
 <FilesMatch "(^|\.)(env|sql|log|bak|orig|ini)$|^(package(-lock)?\.json|composer\.(json|lock)|.*\.config\.(js|ts|mjs|cjs))$">
   Require all denied
 </FilesMatch>
+
+# Documentation, which the deploy now puts in the web root: README.md,
+# CODE_OF_CONDUCT.md, LICENSE, and the note in photos/ describing how to name a
+# car photograph. None of it is secret and none of it is for visitors.
+<FilesMatch "\.md$">
+  Require all denied
+</FilesMatch>
+<Files "LICENSE">
+  Require all denied
+</Files>
 
 # The directory listing is off by default on most hosts, but not all, and an
 # open listing of the web root is a map of everything on the server.
