@@ -11,6 +11,11 @@ import { Reveal } from './Reveal';
  * the file is missing the section falls back to the navy beneath it and still
  * looks deliberate, where an <img> would leave a broken-image icon on a live
  * page. It is decorative either way: every word here is in the markup.
+ *
+ * The image is a stylised car on a mountain road, not a photograph of the
+ * fleet, and it is used here precisely because this band is scene-setting
+ * rather than evidence. It would be wrong on a service card, where a picture
+ * is read as "this is the vehicle you would get".
  */
 export function OpenRoad() {
   const c = home.openRoad;
@@ -19,7 +24,7 @@ export function OpenRoad() {
     <section className="relative isolate overflow-hidden bg-navy text-white">
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[url('/open-road.jpg')] bg-cover bg-center"
+        className="absolute inset-0 bg-[url('/open-road.webp')] bg-cover bg-center"
       />
       <div aria-hidden="true" className="road-scrim absolute inset-0" />
 
