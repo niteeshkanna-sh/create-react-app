@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { home } from '../content';
+import { useHome } from '../content';
 import { Hero } from '../components/Hero';
 import { HowItWorks } from '../components/HowItWorks';
 import { OpenRoad } from '../components/OpenRoad';
@@ -9,6 +9,7 @@ import { Highlights } from '../components/Highlights';
 import { WhyUs } from '../components/WhyUs';
 
 export function Home() {
+  const home = useHome();
   const c = home.closingCta;
 
   return (

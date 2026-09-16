@@ -1,10 +1,11 @@
-import { home } from '../content';
+import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
 
 const SCENES = ['step-1', 'step-2', 'step-3'] as const;
 
 export function HowItWorks() {
+  const home = useHome();
   const { heading, steps, noteLead, noteBody } = home.howItWorks;
 
   return (

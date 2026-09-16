@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { home } from '../content';
+import { useHome } from '../content';
 import { Reveal } from './Reveal';
 
 /**
@@ -18,6 +18,7 @@ import { Reveal } from './Reveal';
  * is read as "this is the vehicle you would get".
  */
 export function OpenRoad() {
+  const home = useHome();
   const c = home.openRoad;
 
   return (

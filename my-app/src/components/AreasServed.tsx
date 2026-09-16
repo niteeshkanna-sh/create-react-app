@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
-import { home } from '../content';
+import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
 
@@ -16,6 +16,7 @@ import { SectionArt } from './art/SectionArt';
  * one service area and the reader another.
  */
 export function AreasServed() {
+  const home = useHome();
   const { heading, intro, footnoteLead, footnoteLinkLabel, footnoteTail } =
     home.areasServed;
 

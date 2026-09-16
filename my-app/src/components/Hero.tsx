@@ -1,6 +1,7 @@
-import { home } from '../content';
+import { useHome } from '../content';
 
 export function Hero() {
+  const home = useHome();
   const h = home.hero;
 
   return (
