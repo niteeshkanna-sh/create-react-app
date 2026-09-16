@@ -24,7 +24,7 @@ const DEFAULTS = join(app, 'src/content/defaults.json');
 const LIVE = join(app, 'src/content/live.json');
 const ADMIN_COPY = join(
   app,
-  '../public_html/admin.niteshacars.in/admin/content-defaults.json',
+  '../admin/content-defaults.json',
 );
 
 const API =

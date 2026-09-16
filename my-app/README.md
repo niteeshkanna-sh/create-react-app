@@ -89,7 +89,7 @@ CORS rejection, or the endpoint not uploaded yet. It is empty, so the site
 degrades to its "ask us what's available" state rather than showing an error.
 
 The endpoint lives in this repo at
-`public_html/admin.niteshacars.in/admin/api/public-vehicles.php` and reaches the
+`admin/api/public-vehicles.php` and reaches the
 server through the admin deploy workflow.
 
 Note the two paths are not the same shape. That repo folder maps onto the

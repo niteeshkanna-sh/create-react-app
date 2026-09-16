@@ -173,12 +173,12 @@ jobs:
           fi
 
           .github/scripts/write-admin-config.sh \
-            public_html/admin.niteshacars.in/admin/config.php
+            admin/config.php
 
           # Proves it parses before it is uploaded. A config.php with a syntax
           # error takes the whole panel down and says nothing about why.
           if command -v php >/dev/null 2>&1; then
-            php -l public_html/admin.niteshacars.in/admin/config.php
+            php -l admin/config.php
           else
             echo "No php on the runner; skipping the syntax check."
           fi
@@ -190,7 +190,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          local-dir: ./public_html/admin.niteshacars.in/admin/
+          local-dir: ./admin/
           server-dir: ./admin/
           dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
 

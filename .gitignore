@@ -24,4 +24,4 @@ yarn-error.log*
 
 # Live admin panel config. Holds real database credentials and must never be
 # committed; config.sample.php is the template to copy on a new server.
-public_html/admin.niteshacars.in/admin/config.php
+admin/config.php
