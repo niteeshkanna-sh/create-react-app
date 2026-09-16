@@ -21,6 +21,7 @@ on:
     branches: [main]
     paths:
       - 'my-app/**'
+      - 'public_html/admin.niteshacars.in/admin/**'
       - '.github/workflows/deploy-hostinger.yml'
   workflow_dispatch:
     inputs:
@@ -146,3 +147,39 @@ jobs:
             **/.DS_Store
             .ftp-deploy-sync-state.json
             photos/README.md
+
+      - name: Deploy the admin panel to /admin
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./public_html/admin.niteshacars.in/admin/
+          server-dir: ./admin/
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+
+          # deploy-admin.yml refuses to write anywhere it cannot already find
+          # config.php, which is the right rule for finding a panel that exists
+          # somewhere unknown -- it is what stopped three deploys landing in
+          # folders nobody served. It cannot create a panel in a new place,
+          # though, and that is what this step is for: admin/ sits directly
+          # under a login directory we have now positively identified as the
+          # web root, so there is no unknown left for that rule to guard.
+          #
+          # config.php is still excluded and still has to be put there by hand
+          # once. It holds the database password, it is gitignored, and it is
+          # the one file no deploy has ever written -- which is exactly why it
+          # can be trusted as the panel's fingerprint.
+          dangerous-clean-slate: false
+
+          # State is kept per-folder. Sharing one file with the site deploy
+          # above would make each run think the other's files had vanished.
+          state-name: .ftp-deploy-admin-state.json
+
+          exclude: |
+            config.php
+            **/.git*
+            **/.git*/**
+            **/.DS_Store
+            .ftp-deploy-admin-state.json
