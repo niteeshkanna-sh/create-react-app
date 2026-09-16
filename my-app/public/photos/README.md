@@ -41,3 +41,32 @@ of photographs still gives a complete-looking site.
 - **Keep them under about 500 KB each.** Export as `.webp` at quality 80 if
   you can; a 4 MB phone photo will load slowly on mobile data, which is how
   most of your visitors arrive.
+
+## Photographs of individual cars
+
+The fleet cards on the home page and on `/cars` look for a picture of each
+vehicle here, and fall back to the drawing when there is not one. The name of
+the file is the only thing that links it to the car — nothing to register, and
+no code to change.
+
+Three names are tried for each car, most specific first:
+
+| File                             | Used for                                          |
+| -------------------------------- | ------------------------------------------------- |
+| `car-maruti-suzuki-swift.webp`   | That exact car — its brand and model in the panel  |
+| `car-swift.webp`                 | Any Swift, whoever makes it                        |
+| `car-suv.webp`                   | Any SUV that has no picture of its own             |
+
+The name comes straight from the panel: take the **Brand** and the **Listing
+name**, lowercase them, and put a hyphen wherever there is a space. `Maruti
+Suzuki` + `Swift` becomes `car-maruti-suzuki-swift`. Change a car's name in the
+panel and the filename has to change with it.
+
+The four body-type files — `car-hatchback`, `car-sedan`, `car-suv`, `car-muv` —
+are the quickest way to get a real photograph onto every card: four files, and
+nothing is left as a drawing. Photograph the actual cars later and drop them in
+one at a time; each one takes over its own card as it arrives.
+
+These are card headers rather than banners, so they crop to 16:10. About
+1200px wide is plenty, and the same shooting notes above apply — especially the
+one about number plates.

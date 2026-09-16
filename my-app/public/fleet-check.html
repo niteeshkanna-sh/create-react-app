@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Fleet check</title>
+<!--
+  Why this page exists.
+
+  When a car added in the admin panel does not appear on the website, there are
+  six different reasons it can happen and they look identical from the outside:
+  the site shows "Ask us what's available" either way. The site already logs
+  which one it hit, but it logs to the browser's developer console, which is
+  not somewhere the person who owns the business is ever going to look.
+
+  So this asks the same question the website asks, and says in plain English
+  what came back and what to do about it. It is a real file in the web root,
+  so it is served whatever else is broken -- including the case where the
+  whole /admin folder is missing, which is exactly when a diagnostic living
+  inside /admin would be useless.
+
+  noindex because this is for the owner, not for Google.
+-->
+<style>
+  :root {
+    --bg: #FAF7F2; --card: #fff; --ink: #1A2233; --dim: #5C5348;
+    --line: #E7E0D6; --ok: #2F6B4F; --bad: #B3261E; --warn: #8A5A00;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--dim); margin: 0 0 24px; }
+  .check {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 14px;
+  }
+  .check h2 { font-size: 1rem; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
+  .dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); } .dot.warn { background: var(--warn); }
+  .url { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; color: var(--dim); word-break: break-all; }
+  .verdict { margin: 10px 0 0; }
+  .fix { margin: 10px 0 0; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 0.93rem; }
+  .fix strong { display: block; margin-bottom: 2px; }
+  pre {
+    margin: 10px 0 0; padding: 10px 12px; background: #2B2A28; color: #F2EDE6;
+    border-radius: 10px; overflow-x: auto; font-size: 0.78rem; line-height: 1.5;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Fleet check</h1>
+  <p class="sub">Asks the website's own question and reports what the server said.</p>
+  <div id="out"></div>
+</main>
+
+<script>
+(function () {
+  var out = document.getElementById('out');
+
+  // Same rule the site uses: the panel sits under /admin on this host.
+  var PANEL = location.origin + '/admin';
+  var ENDPOINT = PANEL + '/api/public-vehicles.php';
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function card(title, url) {
+    var c = el('div', 'check');
+    var h = el('h2');
+    var dot = el('span', 'dot');
+    h.appendChild(dot);
+    h.appendChild(document.createTextNode(title));
+    c.appendChild(h);
+    if (url) c.appendChild(el('p', 'url', url));
+    out.appendChild(c);
+    return {
+      node: c,
+      mark: function (state) { dot.className = 'dot ' + state; },
+      say: function (text) { c.appendChild(el('p', 'verdict', text)); },
+      fix: function (heading, text) {
+        var f = el('div', 'fix');
+        f.appendChild(el('strong', null, heading));
+        f.appendChild(document.createTextNode(text));
+        c.appendChild(f);
+      },
+      raw: function (text) { c.appendChild(el('pre', null, text)); },
+      table: function (rows) {
+        var t = el('table');
+        var head = t.insertRow();
+        ['Vehicle', 'Body', 'Per day'].forEach(function (label) {
+          var th = document.createElement('th');
+          th.textContent = label;
+          head.appendChild(th);
+        });
+        rows.forEach(function (r) {
+          var tr = t.insertRow();
+          tr.insertCell().textContent = r.brand + ' ' + r.name;
+          tr.insertCell().textContent = r.bodyType;
+          tr.insertCell().textContent = '₹' + r.rateDaily;
+        });
+        c.appendChild(t);
+      }
+    };
+  }
+
+  // A body can be a 200-page of HTML, a one-line PHP error, or JSON. Showing
+  // the start of it verbatim is what makes the difference obvious.
+  function snippet(text) {
+    var t = (text || '').trim();
+    return t.length > 500 ? t.slice(0, 500) + '…' : (t || '(empty response)');
+  }
+
+  function run() {
+    var c = card('The website asks the panel for the fleet', ENDPOINT);
+
+    fetch(ENDPOINT, { headers: { accept: 'application/json' } })
+      .then(function (res) {
+        return res.text().then(function (text) { return { res: res, text: text }; });
+      })
+      .then(function (r) {
+        var status = r.res.status;
+        var type = (r.res.headers.get('content-type') || '').toLowerCase();
+        c.say('The server answered ' + status + ' ' + r.res.statusText + ', as ' + (type || 'no stated type') + '.');
+
+        if (status === 404) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          c.fix('The panel is not at /admin on this server.',
+            'The website is being served from a folder that has no admin folder in it. ' +
+            'Open ' + PANEL + '/ in a new tab — if that is also a "page not found", the panel ' +
+            'was never published to the same folder as the website, and that is the whole problem. ' +
+            'Everything else here is fine.');
+          return;
+        }
+
+        if (status >= 500 || /not set up yet/i.test(r.text) || /database unavailable/i.test(r.text)) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          if (/not set up yet/i.test(r.text)) {
+            c.fix('The panel cannot find its config file.',
+              'config.php is missing. It should be in a folder named nitesha-config, one level ' +
+              'above the website folder, so that publishing the site does not wipe it.');
+          } else if (/database unavailable/i.test(r.text)) {
+            c.fix('The panel found its config but the database refused it.',
+              'The database name, user or password in config.php does not match what the host has. ' +
+              'Check them in hPanel under Databases.');
+          } else {
+            c.fix('The panel hit a server error.',
+              'The text above is what PHP said. If it is blank, the error log in hPanel under ' +
+              'Advanced → PHP Error Log will have the reason.');
+          }
+          return;
+        }
+
+        if (type.indexOf('application/json') === -1) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          c.fix('That is not JSON, so PHP is not running this file.',
+            'The server handed back the file itself, or the website’s "page not found" page, ' +
+            'instead of running it. That usually means the rewrite rule that lets /admin through ' +
+            'is missing from .htaccess, or PHP is switched off for this folder.');
+          return;
+        }
+
+        var body;
+        try {
+          body = JSON.parse(r.text);
+        } catch (e) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          c.fix('The response claimed to be JSON but would not parse.',
+            'Usually a PHP notice or warning printed before the real output. The text above shows it.');
+          return;
+        }
+
+        if (!body.ok || !Array.isArray(body.vehicles)) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          c.fix('The panel answered, but not with a fleet.', 'This is the raw reply.');
+          return;
+        }
+
+        if (body.vehicles.length === 0) {
+          c.mark('warn');
+          c.fix('The panel is working. It has no cars to show.',
+            'The website only lists a car when its status is Available and it has a rate card ' +
+            'dated today or earlier. A car that is Booked, On Rental, under Maintenance or ' +
+            'Inactive is deliberately hidden, so it is never advertised when it cannot be given ' +
+            'out. Open Vehicles in the panel and check the status and the daily rate on each car.');
+          return;
+        }
+
+        c.mark('ok');
+        c.say('The panel returned ' + body.vehicles.length +
+          (body.vehicles.length === 1 ? ' car.' : ' cars.') +
+          ' These are exactly what the website should be showing.');
+        c.table(body.vehicles);
+        c.fix('If the website still shows none of these,',
+          'it is holding an old copy of the page. Reload with Ctrl+Shift+R (Cmd+Shift+R on a Mac).');
+      })
+      .catch(function (err) {
+        c.mark('bad');
+        c.fix('The request never completed.',
+          'The browser could not reach ' + ENDPOINT + ' at all — ' + (err && err.message ? err.message : 'no reason given') +
+          '. That is a dead host, a certificate the browser refuses, or no internet on this device. ' +
+          'Open that address directly in a new tab to see what it says.');
+      });
+  }
+
+  run();
+})();
+</script>
+</body>
+</html>

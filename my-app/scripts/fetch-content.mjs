@@ -27,9 +27,18 @@ const ADMIN_COPY = join(
   '../admin/content-defaults.json',
 );
 
+// The panel used to live on its own subdomain, and this still pointed there
+// long after the move. admin.niteshacars.in has no certificate, so every build
+// silently failed this fetch and shipped the defaults -- meaning nothing typed
+// into "Website content" in the panel ever reached the site, and nothing said
+// so louder than one line in a build log. The panel is part of the site now,
+// so the address comes from the same place the canonical URLs do.
+const { site } = JSON.parse(
+  await readFile(join(app, 'src/data/seo.json'), 'utf8'),
+);
+
 const API =
-  process.env.CONTENT_API ??
-  'https://admin.niteshacars.in/api/public-content.php';
+  process.env.CONTENT_API ?? `${site.origin}/admin/api/public-content.php`;
 
 const TIMEOUT_MS = 10_000;
 

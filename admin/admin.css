@@ -113,11 +113,24 @@ button { font-family: inherit; }
 .admin-tab:not(.active) .tab-count { background: var(--bg); color: var(--ink-dim); }
 
 .panel-header {
-  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px;
-  margin-bottom: 22px;
+  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px;
 }
-.panel-header h2 { font-size: 1.4rem; margin-bottom: 4px; }
-.panel-header p { color: var(--ink-dim); font-size: 0.88rem; }
+/* Heading and description on one line. They were stacked, which cost a whole
+   line of height at the top of every panel for a sentence that is context
+   rather than content. */
+.panel-header > div {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0;
+}
+.panel-header h2 { font-size: 1.15rem; margin-bottom: 0; }
+/* A quiet link rather than a second button: it sits beside "+ Add Vehicle",
+   and two filled buttons would compete for the same glance. */
+.panel-header-link {
+  align-self: center; font-size: 0.85rem; font-weight: 600;
+  color: var(--ink-dim); text-decoration: underline; text-underline-offset: 3px;
+}
+.panel-header-link:hover { color: var(--primary); }
+.panel-header p { color: var(--ink-dim); font-size: 0.84rem; }
 
 /* ---------- Car admin grid ---------- */
 .car-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
@@ -143,20 +156,34 @@ button { font-family: inherit; }
 }
 
 /* ---------- Dashboard stats ---------- */
-.stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; }
-.stat-grid-3 { grid-template-columns: repeat(3, 1fr); margin-bottom: 24px; }
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 10px; margin-bottom: 18px;
+}
+.stat-grid-3 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: 16px; }
 .stat-card {
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 18px; display: flex; flex-direction: column; gap: 6px;
+  padding: 11px 13px; display: flex; flex-direction: column; gap: 3px;
 }
-.stat-label { font-size: 0.78rem; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-.stat-value { font-size: 1.5rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* --ink-faint measures 3.35:1 on white, under the 4.5:1 needed for text this
+   small, and it was already being used at 0.78rem. Shrinking it further would
+   have made a failing contrast worse, so the label moves to --ink-dim at
+   7.54:1. */
+.stat-label { font-size: 0.72rem; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+/* margin-top:auto: grid stretches every card in a row to the tallest one, so a
+   label that wraps to two lines ("Security deposit refunded") left its
+   neighbours' numbers floating mid-card. Pinning the value to the bottom lines
+   the numbers up across the row again. */
+.stat-value {
+  font-size: 1.15rem; font-weight: 800; color: var(--ink);
+  font-variant-numeric: tabular-nums; margin-top: auto;
+}
 .stat-card-income .stat-value { color: #2F6B4F; }
 .stat-card-expense .stat-value { color: var(--danger); }
 .stat-card-balance .stat-value { color: var(--primary); }
 
-.dashboard-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.dashboard-col h3 { font-size: 1rem; margin-bottom: 12px; }
+.dashboard-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dashboard-col h3 { font-size: 0.95rem; margin-bottom: 8px; }
 
 /* ---------- Finance ---------- */
 .finance-form {
@@ -225,8 +252,10 @@ button { font-family: inherit; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
 /* ---------- Dashboard: rental overview ---------- */
-.dashboard-subheading { font-size: 1.1rem; margin: 8px 0 16px; }
-.stat-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.dashboard-subheading { font-size: 0.95rem; margin: 2px 0 10px; }
+/* Was a fixed four columns. Auto-fill lets a wide screen show more and a
+   narrow one fewer, without a breakpoint for each size. */
+.stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); }
 .stat-card-deposit .stat-value { color: #8A5A00; }
 
 /* ---------- Wide/tall modal variants ---------- */
@@ -366,8 +395,7 @@ button { font-family: inherit; }
 }
 
 @media (max-width: 900px) {
-  .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .stat-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid, .stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
   .dashboard-cols { grid-template-columns: 1fr; }
   .finance-form { grid-template-columns: 1fr 1fr; }
   .finance-form button { grid-column: span 2; }
@@ -379,7 +407,8 @@ button { font-family: inherit; }
 @media (max-width: 560px) {
   .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
   .admin-header-inner { flex-direction: column; gap: 10px; align-items: flex-start; }
-  .stat-grid, .stat-grid-3, .stat-grid-4 { grid-template-columns: 1fr; }
+  .stat-grid, .stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+  .stat-grid-3 { grid-template-columns: 1fr; }
   .finance-form { grid-template-columns: 1fr; }
   .finance-form button { grid-column: span 1; }
   .report-filters .field-group { min-width: 0; flex: 1 1 100%; }
