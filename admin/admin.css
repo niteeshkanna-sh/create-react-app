@@ -77,12 +77,7 @@ button { font-family: inherit; }
 .login-hint code { background: var(--bg); padding: 2px 6px; border-radius: 6px; font-weight: 600; color: var(--ink); }
 .back-link { display: inline-block; margin-top: 18px; font-size: 0.85rem; color: var(--primary); }
 
-/* ---------- Dashboard shell ---------- */
-.admin-header { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
-.admin-header-inner {
-  max-width: 1100px; margin: 0 auto; padding: 16px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-}
+/* ---------- Brand marks, used by the sign-in page and the shell ---------- */
 .logo { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
 .logo-mark {
   display: inline-flex; align-items: center; justify-content: center;
@@ -93,24 +88,138 @@ button { font-family: inherit; }
 .admin-tag {
   font-size: 0.7rem; font-weight: 700; background: var(--ink); color: #fff;
   padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
-.admin-header-actions { display: flex; gap: 10px; }
 
-.admin-body { max-width: 1100px; margin: 0 auto; padding: 28px 24px 8px; }
+/* ---------------------------------------------------------------------------
+   The panel shell: a column of destinations beside the page.
 
-.admin-tabs { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.admin-tab {
-  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
-  padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 0.88rem; cursor: pointer;
-  flex-shrink: 0; white-space: nowrap;
+   It was a row of pills above the page. On a phone that row showed two of its
+   six destinations and the other four were reachable only by dragging a strip
+   that gave no sign it could be dragged -- which is the whole of the
+   "buttons are not clickable" complaint. A column has room for all of them,
+   and folds into a drawer where there is no room for a column.
+--------------------------------------------------------------------------- */
+
+.ns-body { min-height: 100vh; }
+
+/* Keyboard users land here first. Off-screen until it has focus. */
+.ns-skip {
+  position: absolute; left: -9999px; top: 0; z-index: 200;
+  background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 0 0 10px 0;
+  font-size: 0.85rem; font-weight: 600;
 }
-.admin-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.tab-icon { vertical-align: -2px; margin-right: 4px; }
-.tab-count {
-  display: inline-block; margin-left: 4px; background: rgba(255,255,255,0.2);
-  padding: 1px 7px; border-radius: 999px; font-size: 0.72rem;
+.ns-skip:focus { left: 0; }
+
+.ns { display: grid; grid-template-columns: var(--side, 244px) minmax(0, 1fr); min-height: 100vh; }
+
+/* ---- the column ---- */
+.ns-side {
+  grid-column: 1; background: var(--primary); color: #fff;
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
 }
-.admin-tab:not(.active) .tab-count { background: var(--bg); color: var(--ink-dim); }
+.ns-brand {
+  display: flex; align-items: center; gap: 9px;
+  padding: 18px 18px 14px; font-weight: 800; font-size: 0.98rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.ns-brand .logo-mark { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+.ns-brand-text { line-height: 1.15; }
+.ns-brand-text span { display: block; font-weight: 500; font-size: 0.76rem; color: rgba(255,255,255,0.6); }
+
+/* Only ever visible inside the drawer. */
+.ns-close {
+  display: none; margin-left: auto; background: none; border: 0; color: #fff;
+  font-size: 1.7rem; line-height: 1; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 10px;
+}
+.ns-close:hover { background: rgba(255,255,255,0.1); }
+
+.ns-nav { flex: 1; padding: 14px 10px; }
+.ns-group {
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); padding: 14px 10px 6px; margin: 0;
+}
+.ns-group:first-child { padding-top: 2px; }
+
+.ns-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  /* 44px tall, which is the smallest a finger reliably hits. */
+  min-height: 44px; padding: 10px 12px; margin-bottom: 2px;
+  border: 0; border-radius: 10px; background: none; cursor: pointer;
+  font: inherit; font-size: 0.88rem; font-weight: 600; text-align: left;
+  color: rgba(255,255,255,0.74);
+}
+.ns-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.ns-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.ns-item.is-on { background: var(--accent); color: #14100D; }
+.ns-item.is-on .ns-ico { opacity: 1; }
+.ns-ico { flex-shrink: 0; opacity: 0.82; }
+.ns-item-label { flex: 1; min-width: 0; }
+
+.ns-item .tab-count {
+  margin: 0; background: rgba(255,255,255,0.16); color: #fff;
+  padding: 1px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+}
+.ns-item .tab-count:empty { display: none; }
+.ns-item.is-on .tab-count { background: rgba(0,0,0,0.16); color: #14100D; }
+
+.ns-side-foot {
+  padding: 14px; border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.ns-who { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; min-width: 0; }
+.ns-who-name { color: rgba(255,255,255,0.86); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ns-side-foot .btn-ghost { background: rgba(255,255,255,0.1); color: #fff; }
+.ns-side-foot .btn-ghost:hover { background: rgba(255,255,255,0.18); }
+
+/* ---- the page beside it ---- */
+.ns-main { grid-column: 2; min-width: 0; display: flex; flex-direction: column; }
+.ns-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 14px 24px; position: sticky; top: 0; z-index: 20;
+}
+.ns-bar-title { font-weight: 700; font-size: 1.02rem; flex: 1; min-width: 0; margin: 0; }
+.ns-burger {
+  display: none; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin-left: -10px;
+  background: none; border: 0; border-radius: 10px; cursor: pointer; color: var(--ink);
+}
+.ns-burger:hover { background: var(--bg); }
+
+.ns-content { flex: 1; width: 100%; max-width: 1180px; padding: 24px; }
+
+/* The scrim only exists while the drawer is open, and only on a phone. */
+.ns-scrim { display: none; }
+
+@media (max-width: 1000px) {
+  .ns { grid-template-columns: minmax(0, 1fr); }
+  .ns-main { grid-column: 1; }
+  .ns-burger { display: inline-flex; }
+  .ns-close { display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Off-canvas rather than hidden: it slides, so it is obvious where it went
+     and where it comes back from. */
+  .ns-side {
+    position: fixed; inset: 0 auto 0 0; width: 270px; max-width: 84vw; z-index: 120;
+    transform: translateX(-100%); transition: transform 0.22s ease;
+  }
+  .ns-open .ns-side { transform: none; box-shadow: 0 0 40px rgba(0,0,0,0.35); }
+  .ns-open .ns-scrim {
+    display: block; position: fixed; inset: 0; z-index: 110;
+    background: rgba(16, 24, 40, 0.5);
+  }
+  .ns-open { overflow: hidden; }
+  .ns-content { padding: 18px 16px 48px; }
+  .ns-bar { padding: 10px 16px; }
+}
+
+/* Nothing to slide on a screen wide enough for the column. */
+@media (min-width: 1001px) {
+  .ns-scrim { display: none !important; }
+}
 
 .panel-header {
   display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
@@ -139,6 +248,87 @@ button { font-family: inherit; }
   padding: 10px 16px; font-size: 0.9rem; color: var(--ink);
 }
 .migration-warning span { display: block; color: var(--ink-dim); font-size: 0.82rem; margin-top: 2px; }
+
+/* ---------------------------------------------------------------------------
+   The page shell: every admin page that is not the dashboard.
+   
+   This lived in a <style> block inside content.php, so places.php used the
+   same class names and got none of them -- no container, no card, no max
+   width, every field stretched the full width of the monitor. A stylesheet
+   two pages share cannot live inside one of them.
+   
+   Rebuilt on the panel's own tokens rather than the hardcoded greys it had, so
+   these pages and the dashboard are recognisably the same product.
+--------------------------------------------------------------------------- */
+
+.c-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 64px; }
+
+.c-top {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  align-items: flex-end; justify-content: space-between; margin-bottom: 18px;
+}
+/* Takes the room it needs and lets the action sit at the far end, rather than
+   growing to the full width and pushing it onto its own line. */
+.c-top > div { flex: 1 1 340px; min-width: 0; }
+.c-top .c-note { margin: 0; }
+
+/* Every section is a card. One rule, so a new page is a card by default rather
+   than by remembering. */
+.c-sec {
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 14px;
+}
+.c-sec h2 { font-size: 1.05rem; margin: 0 0 4px; }
+.c-note { color: var(--ink-dim); font-size: 0.87rem; margin: 0 0 14px; }
+.c-hint { color: var(--ink-dim); font-size: 0.8rem; margin: 4px 0 0; }
+
+.c-label { display: block; margin: 14px 0 5px; font-weight: 600; font-size: 0.85rem; }
+.c-input {
+  width: 100%; padding: 9px 11px; border: 1px solid var(--border);
+  border-radius: 8px; font: inherit; font-size: 0.92rem; background: #fff;
+}
+.c-input:focus { border-color: var(--primary); outline: none; }
+
+.c-row { border-left: 3px solid var(--border); padding-left: 14px; margin: 16px 0; }
+.c-row-n {
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.c-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+
+.c-flag {
+  display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px;
+  background: var(--bg); color: var(--ink-dim);
+}
+
+.c-msg { padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.92rem; }
+.c-ok  { background: #EAF7EE; border-left: 3px solid #2F6B4F; }
+.c-bad { background: #FDEAEA; border-left: 3px solid var(--danger); }
+
+/* A section that folds. The card is the <details>; the heading is its
+   <summary>, which is what you press to open it. */
+.c-fold { padding: 0; }
+.c-sum {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 52px; padding: 12px 18px; cursor: pointer;
+  font-weight: 700; font-size: 1.02rem; list-style: none;
+  border-radius: var(--radius);
+}
+.c-sum::-webkit-details-marker { display: none; }
+.c-sum:hover { background: var(--bg); }
+.c-sum:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.c-sum-name { flex: 1; min-width: 0; }
+.c-sum-chev { flex-shrink: 0; color: var(--ink-faint); transition: transform 0.18s ease; }
+.c-fold[open] > .c-sum { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+.c-fold[open] > .c-sum .c-sum-chev { transform: rotate(180deg); }
+.c-fold-body { padding: 4px 18px 18px; }
+
+/* Spacing that was written inline on the element. */
+.c-note-tight { margin: 4px 0 0; }
+.c-label-group { margin-top: 22px; }
+.c-msg-lead { margin: 0 0 .6rem; }
+.c-msg-body { margin: 0 0 .8rem; }
 
 /* ---------- Places to visit ---------- */
 .place-list { display: flex; flex-direction: column; gap: 10px; }
@@ -223,7 +413,7 @@ button { font-family: inherit; }
 .car-admin-card .actions .btn { flex: 1; }
 
 .empty-state {
-  text-align: center; padding: 60px 20px; color: var(--ink-faint);
+  text-align: center; padding: 34px 20px; color: var(--ink-faint);
   background: #fff; border: 1px dashed var(--border); border-radius: var(--radius);
 }
 
@@ -296,11 +486,6 @@ button { font-family: inherit; }
 .inquiry-detail { font-size: 0.85rem; color: var(--ink-dim); }
 .inquiry-time { font-size: 0.75rem; color: var(--ink-faint); white-space: nowrap; }
 
-.storage-note {
-  max-width: 1100px; margin: 24px auto 40px; padding: 0 24px;
-  font-size: 0.8rem; color: var(--ink-faint); line-height: 1.5;
-}
-
 /* ---------- Modal ---------- */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(16,24,40,0.5);
@@ -315,11 +500,27 @@ button { font-family: inherit; }
 .modal-row-3 { grid-template-columns: 1fr 1fr 1fr; }
 .field-group { margin-bottom: 14px; }
 .field-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-dim); margin-bottom: 6px; }
-.field-group input, .field-group select {
+.field-group input, .field-group select, .field-group textarea {
   width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
   font-size: 0.9rem; outline: none; font-family: inherit;
 }
-.field-group input:focus, .field-group select:focus { border-color: var(--primary); }
+/* A tick box given width:100% and a text field's padding stretched across the
+   row, which is why "Shown on the site" had its box floating away from its
+   word. These are the two inputs that are not boxes to type in. */
+.field-group input[type="checkbox"],
+.field-group input[type="radio"] {
+  width: 18px; height: 18px; padding: 0; margin: 0; accent-color: var(--primary); flex-shrink: 0;
+}
+/* A label wrapping a tick box is a row, not a block -- and the whole row is
+   the target, which is what makes it hittable with a thumb. */
+.field-group label.finance-toggle,
+label.finance-toggle {
+  display: flex; align-items: center; gap: 9px;
+  min-height: 44px; margin: 0; cursor: pointer; font-weight: 600; color: var(--ink);
+}
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus { border-color: var(--primary); }
 .color-input { padding: 4px !important; height: 40px; cursor: pointer; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
@@ -460,9 +661,12 @@ button { font-family: inherit; }
 .report-table tfoot td { font-weight: 700; background: var(--bg); }
 
 @media print {
-  .header, .admin-tabs, .panel-header .btn, .report-tabs, .report-filters, .report-export-row,
-  .booking-filters, .admin-header, .storage-note, .wa-float, .mobile-footer-nav { display: none !important; }
+  .ns-side, .ns-bar, .ns-skip, .ns-scrim, .panel-header .btn, .report-tabs, .report-filters,
+  .report-export-row, .booking-filters, .c-actions, .place-actions,
+  .wa-float, .mobile-footer-nav { display: none !important; }
   body { background: #fff; }
+  .ns { display: block; }
+  .ns-content { max-width: none; padding: 0; }
   .report-results { border: none; }
 }
 
@@ -478,7 +682,6 @@ button { font-family: inherit; }
 
 @media (max-width: 560px) {
   .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
-  .admin-header-inner { flex-direction: column; gap: 10px; align-items: flex-start; }
   .stat-grid, .stat-grid-4 { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
   .stat-grid-3 { grid-template-columns: 1fr; }
   .finance-form { grid-template-columns: 1fr; }
@@ -486,14 +689,13 @@ button { font-family: inherit; }
   .report-filters .field-group { min-width: 0; flex: 1 1 100%; }
 }
 
-/* Signed-in identity in the admin header. */
-.who { font-size: 0.85rem; color: var(--ink-dim); display: flex; align-items: center; gap: 8px; }
+/* Signed-in identity, at the foot of the navigation column. */
 .who-role {
   font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  background: var(--amber-wash, #FFF3DC); color: var(--accent-deep); padding: 3px 8px; border-radius: 999px;
+  background: rgba(245, 165, 0, 0.22); color: var(--accent); padding: 3px 8px; border-radius: 999px;
+  flex-shrink: 0;
 }
 .logout-form { display: inline; margin: 0; }
-@media (max-width: 560px) { .who { display: none; } }
 
 /* A voided payment stays listed — the record of what was entered is part of
    the trail — but is clearly no longer counted. */
@@ -649,4 +851,63 @@ button { font-family: inherit; }
 @media (max-width: 560px) {
   .expense-card { flex-direction: column; }
   .expense-card .right { align-items: flex-start; }
+}
+
+/* ---------------------------------------------------------------------------
+   Touch targets.
+
+   Every one of these was between 31 and 38 pixels tall, which is under the
+   44 a fingertip reliably lands on -- "Delete" on a place was 31. On a mouse
+   a small button is tidy; on a phone it is a button that misses.
+--------------------------------------------------------------------------- */
+@media (hover: none), (max-width: 700px) {
+  .btn { min-height: 44px; padding: 11px 18px; }
+  .btn-sm { min-height: 44px; padding: 10px 16px; font-size: 0.84rem; }
+  .link-btn { min-height: 44px; display: inline-flex; align-items: center; }
+  .filter-chip, .report-tab { min-height: 44px; }
+  .transaction-delete { width: 44px; height: 44px; }
+  input[type="file"] { width: 100%; }
+}
+
+/* ---------------------------------------------------------------------------
+   The panel on a phone.
+--------------------------------------------------------------------------- */
+@media (max-width: 700px) {
+  .c-wrap { max-width: none; margin: 0; padding: 0; }
+  .c-top { align-items: flex-start; }
+  .c-sec { padding: 14px; }
+  .c-sum { padding: 12px 14px; }
+  .c-fold-body { padding: 4px 14px 14px; }
+
+  /* Side by side these two were 100px wide each and the labels wrapped to
+     three lines. Stacked, each gets the width of the screen. */
+  .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
+  .modal { padding: 18px; border-radius: 16px; max-height: 94vh; }
+  .modal-overlay { padding: 10px; align-items: flex-end; }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions .btn { width: 100%; }
+
+  .panel-header { align-items: stretch; }
+  .panel-header > div { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .panel-header .btn { width: 100%; }
+
+  /* The delete button sits inside its own form, so it is the form that has to
+     stretch -- "Edit" grew and "Delete" stayed the width of the word. */
+  .place-actions, .place-actions form { flex: 1; display: flex; }
+  .place-actions .btn { flex: 1; width: 100%; }
+  .car-admin-grid { grid-template-columns: 1fr; }
+  .report-table th, .report-table td { padding: 9px 11px; }
+  .empty-state { padding: 34px 16px; }
+
+  /* Two stat cards to a row rather than whatever fits: at 132px minimum a
+     360px phone got two anyway, and a 320px one got one very wide card. */
+  .stat-grid, .stat-grid-3, .stat-grid-4 { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card { padding: 10px 11px; }
+  .stat-value { font-size: 1.05rem; }
+}
+
+/* Narrower than most phones. One column of everything. */
+@media (max-width: 380px) {
+  .stat-grid, .stat-grid-3, .stat-grid-4 { grid-template-columns: 1fr; }
+  .c-top .btn, .place-actions { width: 100%; }
 }

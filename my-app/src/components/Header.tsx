@@ -147,7 +147,7 @@ export function Header() {
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            className="rounded-xl border border-white/20 p-2.5 text-gold-light transition hover:border-gold/60 lg:hidden"
+            className="grid h-11 w-11 place-items-center rounded-xl border border-white/20 text-gold-light transition hover:border-gold/60 lg:hidden"
           >
             <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
             <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none">

@@ -1,6 +1,5 @@
 // The server decides who is signed in; by the time this page renders, the
 // session has already been checked. Signing out is a form post to logout.php.
-const dashboard = document.getElementById('dashboard');
 
 function showDashboard() {
   renderOverview();
@@ -40,8 +39,8 @@ document.addEventListener('DOMContentLoaded', boot);
 const TAB_PANELS = ['dashboard', 'bookings', 'cars', 'inquiries', 'finance', 'reports'];
 document.querySelectorAll('.admin-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('active'));
-    tab.classList.add('active');
+    document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('is-on'));
+    tab.classList.add('is-on');
     const target = tab.dataset.tab;
     TAB_PANELS.forEach((name) => {
       document.getElementById(`panel-${name}`).hidden = target !== name;
@@ -1734,8 +1733,8 @@ function currentMonthStr() {
 
 document.querySelectorAll('.report-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.report-tab').forEach((t) => t.classList.remove('active'));
-    tab.classList.add('active');
+    document.querySelectorAll('.report-tab').forEach((t) => t.classList.remove('is-on'));
+    tab.classList.add('is-on');
     currentReportType = tab.dataset.report;
     renderReportFilters();
     renderReport();

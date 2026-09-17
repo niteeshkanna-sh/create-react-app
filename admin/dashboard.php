@@ -5,6 +5,7 @@ require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/vocab.php';
 require_once __DIR__ . '/src/migrate.php';
+require_once __DIR__ . '/src/shell.php';
 
 // Anyone reaching this page must already be signed in; require_login sends
 // them to the sign-in form otherwise.
@@ -20,55 +21,9 @@ $migrationError = migrate_if_needed();
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
+
+admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — NiteSha Cars</title>
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
-  <link rel="stylesheet" href="<?= asset('admin.css') ?>" />
-</head>
-<body>
-<?php if ($migrationError !== null): ?>
-  <div class="migration-warning">
-    <strong>The database is not fully up to date.</strong>
-    Some newer features may fail until this is resolved.
-    <span><?= e($migrationError) ?></span>
-  </div>
-<?php endif; ?>
-
-  <!-- ===== Dashboard ===== -->
-  <div class="dashboard" id="dashboard">
-    <header class="admin-header">
-      <div class="admin-header-inner">
-        <span class="logo"><span class="logo-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5l1.4-4.2A2 2 0 0 1 6.3 7h11.4a2 2 0 0 1 1.9 1.3L21 12.5"/><rect x="2.5" y="12.5" width="19" height="5" rx="1.5"/><circle cx="7" cy="18" r="1.4" fill="#fff" stroke="none"/><circle cx="17" cy="18" r="1.4" fill="#fff" stroke="none"/></svg></span> NiteSha Cars &amp; Bikes <span class="admin-tag">Admin</span></span>
-        <div class="admin-header-actions">
-          <span class="who"><?= e($me['name']) ?> <span class="who-role"><?= e($me['role_name']) ?></span></span>
-          <a class="btn btn-ghost btn-sm" href="content.php">Website content</a>
-        <a class="btn btn-ghost btn-sm" href="places.php">Places to visit</a>
-          <form method="post" action="logout.php" class="logout-form">
-            <?= csrf_field() ?>
-            <button type="submit" class="btn btn-ghost btn-sm">Log Out</button>
-          </form>
-        </div>
-      </div>
-    </header>
-
-    <div class="admin-body">
-      <nav class="admin-tabs">
-        <button class="admin-tab active" data-tab="dashboard"><svg class="tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="4" width="4" height="16" rx="1"/><rect x="17" y="9" width="4" height="11" rx="1"/></svg> Dashboard</button>
-        <button class="admin-tab" data-tab="bookings"><svg class="tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="8.5" y="2" width="7" height="4" rx="1"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="16" y2="15"/></svg> Bookings <span class="tab-count" id="bookingCount"></span></button>
-        <button class="admin-tab" data-tab="cars"><svg class="tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.4-4.2A2 2 0 0 1 6.3 7.5h11.4a2 2 0 0 1 1.9 1.3L21 13"/><rect x="2.5" y="13" width="19" height="5" rx="1.5"/><circle cx="7" cy="18.5" r="1.4"/><circle cx="17" cy="18.5" r="1.4"/></svg> Vehicles</button>
-        <button class="admin-tab" data-tab="inquiries"><svg class="tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h5l1.5 3h5L16 12h5"/><path d="M5.5 5h13l2.5 7v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7l2.5-7z"/></svg> Inquiries <span class="tab-count" id="inquiryCount"></span></button>
-        <button class="admin-tab" data-tab="finance"><svg class="tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1"/></svg> Finance</button>
-        <button class="admin-tab" data-tab="reports"><svg class="tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg> Reports</button>
-      </nav>
 
       <!-- Dashboard tab -->
       <section class="admin-panel" id="panel-dashboard">
@@ -355,10 +310,7 @@ header('Referrer-Policy: same-origin');
 
         <div class="report-results" id="reportResults"></div>
       </section>
-    </div>
-
-    
-  </div>
+<?php admin_shell_close(); ?>
 
   <!-- ===== Car edit/add modal ===== -->
   <div class="modal-overlay" id="carModalOverlay" hidden>
