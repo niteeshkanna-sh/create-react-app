@@ -5,6 +5,7 @@ require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/migrate.php';
 require_once __DIR__ . '/src/places.php';
+require_once __DIR__ . '/src/shell.php';
 
 /**
  * Places worth driving to.
@@ -23,8 +24,7 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
 
 $notice = null;
-$error  = $migrationError === null ? null
-    : 'The database could not be brought up to date: ' . $migrationError;
+$error  = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
@@ -53,28 +53,18 @@ if (isset($_GET['edit'])) {
         }
     }
 }
+
+admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Places to visit — NiteSha Cars &amp; Bikes Admin</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="stylesheet" href="<?= asset('admin.css') ?>">
-</head>
-<body>
-<div class="c-wrap">
 
   <div class="c-top">
     <div>
-      <h1 style="margin:0;font-size:1.3rem">Places to visit</h1>
-      <p class="c-note" style="margin:.3rem 0 0">
+      <p class="c-note">
         Shown on the home page and on <strong>niteshacars.in/places</strong>. These are
         what people search for before they book a car, so it is worth keeping current.
       </p>
     </div>
-    <a class="btn btn-ghost btn-sm" href="dashboard.php">Back to dashboard</a>
+    <a class="btn btn-outline btn-sm" href="/places" target="_blank" rel="noopener">See the page &rarr;</a>
   </div>
 
   <?php if ($notice !== null): ?><div class="c-msg c-ok"><?= e($notice) ?></div><?php endif; ?>
@@ -178,8 +168,8 @@ if (isset($_GET['edit'])) {
               <?php if ((int) $row['published'] !== 1): ?>
                 <span class="c-flag">hidden</span>
               <?php endif; ?>
-              <p class="c-note" style="margin:.2rem 0 0"><?= e((string) $row['blurb']) ?></p>
-              <p class="c-note" style="margin:.2rem 0 0">
+              <p class="c-note c-note-tight"><?= e((string) $row['blurb']) ?></p>
+              <p class="c-note c-note-tight">
                 <?= e((string) $row['category']) ?> &middot; order <?= (int) $row['sort_order'] ?>
                 <?= $row['map_url'] !== '' ? ' &middot; has a map link' : ' &middot; no map link' ?>
               </p>
@@ -199,6 +189,6 @@ if (isset($_GET['edit'])) {
     <?php endif; ?>
   </div>
 
-</div>
+<?php admin_shell_close(); ?>
 </body>
 </html>

@@ -104,7 +104,7 @@ export function WhyUs() {
           <Reveal delay={120}>
             <Link
               to="/about"
-              className="mt-8 inline-flex items-center gap-1.5 font-semibold text-navy transition hover:text-gold-deep"
+              className="tap-target mt-8 inline-flex items-center gap-1.5 font-semibold text-navy transition hover:text-gold-deep"
             >
               More about us
               <span aria-hidden="true">→</span>

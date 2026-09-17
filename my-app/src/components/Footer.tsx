@@ -25,7 +25,7 @@ export function Footer() {
           <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
             Get in touch
           </h2>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="tap-list mt-3 space-y-2 text-sm">
             <li>
               <a href="tel:+916374942976" className="transition hover:text-gold">
                 +91 63749 42976
@@ -43,7 +43,7 @@ export function Footer() {
           <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
             Pages
           </h2>
-          <ul className="mt-3 space-y-2 text-sm">
+          <ul className="tap-list mt-3 space-y-2 text-sm">
             <li>
               <Link to="/cars" className="transition hover:text-gold">
                 Self-drive cars
