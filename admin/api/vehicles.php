@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/http.php';
+require_once __DIR__ . '/../src/vocab.php';
 require_once __DIR__ . '/../src/vehicle-photos.php';
 
 /**
@@ -16,10 +17,7 @@ require_once __DIR__ . '/../src/vehicle-photos.php';
  * the status to Inactive instead.
  */
 
-const BODY_TYPES    = ['Hatchback', 'Sedan', 'SUV', 'MUV', 'Other'];
-const FUEL_TYPES    = ['Petrol', 'Diesel', 'Electric', 'CNG'];
-const TRANSMISSIONS = ['Manual', 'Automatic'];
-const VEHICLE_STATUSES = ['Available', 'Booked', 'On Rental', 'Maintenance', 'Inactive'];
+
 
 $action = $_GET['action'] ?? ($_SERVER['REQUEST_METHOD'] === 'POST' ? 'save' : 'list');
 

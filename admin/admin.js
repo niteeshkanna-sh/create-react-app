@@ -156,6 +156,7 @@ function openCarModal(car) {
   // wrong car sitting above the right one's details.
   photoRemoved = false;
   document.getElementById('carPhoto').value = '';
+  document.getElementById('carCropBox').hidden = true;
   showCarPhoto(car && car.photo ? car.photo : null);
 
   carModalOverlay.hidden = false;
@@ -182,8 +183,139 @@ document.getElementById('carPhotoRemove').addEventListener('click', () => {
   // leave the vehicle exactly as it was.
   photoRemoved = true;
   document.getElementById('carPhoto').value = '';
+  document.getElementById('carCropBox').hidden = true;
   showCarPhoto(null);
 });
+
+// ---- Framing a photograph ----
+//
+// Every car is saved at one size, 1200x750, which is the shape the website's
+// cards use. That is what stops the fleet looking ragged: the page is not
+// cropping pictures of different proportions and hoping, it is laying out
+// identical rectangles. It also means a 4 MB phone photograph arrives as
+// something around 150 KB, which the fleet page fetches once per car.
+//
+// Written by hand rather than with a cropping library because the panel has no
+// build step -- every script here is a plain file the browser loads, and
+// adding a dependency would mean adding one.
+const CROP_W = 1200;
+const CROP_H = 750;
+
+const cropBox = document.getElementById('carCropBox');
+const cropWindow = document.getElementById('carCropWindow');
+const cropImg = document.getElementById('carCropImg');
+const cropZoom = document.getElementById('carCropZoom');
+
+// Position and scale of the image inside the window, in window pixels.
+let crop = { x: 0, y: 0, scale: 1, base: 1, natW: 0, natH: 0 };
+
+function cropApply() {
+  cropImg.style.transform =
+    `translate(${crop.x}px, ${crop.y}px) scale(${crop.base * crop.scale})`;
+}
+
+/** Keeps the image covering the window, so no empty corner can be framed. */
+function cropClamp() {
+  const w = cropWindow.clientWidth;
+  const h = cropWindow.clientHeight;
+  const drawnW = crop.natW * crop.base * crop.scale;
+  const drawnH = crop.natH * crop.base * crop.scale;
+  crop.x = Math.min(0, Math.max(w - drawnW, crop.x));
+  crop.y = Math.min(0, Math.max(h - drawnH, crop.y));
+}
+
+function cropStart(file) {
+  const url = URL.createObjectURL(file);
+  const probe = new Image();
+  probe.onload = () => {
+    crop.natW = probe.naturalWidth;
+    crop.natH = probe.naturalHeight;
+    // Start at the smallest scale that still fills the window, so the opening
+    // view is always valid and usually the whole car.
+    const w = cropWindow.clientWidth || 360;
+    const h = cropWindow.clientHeight || 225;
+    crop.base = Math.max(w / crop.natW, h / crop.natH);
+    crop.scale = 1;
+    cropZoom.value = '100';
+    cropImg.src = url;
+    cropImg.style.width = `${crop.natW}px`;
+    cropImg.style.height = `${crop.natH}px`;
+    // Centre it.
+    crop.x = (w - crop.natW * crop.base) / 2;
+    crop.y = (h - crop.natH * crop.base) / 2;
+    cropClamp();
+    cropApply();
+    cropBox.hidden = false;
+  };
+  probe.onerror = () => {
+    showError(new Error('That image could not be opened.'));
+  };
+  probe.src = url;
+}
+
+// Pointer events rather than mouse events, so dragging works with a finger on
+// a phone as well as a mouse -- the panel is used on both.
+let dragging = null;
+cropWindow.addEventListener('pointerdown', (e) => {
+  if (cropBox.hidden) return;
+  dragging = { px: e.clientX, py: e.clientY, x: crop.x, y: crop.y };
+  cropWindow.setPointerCapture(e.pointerId);
+});
+cropWindow.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  crop.x = dragging.x + (e.clientX - dragging.px);
+  crop.y = dragging.y + (e.clientY - dragging.py);
+  cropClamp();
+  cropApply();
+});
+for (const done of ['pointerup', 'pointercancel']) {
+  cropWindow.addEventListener(done, () => { dragging = null; });
+}
+
+cropZoom.addEventListener('input', () => {
+  const w = cropWindow.clientWidth;
+  const h = cropWindow.clientHeight;
+  // Zoom about the middle of the window, which is where the eye is, rather
+  // than the top-left corner, which sends the subject off the edge.
+  const cx = (w / 2 - crop.x) / crop.scale;
+  const cy = (h / 2 - crop.y) / crop.scale;
+  crop.scale = Number(cropZoom.value) / 100;
+  crop.x = w / 2 - cx * crop.scale;
+  crop.y = h / 2 - cy * crop.scale;
+  cropClamp();
+  cropApply();
+});
+
+/** The framed area, as a file ready to upload. */
+function croppedBlob() {
+  return new Promise((resolve, reject) => {
+    const w = cropWindow.clientWidth;
+    const h = cropWindow.clientHeight;
+    const drawn = crop.base * crop.scale;
+
+    // What the window shows, in the source image's own pixels.
+    const sx = -crop.x / drawn;
+    const sy = -crop.y / drawn;
+    const sw = w / drawn;
+    const sh = h / drawn;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = CROP_W;
+    canvas.height = CROP_H;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(cropImg, sx, sy, sw, sh, 0, 0, CROP_W, CROP_H);
+
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(new File([blob], 'photo.webp', { type: 'image/webp' }));
+        else reject(new Error('The framed image could not be prepared.'));
+      },
+      'image/webp',
+      0.85,
+    );
+  });
+}
 
 // Show the chosen file straight away rather than after saving, so a wrong
 // picture is obvious before it is committed to anything.
@@ -191,7 +323,8 @@ document.getElementById('carPhoto').addEventListener('change', (e) => {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
   photoRemoved = false;
-  showCarPhoto(URL.createObjectURL(file));
+  document.getElementById('carPhotoPreview').hidden = true;
+  cropStart(file);
 });
 
 function closeCarModal() {
@@ -245,7 +378,11 @@ carForm.addEventListener('submit', async (e) => {
     const chosen = document.getElementById('carPhoto').files[0] || null;
     const vehicleId = saved && saved.id ? saved.id : carData.id;
     if (vehicleId && (chosen || photoRemoved)) {
-      await saveVehiclePhoto(vehicleId, chosen);
+      // The framed version, at a fixed size, rather than whatever came off the
+      // phone. Uploading the original would put the cropping back on the
+      // website, where it has no idea which part of the picture matters.
+      const image = chosen ? await croppedBlob() : null;
+      await saveVehiclePhoto(vehicleId, image);
     }
 
     closeCarModal();

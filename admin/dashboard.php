@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
+require_once __DIR__ . '/src/vocab.php';
 require_once __DIR__ . '/src/migrate.php';
 
 // Anyone reaching this page must already be signed in; require_login sends
@@ -371,11 +372,7 @@ header('Referrer-Policy: same-origin');
           </div>
           <div class="field-group">
             <label for="carBodyType">Body Type</label>
-            <select id="carBodyType" required>
-              <option>Hatchback</option>
-              <option>Sedan</option>
-              <option>SUV</option>
-            </select>
+            <select id="carBodyType" required><?= options_for(BODY_TYPES) ?></select>
           </div>
         </div>
         <div class="modal-row modal-row-3">
@@ -395,19 +392,11 @@ header('Referrer-Policy: same-origin');
         <div class="modal-row">
           <div class="field-group">
             <label for="carFuel">Fuel</label>
-            <select id="carFuel" required>
-              <option>Petrol</option>
-              <option>Diesel</option>
-              <option>Electric</option>
-              <option>CNG</option>
-            </select>
+            <select id="carFuel" required><?= options_for(FUEL_TYPES) ?></select>
           </div>
           <div class="field-group">
             <label for="carTransmission">Transmission</label>
-            <select id="carTransmission" required>
-              <option>Manual</option>
-              <option>Automatic</option>
-            </select>
+            <select id="carTransmission" required><?= options_for(TRANSMISSIONS) ?></select>
           </div>
         </div>
         <div class="modal-row modal-row-3">
@@ -421,13 +410,7 @@ header('Referrer-Policy: same-origin');
           </div>
           <div class="field-group">
             <label for="carStatus">Status</label>
-            <select id="carStatus" required>
-              <option>Available</option>
-              <option>Booked</option>
-              <option>On Rental</option>
-              <option>Maintenance</option>
-              <option>Inactive</option>
-            </select>
+            <select id="carStatus" required><?= options_for(VEHICLE_STATUSES) ?></select>
           </div>
         </div>
 
@@ -481,10 +464,26 @@ header('Referrer-Policy: same-origin');
               <img alt="" id="carPhotoPreviewImg" />
               <button type="button" class="btn btn-danger btn-sm" id="carPhotoRemove">Remove</button>
             </div>
+
+            <!-- Shown only while a newly chosen photograph is being framed.
+                 The window is the exact shape the website's cards use, so what
+                 is inside it is what a customer sees -- no guessing at how it
+                 will be cut. -->
+            <div class="photo-crop" id="carCropBox" hidden>
+              <div class="crop-window" id="carCropWindow">
+                <img id="carCropImg" alt="" draggable="false" />
+              </div>
+              <label class="crop-zoom">
+                Zoom
+                <input type="range" id="carCropZoom" min="100" max="300" value="100" />
+              </label>
+              <p class="field-note">Drag the photo to choose what shows. Every car is saved at
+              the same size, so the cards line up.</p>
+            </div>
+
             <input type="file" id="carPhoto" accept="image/jpeg,image/png,image/webp,image/avif" />
             <p class="field-note">Shown on the website's fleet cards. JPG, PNG, WebP or AVIF,
-            up to 6&nbsp;MB. A landscape photo of the whole car works best &mdash; it is
-            cropped to a wide rectangle.</p>
+            up to 6&nbsp;MB. A landscape photo of the whole car works best.</p>
           </div>
         </div>
 
