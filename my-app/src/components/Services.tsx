@@ -4,22 +4,29 @@ import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
 import { hasScene } from './art/scenes';
 
-export function Services() {
+/**
+ * `showHeading` is off on /services, where the page banner has just said the
+ * same words -- a heading repeating the title directly above it reads as a
+ * rendering fault rather than a section.
+ */
+export function Services({ showHeading = true }: { showHeading?: boolean }) {
   const home = useHome();
   const { heading, items } = home.services;
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-20">
-      <Reveal>
-        <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">
-          What we rent
-        </p>
-        <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-          {heading}
-        </h2>
-      </Reveal>
+      {showHeading ? (
+        <Reveal>
+          <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">
+            What we rent
+          </p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
+            {heading}
+          </h2>
+        </Reveal>
+      ) : null}
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${showHeading ? 'mt-10' : ''}`}>
         {items.map((s, i) => (
           <Reveal key={s.to} delay={i * 80} className="h-full">
             <Link

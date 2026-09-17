@@ -1,10 +1,33 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
+import { useHome } from '../content';
+import { SocialLinks } from './SocialLinks';
+
+/** The footer names five and sends the rest to /services. */
+const SHOWN = 5;
+
+/**
+ * +916374942976 -> +91 63749 42976.
+ *
+ * seo.json holds the dialling form, which is what tel: needs and what nobody
+ * wants to read. Derived rather than written out a second time, so the two can
+ * never end up being different numbers.
+ */
+function readablePhone(raw: string): string {
+  const digits = raw.replace(/[^0-9]/g, '');
+  return digits.length === 12 && digits.startsWith('91')
+    ? `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`
+    : raw;
+}
 
 export function Footer() {
+  // The same list the home page and /services read, so adding a service in the
+  // panel puts it in all three rather than in two that then disagree.
+  const services = useHome().services.items;
+
   return (
     <footer className="bg-navy text-white/70">
-      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
             <span
@@ -27,62 +50,19 @@ export function Footer() {
           </h2>
           <ul className="tap-list mt-3 space-y-2 text-sm">
             <li>
-              <a href="tel:+916374942976" className="transition hover:text-gold">
-                +91 63749 42976
+              <a href={`tel:${seo.site.phone}`} className="transition hover:text-gold">
+                {readablePhone(seo.site.phone)}
               </a>
             </li>
             <li>
-              <a href="mailto:niteshacars045@gmail.com" className="transition hover:text-gold">
-                niteshacars045@gmail.com
+              <a href={`mailto:${seo.site.email}`} className="transition hover:text-gold">
+                {seo.site.email}
               </a>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
-            Pages
-          </h2>
-          <ul className="tap-list mt-3 space-y-2 text-sm">
-            <li>
-              <Link to="/cars" className="transition hover:text-gold">
-                Self-drive cars
-              </Link>
             </li>
             <li>
               <Link to="/places" className="transition hover:text-gold">
                 Places to visit
               </Link>
-            </li>
-            <li>
-              <Link to="/bikes" className="transition hover:text-gold">
-                Bike rental
-              </Link>
-            </li>
-            <li>
-              <Link to="/wedding-cars" className="transition hover:text-gold">
-                Wedding cars
-              </Link>
-            </li>
-            <li>
-              <Link to="/tourist-vehicles" className="transition hover:text-gold">
-                Tourist vehicles
-              </Link>
-            </li>
-            <li>
-              <Link to="/monthly" className="transition hover:text-gold">
-                Monthly rental
-              </Link>
-            </li>
-            <li>
-              <Link to="/nri" className="transition hover:text-gold">
-                For NRI visitors
-              </Link>
-            </li>
-            <li>
-              <a href="#how" className="transition hover:text-gold">
-                How it works
-              </a>
             </li>
             <li>
               <Link to="/contact" className="transition hover:text-gold">
@@ -91,6 +71,32 @@ export function Footer() {
             </li>
           </ul>
         </div>
+
+        <div>
+          <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
+            Services
+          </h2>
+          <ul className="tap-list mt-3 space-y-2 text-sm">
+            {services.slice(0, SHOWN).map((s) => (
+              <li key={s.to}>
+                <Link to={s.to} className="transition hover:text-gold">
+                  {s.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {services.length > SHOWN ? (
+            <Link
+              to="/services"
+              className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-gold/40 px-4 text-sm font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              View all services
+              <span aria-hidden="true">&rarr;</span>
+            </Link>
+          ) : null}
+        </div>
+
+        <SocialLinks />
       </div>
 
       <div className="border-t border-white/10">

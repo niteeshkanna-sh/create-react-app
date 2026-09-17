@@ -114,6 +114,14 @@
       "imageAlt": "The NiteSha Cars & Bikes office in Nagercoil, Kanyakumari district"
     },
     {
+      "path": "/services",
+      "title": "What We Hire \u2014 Cars, Bikes & Tourist Vehicles in Kanyakumari",
+      "description": "Self drive cars, bike rental, wedding cars, tourist vehicles with a driver and monthly hire across Kanyakumari district. One page, every service and what it covers.",
+      "priority": "0.9",
+      "imageSlot": "services-hero",
+      "imageAlt": "Self-drive cars, bikes and tourist vehicles for hire across Kanyakumari district"
+    },
+    {
       "path": "/places",
       "title": "Places to Visit in Kanyakumari — NiteSha Cars & Bikes",
       "description": "Vivekananda Rock, Vattakottai Fort, Thirparappu Falls and more — every one an easy drive from Nagercoil. Hire a self-drive car and go at your own pace.",

@@ -129,6 +129,15 @@
       "primaryHref": "/contact",
       "secondaryLabel": "See our cars",
       "secondaryHref": "/cars"
+    },
+    "social": {
+      "heading": "Follow us",
+      "whatsapp": "https://wa.me/916374942976",
+      "instagram": "",
+      "facebook": "",
+      "youtube": "",
+      "x": "",
+      "linkedin": ""
     }
   }
 }
