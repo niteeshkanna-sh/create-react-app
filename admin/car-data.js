@@ -31,6 +31,9 @@ function toPanelShape(v) {
     status: v.status,
     currentKm: v.current_km,
     price: v.rate_daily,
+    // Blank rather than 0: empty means "one price", and 0 would advertise
+    // a range topping out at nothing.
+    priceMax: v.rate_daily_max ?? '',
     price7: v.rate_7day || 0,
     price15: v.rate_15day || 0,
     price30: v.rate_30day || 0,
@@ -58,6 +61,7 @@ function toApiShape(car) {
     status: car.status,
     current_km: car.currentKm,
     rate_daily: car.price,
+    rate_daily_max: car.priceMax === '' || car.priceMax === null ? '' : car.priceMax,
     rate_7day: car.price7 || '',
     rate_15day: car.price15 || '',
     rate_30day: car.price30 || '',

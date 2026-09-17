@@ -1,4 +1,5 @@
 import { useHome } from '../content';
+import { ContentLink } from './ContentLink';
 
 export function Hero() {
   const home = useHome();
@@ -36,18 +37,18 @@ export function Hero() {
         </p>
 
         <div data-hero-item="" style={{ ["--hero-delay" as string]: "340ms" }} className="mt-8 flex flex-wrap gap-3">
-          <a
-            href={h.primaryHref}
-            className="rounded-xl bg-gold px-6 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          <ContentLink
+            to={h.primaryHref}
+            className="rounded-xl bg-gold px-6 py-3 text-center font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             {h.primaryLabel}
-          </a>
-          <a
-            href={h.secondaryHref}
-            className="rounded-xl border border-gold/40 px-6 py-3 font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          </ContentLink>
+          <ContentLink
+            to={h.secondaryHref}
+            className="rounded-xl border border-gold/40 px-6 py-3 text-center font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
           >
             {h.secondaryLabel}
-          </a>
+          </ContentLink>
         </div>
 
         <ul data-hero-item="" style={{ ["--hero-delay" as string]: "420ms" }} className="mt-12 grid gap-3 sm:grid-cols-3">

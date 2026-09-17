@@ -24,8 +24,13 @@ export interface Car {
   transmission: Transmission;
   seats: number;
   year: number;
-  /** Daily rate in rupees. */
+  /** Daily rate in rupees. What a booking is charged at. */
   rateDaily: number;
+  /**
+   * Top of the advertised daily band, when the price is a range rather than
+   * one figure. Display only -- rateDaily is still what is charged.
+   */
+  rateDailyMax?: number;
   /** Per-day rate when hired for a week or more. Omit if not offered. */
   rateWeekly?: number;
   /** Per-day rate for a month or more. Omit if not offered. */
@@ -75,3 +80,16 @@ export const inr = (n: number) =>
     currency: 'INR',
     maximumFractionDigits: 0,
   }).format(n);
+
+/**
+ * What a card prints as the daily price.
+ *
+ * A band when the panel carries an upper rate, one figure otherwise. An upper
+ * rate equal to or below the daily rate is treated as no band at all: printing
+ * "₹1,600 – ₹1,600" would look like a fault, and "₹1,800 – ₹1,600" like a
+ * different one.
+ */
+export const dailyRate = (car: Pick<Car, 'rateDaily' | 'rateDailyMax'>) =>
+  car.rateDailyMax !== undefined && car.rateDailyMax > car.rateDaily
+    ? `${inr(car.rateDaily)} – ${inr(car.rateDailyMax)}`
+    : inr(car.rateDaily);

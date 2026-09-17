@@ -26,6 +26,7 @@ interface ApiVehicle {
   seats: number;
   year: number;
   rateDaily: number;
+  rateDailyMax: number | null;
   rateWeekly: number | null;
   rateFortnight: number | null;
   rateMonthly: number | null;
@@ -64,6 +65,7 @@ function toCar(v: ApiVehicle): Car {
     seats: v.seats,
     year: v.year,
     rateDaily: v.rateDaily,
+    rateDailyMax: v.rateDailyMax ?? undefined,
     rateWeekly: v.rateWeekly ?? undefined,
     rateMonthly: v.rateMonthly ?? undefined,
     kmLimitPerDay: v.kmLimitPerDay,

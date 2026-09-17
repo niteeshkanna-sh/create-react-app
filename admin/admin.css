@@ -34,6 +34,10 @@ button { font-family: inherit; }
   border: none; border-radius: 9px; font-weight: 600; cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
   padding: 11px 20px; font-size: 0.9rem;
+  /* "+ Add Deposit" and "Mark Completed" were breaking across two lines on a
+     phone, which makes a button look like a paragraph. A label stays on one
+     line; it is the row of buttons that wraps, not the words inside one. */
+  white-space: nowrap;
 }
 .btn-sm { padding: 8px 14px; font-size: 0.8rem; }
 .btn-block { width: 100%; }
@@ -299,7 +303,7 @@ button { font-family: inherit; }
 .c-flag {
   display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px;
-  background: var(--bg); color: var(--ink-dim);
+  background: var(--bg); color: var(--ink-dim); white-space: nowrap;
 }
 
 .c-msg { padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.92rem; }
@@ -318,7 +322,8 @@ button { font-family: inherit; }
 .c-sum::-webkit-details-marker { display: none; }
 .c-sum:hover { background: var(--bg); }
 .c-sum:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-.c-sum-name { flex: 1; min-width: 0; }
+.c-sum-name { flex: 1 1 auto; min-width: 0; }
+.c-sum .c-flag { flex-shrink: 0; }
 .c-sum-chev { flex-shrink: 0; color: var(--ink-faint); transition: transform 0.18s ease; }
 .c-fold[open] > .c-sum { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
 .c-fold[open] > .c-sum .c-sum-chev { transform: rotate(180deg); }
@@ -522,7 +527,7 @@ label.finance-toggle {
 .field-group select:focus,
 .field-group textarea:focus { border-color: var(--primary); }
 .color-input { padding: 4px !important; height: 40px; cursor: pointer; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 
 /* ---------- Dashboard: rental overview ---------- */
 .dashboard-subheading { font-size: 0.95rem; margin: 2px 0 10px; }
@@ -611,10 +616,16 @@ label.finance-toggle {
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 18px; margin-bottom: 14px;
 }
+/* Wrapping, so a narrow screen puts the heading on its own line and the
+   buttons on the next. Without it the heading kept shrinking to leave room --
+   "Customer & Rental Details" came out three words tall beside a column of
+   staggered buttons. */
 .detail-section-title {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  font-weight: 700; margin-bottom: 12px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px; font-weight: 700; margin-bottom: 12px;
 }
+.detail-section-title > span:first-child { flex: 1 1 auto; min-width: 0; }
+.detail-section-title > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 20px; }
 .detail-field { display: flex; flex-direction: column; gap: 2px; }
 .detail-field .k { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.03em; }
@@ -884,8 +895,10 @@ label.finance-toggle {
   .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
   .modal { padding: 18px; border-radius: 16px; max-height: 94vh; }
   .modal-overlay { padding: 10px; align-items: flex-end; }
-  .modal-actions { flex-direction: column-reverse; }
-  .modal-actions .btn { width: 100%; }
+  /* Side by side, not stacked. Two 44px-tall buttons fit across a 390px
+     phone with room to spare, and stacking them put Cancel under the primary
+     action where a thumb reaching for one finds the other. */
+  .modal-actions .btn { flex: 1 1 0; min-width: 0; }
 
   .panel-header { align-items: stretch; }
   .panel-header > div { flex-direction: column; align-items: flex-start; gap: 2px; }
@@ -904,6 +917,23 @@ label.finance-toggle {
   .stat-grid, .stat-grid-3, .stat-grid-4 { grid-template-columns: 1fr 1fr; gap: 8px; }
   .stat-card { padding: 10px 11px; }
   .stat-value { font-size: 1.05rem; }
+
+  /* The fold heading: name across the top with its chevron, count underneath.
+     Side by side, "Logo, mark and page banners" came out three lines tall
+     next to the badge. */
+  .c-sum { flex-wrap: wrap; row-gap: 6px; }
+  .c-sum-name { order: 1; flex: 1 1 auto; }
+  .c-sum-chev { order: 2; margin-left: auto; }
+  .c-sum .c-flag { order: 3; }
+
+  /* A heading takes its own line, and its buttons line up two to a row
+     underneath rather than each ending up a different width. An odd one at
+     the end spans both columns instead of sitting half-width beside a gap. */
+  .detail-section-title > span:first-child { flex: 1 1 100%; }
+  .detail-section-title > div {
+    width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .detail-section-title > div > .btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 /* Narrower than most phones. One column of everything. */

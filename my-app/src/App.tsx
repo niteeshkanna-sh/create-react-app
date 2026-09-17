@@ -19,13 +19,26 @@ import { NotFound } from './pages/NotFound';
 
 /**
  * A browser restores scroll position on navigation, which on a client-side
- * router means a new page can open halfway down. Reset on every path change,
- * but leave hash links alone so #anchors still work.
+ * router means a new page can open halfway down. Reset on every path change.
+ *
+ * A #hash is honoured by the browser only on a real page load, so a link like
+ * /contact#enquire used to land at the top of Contact rather than on the form
+ * it named. <main> is keyed on the path and remounts, so the target does not
+ * exist yet when this runs -- hence waiting for the frame it paints in.
  */
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    if (!hash) window.scrollTo(0, 0);
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      document
+        .getElementById(hash.slice(1))
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pathname, hash]);
   return null;
 }

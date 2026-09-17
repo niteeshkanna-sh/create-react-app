@@ -19,7 +19,7 @@ export function Logo({ onClick }: { onClick?: () => void }) {
   const logo = useSiteImage('logo');
 
   return (
-    <Link to="/" onClick={onClick} className="flex items-center gap-3">
+    <Link to="/" onClick={onClick} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
       <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.25)]">
         {logo ? (
           // The name is written out beside this, so the badge repeating it
@@ -61,11 +61,15 @@ export function Logo({ onClick }: { onClick?: () => void }) {
         )}
       </span>
 
-      <span className="leading-tight">
-        <span className="eyebrow-gold block text-[10px] sm:text-[11px]">
+      {/* whitespace-nowrap because "NiteSha Cars & Bikes" was breaking after
+          "Cars", which reads as two businesses. It is sized to fit the
+          narrowest phone beside the badge and the menu button rather than
+          being allowed to wrap. */}
+      <span className="min-w-0 leading-tight">
+        <span className="eyebrow-gold block text-[9px] sm:text-[11px]">
           Premium Rentals
         </span>
-        <span className="block text-base font-bold tracking-tight text-white sm:text-lg">
+        <span className="block text-[15px] font-bold tracking-tight whitespace-nowrap text-white sm:text-lg">
           {seo.site.name}
         </span>
       </span>

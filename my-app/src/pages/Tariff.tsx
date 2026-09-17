@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { inr } from '../data/cars';
+import { dailyRate, inr } from '../data/cars';
 import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
 
@@ -67,7 +67,7 @@ export function Tariff() {
                         {car.bodyType} · {car.fuel} · {car.transmission}
                       </span>
                     </th>
-                    <td className="px-5 py-4 font-semibold text-navy">{inr(car.rateDaily)}</td>
+                    <td className="px-5 py-4 font-semibold text-navy">{dailyRate(car)}</td>
                     <td className="px-5 py-4 text-ink-dim">
                       {car.rateWeekly ? inr(car.rateWeekly) : '—'}
                     </td>
