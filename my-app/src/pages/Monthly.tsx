@@ -78,6 +78,7 @@ export function Monthly() {
     <>
       <PageHeader
         photo="monthly-hero"
+        imageAlt="A car on monthly rental parked at a home in Nagercoil"
         scene="/monthly"
         title="Monthly car rental in Nagercoil"
         intro={`Need a car for weeks rather than days? Monthly self drive hire across ${seo.site.district} district — hatchbacks, sedans, SUVs and 7 seater vehicles.`}

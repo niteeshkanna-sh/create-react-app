@@ -7,6 +7,7 @@ export function Contact() {
     <>
       <PageHeader
         photo="contact-hero"
+        imageAlt="The NiteSha Cars and Bikes office in Nagercoil, Kanyakumari district"
         scene="coast"
         title="Contact"
         intro="Call us, write to us, or send the form below. Only your name and phone number are needed to start."

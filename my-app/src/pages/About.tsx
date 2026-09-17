@@ -13,6 +13,7 @@ export function About() {
     <>
       <PageHeader
         photo="about-hero"
+        imageAlt="The NiteSha Cars and Bikes team and vehicle yard in Nagercoil"
         scene="coast"
         title="About us"
         intro="NiteSha Cars & Bikes rents self drive cars, two-wheelers, wedding cars and tourist vehicles across Kanyakumari district."

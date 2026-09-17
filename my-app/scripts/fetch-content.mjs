@@ -25,6 +25,7 @@ const app = dirname(here);
 
 const DEFAULTS = join(app, 'src/content/defaults.json');
 const LIVE = join(app, 'src/content/live.json');
+const BRAND = join(app, 'src/data/brand.json');
 const ADMIN_COPY = join(
   app,
   '../admin/content-defaults.json',
@@ -69,6 +70,7 @@ try {
 }
 
 let content = defaults;
+let brand = {};
 let source = 'defaults (no fetch attempted)';
 
 if (process.env.CONTENT_API !== 'off') {
@@ -87,6 +89,17 @@ if (process.env.CONTENT_API !== 'off') {
     // endpoint depend on files a hand-updated panel does not have.
     content = mergeContent(defaults, body.overrides ?? {},
       (message) => console.warn(`fetch-content: ${message}`));
+
+    // Images uploaded in the panel, so the sitemap and the structured data can
+    // name them. They already reach visitors the moment they are uploaded --
+    // the browser asks the panel on every page load -- but a sitemap is written
+    // once, here, and an image nobody lists is an image image-search will be
+    // slow to find. Absolute, because that is what both consumers need.
+    for (const [slot, value] of Object.entries(body.brand ?? {})) {
+      if (typeof value === 'string' && value !== '') {
+        brand[slot] = new URL(value, `${API.replace(/\/api\/[^/]*$/, '')}/`).toString();
+      }
+    }
 
     if (body.ready === false) {
       console.warn(
@@ -108,4 +121,10 @@ if (process.env.CONTENT_API !== 'off') {
 }
 
 await writeFile(LIVE, JSON.stringify(content, null, 2) + '\n');
-console.log(`fetch-content: ${source}`);
+await writeFile(BRAND, JSON.stringify(brand, null, 2) + '\n');
+
+const uploaded = Object.keys(brand).length;
+console.log(
+  `fetch-content: ${source}` +
+    (uploaded > 0 ? `, ${uploaded} uploaded image(s)` : ''),
+);

@@ -27,3 +27,4 @@ dist-ssr
 # copy when it answers, the committed defaults when it does not. Generated, so
 # not tracked -- defaults.json is the version under review.
 src/content/live.json
+src/data/brand.json

@@ -18,8 +18,26 @@ require_once __DIR__ . '/vehicle-photos.php';
  */
 
 const SITE_IMAGE_SLOTS = [
-    'logo'  => 'Logo badge',
-    'snake' => 'Mark beside the logo',
+    // The brand marks.
+    'logo'          => 'Logo badge',
+    'snake'         => 'Mark beside the logo',
+
+    // The wide photograph across the top of each page. The names match what
+    // the site asks for, so adding one here and adding one there is the same
+    // decision rather than two that can disagree.
+    'cars-hero'     => 'Cars page banner',
+    'bikes-hero'    => 'Bikes page banner',
+    'wedding-hero'  => 'Wedding cars banner',
+    'tourist-hero'  => 'Tourist vehicles banner',
+    'monthly-hero'  => 'Monthly rental banner',
+    'nri-hero'      => 'NRI page banner',
+    'tariff-hero'   => 'Tariff page banner',
+    'about-hero'    => 'About page banner',
+    'contact-hero'  => 'Contact page banner',
+    'blog-hero'     => 'Blog page banner',
+
+    // The panel on the home page listing the towns served.
+    'coast'         => 'Areas we serve panel',
 ];
 
 function site_image_dir(): string
@@ -85,7 +103,9 @@ function site_image_save(string $slot, array $file, int $userId): ?string
     // Our name, never the uploader's: a filename from a browser can contain
     // path separators, and writing outside this directory is the one thing
     // that must not be possible.
-    $name = sprintf('b%s-%s.%s', preg_replace('/[^a-z]/', '', $slot),
+    // Hyphens kept: stripping them turned cars-hero into carshero, which is
+    // still unique but tells a reader nothing. brand.php's pattern allows them.
+    $name = sprintf('b%s-%s.%s', preg_replace('/[^a-z-]/', '', $slot),
         bin2hex(random_bytes(8)), $extension);
 
     if (!move_uploaded_file((string) $file['tmp_name'], site_image_dir() . '/' . $name)) {
