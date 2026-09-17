@@ -59,7 +59,7 @@ if (isset($_GET['edit'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Places to visit — NiteSha Cars Admin</title>
+  <title>Places to visit — NiteSha Cars &amp; Bikes Admin</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="<?= asset('admin.css') ?>">
 </head>

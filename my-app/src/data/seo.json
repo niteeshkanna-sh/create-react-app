@@ -43,7 +43,7 @@
     },
     {
       "path": "/bikes",
-      "title": "Bike Rental in Nagercoil & Kanyakumari — NiteSha",
+      "title": "Bike Rental in Nagercoil & Kanyakumari — NiteSha Cars & Bikes",
       "description": "Two-wheeler and bike rental in Nagercoil, Kanyakumari, Marthandam and Colachel. Hourly, daily and weekly rates for scooters and motorcycles.",
       "priority": "0.9",
       "imageSlot": "bikes-hero",
@@ -95,7 +95,7 @@
       "description": "NiteSha Cars & Bikes rents self drive cars, two-wheelers, wedding cars and tourist vehicles across Kanyakumari district from Nagercoil.",
       "priority": "0.6",
       "imageSlot": "about-hero",
-      "imageAlt": "The NiteSha Cars and Bikes team and vehicle yard in Nagercoil"
+      "imageAlt": "The NiteSha Cars & Bikes team and vehicle yard in Nagercoil"
     },
     {
       "path": "/blog",
@@ -111,11 +111,11 @@
       "description": "Call +91 63749 42976 or send an enquiry. Self drive cars, bikes, wedding cars and tourist vehicles across Kanyakumari district.",
       "priority": "0.8",
       "imageSlot": "contact-hero",
-      "imageAlt": "The NiteSha Cars and Bikes office in Nagercoil, Kanyakumari district"
+      "imageAlt": "The NiteSha Cars & Bikes office in Nagercoil, Kanyakumari district"
     },
     {
       "path": "/places",
-      "title": "Places to Visit in Kanyakumari — Drive Yourself | NiteSha Cars",
+      "title": "Places to Visit in Kanyakumari — NiteSha Cars & Bikes",
       "description": "Vivekananda Rock, Vattakottai Fort, Thirparappu Falls and more — every one an easy drive from Nagercoil. Hire a self-drive car and go at your own pace.",
       "priority": "0.8",
       "imageSlot": "places-hero",
