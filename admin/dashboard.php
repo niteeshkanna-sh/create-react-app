@@ -118,11 +118,6 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
             <h2>Vehicle Management</h2>
             <p>Fleet, rates, KM limits, and status. Available cars also show in "Popular Rentals" on the public site.</p>
           </div>
-          <!-- A car added here only reaches the website when its status is
-               Available and it has a rate card. When one does not appear, this
-               says which of those it is, rather than leaving the panel and the
-               site each looking correct on their own. -->
-          <a class="panel-header-link" href="/fleet-check.html" target="_blank" rel="noopener">Why is a car not on the site?</a>
           <button class="btn btn-primary" id="addCarBtn">+ Add Vehicle</button>
         </div>
 
