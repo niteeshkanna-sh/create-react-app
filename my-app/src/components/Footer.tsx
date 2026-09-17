@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
-import { useHome } from '../content';
+import { useHome, useSiteImage } from '../content';
 import { SocialLinks } from './SocialLinks';
 
 /** The footer names five and sends the rest to /services. */
@@ -24,18 +24,26 @@ export function Footer() {
   // The same list the home page and /services read, so adding a service in the
   // panel puts it in all three rather than in two that then disagree.
   const services = useHome().services.items;
+  // The footer showed a letter N while an uploaded logo sat in the header.
+  const logo = useSiteImage('logo');
 
   return (
     <footer className="bg-navy text-white/70">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-base font-bold text-gold"
-            >
-              N
-            </span>
+            {logo ? (
+              <span className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-1.5">
+                <img src={logo} alt="" aria-hidden="true" className="max-h-7 w-auto max-w-[96px] object-contain" />
+              </span>
+            ) : (
+              <span
+                aria-hidden="true"
+                className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-base font-bold text-gold"
+              >
+                N
+              </span>
+            )}
             <span className="text-lg font-semibold text-white">{seo.site.name}</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed">

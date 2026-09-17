@@ -20,12 +20,37 @@ export function Logo({ onClick }: { onClick?: () => void }) {
 
   return (
     <Link to="/" onClick={onClick} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+      {/* An uploaded logo and the drawn badge want different frames.
+      
+          The drawn one is a circle because it was designed as one. A real logo
+          is whatever shape it is, usually square or wide, and usually carries
+          the business name inside it -- so a round crop cut the name off and
+          shrank what was left past reading. object-cover was doing exactly
+          that.
+      
+          The white plate stays, and gains padding. A logo with its own dark
+          background sat edge to edge in the badge, covering the white
+          completely, which left a dark mark on a dark header with nothing to
+          separate them. The padding is what makes it visible. */}
+      {logo ? (
+        <span className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-white px-1.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)]">
+          {/* max-h rather than h-full: inside a grid, a percentage height
+              resolves against a row the image itself sizes, so h-full came
+              back as the image's own 400px and simply overflowed. An explicit
+              cap has nothing circular in it.
+          
+              The name is written out beside this, so the badge repeating it
+              would have a screen reader say the business twice. */}
+          <img
+            src={logo}
+            alt=""
+            aria-hidden="true"
+            className="max-h-9 w-auto max-w-[116px] object-contain"
+          />
+        </span>
+      ) : (
       <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.25)]">
-        {logo ? (
-          // The name is written out beside this, so the badge repeating it
-          // would have a screen reader say the business twice.
-          <img src={logo} alt="" aria-hidden="true" className="size-full object-cover" />
-        ) : (
+        {(
         <svg viewBox="0 0 40 40" className="size-9" aria-hidden="true">
           <defs>
             <linearGradient id="ns-gold" x1="0" y1="0" x2="1" y2="1">
@@ -60,6 +85,7 @@ export function Logo({ onClick }: { onClick?: () => void }) {
         </svg>
         )}
       </span>
+      )}
 
       {/* whitespace-nowrap because "NiteSha Cars & Bikes" was breaking after
           "Cars", which reads as two businesses. It is sized to fit the
