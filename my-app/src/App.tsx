@@ -14,6 +14,7 @@ import { Monthly } from './pages/Monthly';
 import { Tariff } from './pages/Tariff';
 import { Blog } from './pages/Blog';
 import { Contact } from './pages/Contact';
+import { Places } from './pages/Places';
 import { NotFound } from './pages/NotFound';
 
 /**
@@ -53,6 +54,7 @@ function App() {
           <Route path="/tariff" element={<Tariff />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/places" element={<Places />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

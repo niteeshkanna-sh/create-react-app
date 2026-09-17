@@ -4,6 +4,7 @@ import { Hero } from '../components/Hero';
 import { HowItWorks } from '../components/HowItWorks';
 import { OpenRoad } from '../components/OpenRoad';
 import { AreasServed } from '../components/AreasServed';
+import { PlacesTeaser } from '../components/PlacesTeaser';
 import { Services } from '../components/Services';
 import { Highlights } from '../components/Highlights';
 import { WhyUs } from '../components/WhyUs';
@@ -21,6 +22,7 @@ export function Home() {
       <HowItWorks />
       <OpenRoad />
       <AreasServed />
+      <PlacesTeaser />
 
       <section className="mx-auto max-w-6xl px-5 py-20">
         <div className="rounded-[14px] border border-line bg-white p-8 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)] sm:p-12">
