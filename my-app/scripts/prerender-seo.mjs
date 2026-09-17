@@ -69,16 +69,26 @@ function rewrite(html, { title, description, url }) {
       /(<meta\s+property="og:url"\s+content=")[^"]*(")/,
       `$1${url}$2`,
     )
+    // The business name, from seo.json rather than from whatever the template
+    // happens to say. It said "Nitesha Cars" while seo.json said "NiteSha Cars
+    // & Bikes", and one business with two names is a weaker signal in local
+    // search than either name would be on its own. Driven from one place now,
+    // so the two cannot disagree again.
+    .replace(
+      /(<meta\s+property="og:site_name"\s+content=")[^"]*(")/,
+      `$1${escape(seo.site.name)}$2`,
+    )
     ;
 
-  return withImages(out);
+  return enrichJsonLd(out);
 }
 
 const escape = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**
- * Adds the site's photographs to the structured data already in the template.
+ * Corrects the business name and adds the site's photographs to the structured
+ * data already in the template.
  *
  * index.html has carried an AutoRental block for a while. I missed it -- the
  * grep that went looking covered src/ and scripts/ and not the template -- and
@@ -90,7 +100,7 @@ const escape = (s) =>
  * is the part worth adding for image search: every banner photograph that
  * actually exists, and the logo, as absolute URLs.
  */
-function withImages(html) {
+function enrichJsonLd(html) {
   const pattern = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/;
   const match = html.match(pattern);
   if (!match) return html;
@@ -110,6 +120,9 @@ function withImages(html) {
   const banners = seo.routes
     .map((r) => pictureFor(r.imageSlot))
     .filter((url) => typeof url === 'string');
+
+  // Same reasoning as og:site_name above: one name, from one place.
+  data.name = seo.site.name;
 
   const existing = data.image === undefined ? [] : [data.image].flat();
   const images = [...new Set([...existing, ...banners])];

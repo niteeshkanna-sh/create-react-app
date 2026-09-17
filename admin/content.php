@@ -126,7 +126,7 @@ function field_input(string $name, array $spec, mixed $value): void
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Website content — NiteSha Cars</title>
+  <title>Website content — NiteSha Cars &amp; Bikes</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>" />
   <link rel="stylesheet" href="<?= asset('admin.css') ?>" />

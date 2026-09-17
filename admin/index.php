@@ -41,7 +41,7 @@ header('Referrer-Policy: same-origin');
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign in — NiteSha Cars Admin</title>
+  <title>Sign in — NiteSha Cars &amp; Bikes Admin</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -55,7 +55,7 @@ header('Referrer-Policy: same-origin');
       <span class="logo-mark">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5A500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5l1.4-4.2A2 2 0 0 1 6.3 7h11.4a2 2 0 0 1 1.9 1.3L21 12.5"/><rect x="2.5" y="12.5" width="19" height="5" rx="1.5"/><circle cx="7" cy="18" r="1.4" fill="#F5A500" stroke="none"/><circle cx="17" cy="18" r="1.4" fill="#F5A500" stroke="none"/></svg>
       </span>
-      NiteSha Cars
+      NiteSha Cars &amp; Bikes
     </div>
 
     <h1>Admin Sign In</h1>
