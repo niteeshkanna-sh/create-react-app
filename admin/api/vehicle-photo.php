@@ -30,9 +30,16 @@ if ($vehicleId <= 0) {
 // the tabs switch in JavaScript without loading the page, so following the
 // instruction exactly could never have helped.
 if (!table_has_column('vehicles', 'photo_file')) {
-    json_error('The database could not be updated to store photographs. '
-             . 'Reload the page; if this keeps happening the database user may '
-             . 'not be allowed to change tables.', 503);
+    // Whatever the database said, rather than a guess about what it meant.
+    // The previous two messages here each named one plausible cause and were
+    // wrong about which, and neither carried the one fact that would have
+    // settled it.
+    $why = last_migration_error();
+    json_error(
+        'The photographs column is still missing from the vehicles table.'
+        . ($why !== null ? ' The database refused to add it: ' . $why : ''),
+        503,
+    );
 }
 
 $vehicle = fetch_one('SELECT id, name, photo_file FROM vehicles WHERE id = ?', [$vehicleId]);

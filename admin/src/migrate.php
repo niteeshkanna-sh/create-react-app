@@ -132,11 +132,27 @@ function migrate_if_needed(): ?string
     try {
         migrate();
         $_SESSION['schema_marker'] = $marker;
+        $GLOBALS['__migrate_error'] = null;
         return null;
     } catch (Throwable $e) {
         // The marker is left unset deliberately, so the next request tries
         // again rather than remembering a failure for the rest of the session.
         error_log('migrate_if_needed failed: ' . $e->getMessage());
+        $GLOBALS['__migrate_error'] = $e->getMessage();
         return $e->getMessage();
     }
+}
+
+/**
+ * Why the last migration attempt failed, for a caller that only finds out
+ * indirectly -- api_guard runs migrate_if_needed() and discards the result,
+ * so an endpoint that then finds a column missing has no idea whether the
+ * migration was never attempted or failed with a reason worth reading.
+ *
+ * Saying "the database has not been updated" and stopping there cost a round
+ * trip that a sentence from the database would have closed.
+ */
+function last_migration_error(): ?string
+{
+    return $GLOBALS['__migrate_error'] ?? null;
 }
