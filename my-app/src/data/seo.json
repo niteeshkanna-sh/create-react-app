@@ -112,6 +112,14 @@
       "priority": "0.8",
       "imageSlot": "contact-hero",
       "imageAlt": "The NiteSha Cars and Bikes office in Nagercoil, Kanyakumari district"
+    },
+    {
+      "path": "/places",
+      "title": "Places to Visit in Kanyakumari — Drive Yourself | NiteSha Cars",
+      "description": "Vivekananda Rock, Vattakottai Fort, Thirparappu Falls and more — every one an easy drive from Nagercoil. Hire a self-drive car and go at your own pace.",
+      "priority": "0.8",
+      "imageSlot": "places-hero",
+      "imageAlt": "The Kanyakumari coastline with the Vivekananda Rock Memorial offshore"
     }
   ]
 }

@@ -140,6 +140,27 @@ button { font-family: inherit; }
 }
 .migration-warning span { display: block; color: var(--ink-dim); font-size: 0.82rem; margin-top: 2px; }
 
+/* ---------- Places to visit ---------- */
+.place-list { display: flex; flex-direction: column; gap: 10px; }
+.place-row {
+  display: grid; grid-template-columns: 96px 1fr auto; gap: 14px; align-items: start;
+  padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: #fff;
+}
+/* One shape whatever the photograph's own proportions, so the rows line up
+   rather than stepping down the page. */
+.place-thumb {
+  width: 96px; aspect-ratio: 16 / 10; border-radius: 8px; overflow: hidden;
+  background: var(--bg); display: grid; place-items: center;
+}
+.place-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.place-body { min-width: 0; }
+.place-actions { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 560px) {
+  .place-row { grid-template-columns: 72px 1fr; }
+  .place-thumb { width: 72px; }
+  .place-actions { grid-column: 1 / -1; }
+}
+
 /* ---------- Logo and mark uploads ---------- */
 .brand-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .brand-slot { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }

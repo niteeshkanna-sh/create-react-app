@@ -51,6 +51,7 @@ header('Referrer-Policy: same-origin');
         <div class="admin-header-actions">
           <span class="who"><?= e($me['name']) ?> <span class="who-role"><?= e($me['role_name']) ?></span></span>
           <a class="btn btn-ghost btn-sm" href="content.php">Website content</a>
+        <a class="btn btn-ghost btn-sm" href="places.php">Places to visit</a>
           <form method="post" action="logout.php" class="logout-form">
             <?= csrf_field() ?>
             <button type="submit" class="btn btn-ghost btn-sm">Log Out</button>

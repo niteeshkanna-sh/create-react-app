@@ -35,6 +35,7 @@ const SITE_IMAGE_SLOTS = [
     'about-hero'    => 'About page banner',
     'contact-hero'  => 'Contact page banner',
     'blog-hero'     => 'Blog page banner',
+    'places-hero'   => 'Places to visit banner',
 
     // The panel on the home page listing the towns served.
     'coast'         => 'Areas we serve panel',
