@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useSeo } from './lib/useSeo';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { FloatingActions } from './components/FloatingActions';
 import { Home } from './pages/Home';
 import { About } from './pages/About';
 import { Cars } from './pages/Cars';
@@ -15,6 +16,7 @@ import { Tariff } from './pages/Tariff';
 import { Blog } from './pages/Blog';
 import { Contact } from './pages/Contact';
 import { Places } from './pages/Places';
+import { Services } from './pages/Services';
 import { NotFound } from './pages/NotFound';
 
 /**
@@ -68,10 +70,12 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/places" element={<Places />} />
+          <Route path="/services" element={<Services />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />
+      <FloatingActions />
     </>
   );
 }

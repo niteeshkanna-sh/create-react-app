@@ -5,6 +5,9 @@ import { Logo } from './Logo';
 import { SnakeMark } from './SnakeMark';
 
 const services = [
+  // First, so the page that lists them all is reachable from the menu that
+  // lists them all -- otherwise /services exists only as a footer button.
+  { to: '/services', label: 'All services' },
   { to: '/cars', label: 'Self-drive cars' },
   { to: '/bikes', label: 'Bike rental' },
   { to: '/wedding-cars', label: 'Wedding cars' },

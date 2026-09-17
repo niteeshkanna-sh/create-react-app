@@ -151,6 +151,19 @@ function content_schema(): array
                         'secondaryHref'  => ['label' => 'Second button link', 'type' => 'text'],
                     ],
                 ],
+                'social' => [
+                    'label'  => 'Social media',
+                    'note'   => 'Paste the address of each page you have. Leave a box empty and that icon is simply not shown -- an icon linking nowhere is worse than no icon. A named box per network rather than a list you add to, so the icon always matches the link.',
+                    'fields' => [
+                        'heading'   => ['label' => 'Heading above the icons', 'type' => 'text'],
+                        'whatsapp'  => ['label' => 'WhatsApp', 'type' => 'text'],
+                        'instagram' => ['label' => 'Instagram', 'type' => 'text'],
+                        'facebook'  => ['label' => 'Facebook', 'type' => 'text'],
+                        'youtube'   => ['label' => 'YouTube', 'type' => 'text'],
+                        'x'         => ['label' => 'X (Twitter)', 'type' => 'text'],
+                        'linkedin'  => ['label' => 'LinkedIn', 'type' => 'text'],
+                    ],
+                ],
             ],
         ],
     ];
