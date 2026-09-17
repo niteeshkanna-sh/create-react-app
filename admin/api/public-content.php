@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/db.php';
 require_once __DIR__ . '/../src/http.php';
+require_once __DIR__ . '/../src/site-images.php';
 
 /**
  * Page content overrides, for the public website's build.
@@ -68,8 +69,17 @@ try {
     $ready = false;
 }
 
+// The logo and the mark ride along with the wording rather than getting an
+// endpoint of their own: the site already makes this request on every page, so
+// a second one would be a second round trip for two short strings.
+$brand = [];
+foreach (site_images() as $slot => $file) {
+    $brand[$slot] = site_image_url($file);
+}
+
 json_out([
     'ok'        => true,
     'ready'     => $ready,
     'overrides' => $overrides === [] ? (object) [] : $overrides,
+    'brand'     => $brand === [] ? (object) [] : $brand,
 ]);

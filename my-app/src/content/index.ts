@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import live from './live.json';
-import { apiUrl } from '../lib/api';
+import { apiUrl, panelUrl } from '../lib/api';
 // @ts-expect-error -- plain ESM, shared verbatim with the build script so the
 // two can never disagree about which edits are safe to show.
 import { mergeContent } from './merge.mjs';
@@ -30,10 +30,17 @@ import { mergeContent } from './merge.mjs';
 
 type Content = typeof live;
 
+/** The logo badge and the mark beside it, when they have been uploaded. */
+export interface Brand {
+  logo?: string;
+  snake?: string;
+}
+
 // Module state rather than a context: the copy is read by eight sections of one
 // page, none of which can change it, so a provider would be ceremony around a
 // value that is effectively global. One fetch serves all of them.
 let current: Content = live;
+let brand: Brand = {};
 let started = false;
 const listeners = new Set<() => void>();
 
@@ -51,8 +58,18 @@ async function loadOnce(): Promise<void> {
     });
     if (!response.ok) throw new Error(`the server answered ${response.status}`);
 
-    const body: { ok?: boolean; overrides?: unknown } = await response.json();
+    const body: { ok?: boolean; overrides?: unknown; brand?: Record<string, unknown> } =
+      await response.json();
     if (!body.ok) throw new Error('the response was not the expected { ok } shape');
+
+    // The panel returns these relative to itself, so they have to be resolved
+    // against the panel and not the page -- an <img> would otherwise ask for
+    // /cars/brand.php on the fleet page and get a 404 on some pages only.
+    const nextBrand: Brand = {};
+    for (const slot of ['logo', 'snake'] as const) {
+      const value = body.brand?.[slot];
+      if (typeof value === 'string' && value !== '') nextBrand[slot] = panelUrl(value);
+    }
 
     const merged = mergeContent(live, body.overrides ?? {}, (message: string) =>
       console.info(`[content] ${message}`),
@@ -61,8 +78,13 @@ async function loadOnce(): Promise<void> {
     // Re-rendering eight sections to paint identical text is wasted work on
     // every page load, and this is the common case: nothing edited since the
     // last build.
-    if (JSON.stringify(merged) !== JSON.stringify(current)) {
+    const changed =
+      JSON.stringify(merged) !== JSON.stringify(current) ||
+      JSON.stringify(nextBrand) !== JSON.stringify(brand);
+
+    if (changed) {
       current = merged;
+      brand = nextBrand;
       notify();
     }
   } catch (error) {
@@ -95,6 +117,21 @@ export function useHome(): Content['home'] {
     () => live.home,
   );
 }
+
+/** The uploaded logo and mark, empty until the panel answers. */
+export function useBrand(): Brand {
+  return useSyncExternalStore(
+    subscribe,
+    () => brand,
+    // Prerendering has no panel to ask, so the drawn versions go into the HTML
+    // -- which is right: a crawler should not wait on an image request.
+    () => EMPTY_BRAND,
+  );
+}
+
+// A stable identity: useSyncExternalStore compares snapshots by reference, and
+// a fresh {} each call would loop forever.
+const EMPTY_BRAND: Brand = {};
 
 /** The copy as it stood at build time. For anything outside a component. */
 export const content = live;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
+require_once __DIR__ . '/src/site-images.php';
 require_once __DIR__ . '/src/content.php';
 require_once __DIR__ . '/src/migrate.php';
 require_once __DIR__ . '/src/audit.php';
@@ -41,7 +42,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action  = (string) ($_POST['action'] ?? '');
     $section = (string) ($_POST['section'] ?? '');
 
-    if ($action === 'migrate') {
+    if ($action === 'brand-upload' || $action === 'brand-clear') {
+        // Handled before the section check below, which would otherwise reject
+        // these for not naming a section -- they do not have one.
+        $slot = (string) ($_POST['slot'] ?? '');
+
+        if (!isset(SITE_IMAGE_SLOTS[$slot])) {
+            $error = 'That is not one of the site images.';
+        } elseif ($action === 'brand-clear') {
+            site_image_clear($slot);
+            audit_log('site_image_cleared', 'content', 'site_image', null, null,
+                ['slot' => $slot], null, (int) $me['id'], (string) $me['name']);
+            $notice = SITE_IMAGE_SLOTS[$slot] . ' removed. The site goes back to the drawn one.';
+        } else {
+            $problem = site_image_save($slot, $_FILES['image'] ?? [], (int) $me['id']);
+            if ($problem !== null) {
+                $error = $problem;
+            } else {
+                audit_log('site_image_changed', 'content', 'site_image', null, null,
+                    ['slot' => $slot], null, (int) $me['id'], (string) $me['name']);
+                $notice = SITE_IMAGE_SLOTS[$slot] . ' updated. It appears on the site within a minute.';
+            }
+        }
+    } elseif ($action === 'migrate') {
         try {
             $applied = migrate();
             $notice  = $applied === []
@@ -162,6 +185,47 @@ function field_input(string $name, array $spec, mixed $value): void
       </form>
     </div>
   <?php endif; ?>
+
+  <?php $brand = site_images(); ?>
+  <div class="c-sec">
+    <h2>Logo and mark</h2>
+    <p class="c-note">
+      The badge in the header, and the mark beside it. Until one is uploaded the
+      site draws its own. PNG with a transparent background looks best for the
+      badge; the mark sits on the dark header, so light artwork reads better than
+      dark. Up to 6&nbsp;MB.
+    </p>
+
+    <div class="brand-slots">
+      <?php foreach (SITE_IMAGE_SLOTS as $slot => $label): ?>
+        <div class="brand-slot">
+          <span class="brand-slot-label"><?= e($label) ?></span>
+          <div class="brand-slot-preview">
+            <?php if (isset($brand[$slot])): ?>
+              <img src="<?= e((string) site_image_url($brand[$slot])) ?>" alt="">
+            <?php else: ?>
+              <span class="brand-slot-empty">Drawn</span>
+            <?php endif; ?>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="brand-upload">
+            <input type="hidden" name="slot" value="<?= e($slot) ?>">
+            <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/avif" required>
+            <button class="btn btn-primary btn-sm" type="submit">Upload</button>
+          </form>
+          <?php if (isset($brand[$slot])): ?>
+            <form method="post">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="brand-clear">
+              <input type="hidden" name="slot" value="<?= e($slot) ?>">
+              <button class="btn btn-ghost btn-sm" type="submit">Use the drawn one</button>
+            </form>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
 
   <?php foreach ($schema[$page]['sections'] as $key => $spec):
         $data       = content_section($page, $key);
