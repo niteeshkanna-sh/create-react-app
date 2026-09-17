@@ -395,18 +395,46 @@ body {
    point against the worst case -- a pure white image -- the white title comes
    out at 12.0:1 and the white/80 intro at 8.3:1, both well clear of the 4.5:1
    floor, so the crop can be anything and the page still reads. */
+/* The scrim over a banner photograph.
+   
+   It was a flat 82-88% navy over the whole band, which kept white type legible
+   against any photograph and turned every photograph into a dark rectangle --
+   the picture may as well not have been uploaded.
+   
+   Weighted instead of flat: heavy on the left, where the heading and intro
+   sit, clearing across the right where there is nothing to read. The photo is
+   visible where it can be, and the type keeps its contrast where it matters.
+   The gentle wash underneath stops a white sky from blowing out on the clear
+   side. */
 .page-scrim {
   background:
     linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--color-navy-deep) 82%, transparent),
-      color-mix(in srgb, var(--color-navy-deep) 88%, transparent)
+      to right,
+      color-mix(in srgb, var(--color-navy-deep) 88%, transparent) 0%,
+      color-mix(in srgb, var(--color-navy-deep) 80%, transparent) 40%,
+      color-mix(in srgb, var(--color-navy-deep) 36%, transparent) 74%,
+      color-mix(in srgb, var(--color-navy-deep) 18%, transparent) 100%
     ),
     linear-gradient(
-      to right,
-      color-mix(in srgb, var(--color-navy-deep) 55%, transparent) 0%,
-      transparent 75%
+      to bottom,
+      color-mix(in srgb, var(--color-navy-deep) 26%, transparent),
+      color-mix(in srgb, var(--color-navy-deep) 38%, transparent)
     );
+}
+
+/* Below the point where the text stops being a left-hand column, it runs the
+   full width -- so a scrim that clears on the right would leave the last words
+   of every line over bare photograph. Even coverage there, just lighter than
+   it was. */
+@media (max-width: 1023px) {
+  .page-scrim {
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-navy-deep) 60%, transparent),
+        color-mix(in srgb, var(--color-navy-deep) 70%, transparent)
+      );
+  }
 }
 
 /* The art frame is 2:1 as a card header, but a page banner is governed by the

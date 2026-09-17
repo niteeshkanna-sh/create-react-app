@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
-import { useHome } from '../content';
+import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
 
@@ -19,6 +19,12 @@ export function AreasServed() {
   const home = useHome();
   const { heading, intro, footnoteLead, footnoteLinkLabel, footnoteTail } =
     home.areasServed;
+
+  // The panel has an "Areas we serve panel" slot, and nothing was reading it:
+  // SectionArt only ever looked in public/photos, so a picture uploaded here
+  // went nowhere and the drawing stayed. Uploading is the whole point of the
+  // slot, so it wins over both the file and the drawing.
+  const uploaded = useSiteImage('coast');
 
   return (
     <section className="bg-white py-16">
@@ -62,6 +68,8 @@ export function AreasServed() {
         <Reveal delay={80}>
           <SectionArt
             name="coast"
+            photo={uploaded}
+            alt={uploaded ? `${heading}` : undefined}
             className="rounded-[14px] shadow-[0_10px_30px_rgba(16,24,40,0.12)]"
           />
         </Reveal>
