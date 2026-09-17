@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import live from './live.json';
 import { apiUrl, panelUrl } from '../lib/api';
+import { photoFor } from '../lib/photos';
 // @ts-expect-error -- plain ESM, shared verbatim with the build script so the
 // two can never disagree about which edits are safe to show.
 import { mergeContent } from './merge.mjs';
@@ -30,11 +31,14 @@ import { mergeContent } from './merge.mjs';
 
 type Content = typeof live;
 
-/** The logo badge and the mark beside it, when they have been uploaded. */
-export interface Brand {
-  logo?: string;
-  snake?: string;
-}
+/**
+ * Images uploaded in the panel, by slot.
+ *
+ * Open-ended rather than two named fields: the panel's list of slots grows
+ * whenever a new place on the site can take a picture, and a type that had to
+ * be edited in step with it would be edited one release late.
+ */
+export type Brand = Record<string, string | undefined>;
 
 // Module state rather than a context: the copy is read by eight sections of one
 // page, none of which can change it, so a provider would be ceremony around a
@@ -66,8 +70,7 @@ async function loadOnce(): Promise<void> {
     // against the panel and not the page -- an <img> would otherwise ask for
     // /cars/brand.php on the fleet page and get a 404 on some pages only.
     const nextBrand: Brand = {};
-    for (const slot of ['logo', 'snake'] as const) {
-      const value = body.brand?.[slot];
+    for (const [slot, value] of Object.entries(body.brand ?? {})) {
       if (typeof value === 'string' && value !== '') nextBrand[slot] = panelUrl(value);
     }
 
@@ -118,7 +121,7 @@ export function useHome(): Content['home'] {
   );
 }
 
-/** The uploaded logo and mark, empty until the panel answers. */
+/** Images uploaded in the panel, empty until it answers. */
 export function useBrand(): Brand {
   return useSyncExternalStore(
     subscribe,
@@ -132,6 +135,17 @@ export function useBrand(): Brand {
 // A stable identity: useSyncExternalStore compares snapshots by reference, and
 // a fresh {} each call would loop forever.
 const EMPTY_BRAND: Brand = {};
+
+/**
+ * One uploaded image, falling back to a file committed under public/photos.
+ *
+ * Every place that shows a picture asks this, so an upload in the panel and a
+ * file in the repository are the same question with one answer, and the
+ * uploaded one wins -- it is the one an owner can change without a deploy.
+ */
+export function useSiteImage(slot: string): string | undefined {
+  return useBrand()[slot] ?? photoFor(slot);
+}
 
 /** The copy as it stood at build time. For anything outside a component. */
 export const content = live;

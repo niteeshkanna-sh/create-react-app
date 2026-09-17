@@ -1,4 +1,4 @@
-import { photoFor } from '../lib/photos';
+import { useSiteImage } from '../content';
 import { SectionArt } from '../components/art/SectionArt';
 import type { SceneName } from '../components/art/scenes';
 
@@ -12,6 +12,13 @@ interface PageHeaderProps {
   photo?: string;
   /** Drawn behind the title until that photograph exists. */
   scene?: SceneName;
+  /**
+   * What the banner photograph shows, for image search and screen readers.
+   * Falls back to the page title, which is never wrong but is rarely the most
+   * useful sentence -- "A Swift parked at Kanyakumari beach" earns a place in
+   * image results that "Our cars" does not.
+   */
+  imageAlt?: string;
 }
 
 /**
@@ -27,8 +34,8 @@ interface PageHeaderProps {
  * unreadable. The alphas below hold the text above 4.5:1 even against a
  * pure-white photograph, so legibility never depends on the crop.
  */
-export function PageHeader({ title, intro, photo, scene }: PageHeaderProps) {
-  const src = photo ? photoFor(photo) : undefined;
+export function PageHeader({ title, intro, photo, scene, imageAlt }: PageHeaderProps) {
+  const src = useSiteImage(photo ?? '');
 
   return (
     <section className="relative isolate overflow-hidden bg-navy text-white">
@@ -45,12 +52,22 @@ export function PageHeader({ title, intro, photo, scene }: PageHeaderProps) {
         <>
           <img
             src={src}
-            alt=""
-            aria-hidden="true"
+            // Described rather than decorative. It was alt="" and hidden from
+            // assistive technology, which is the right call for an ornament --
+            // but this is a photograph of the thing being hired, on a site that
+            // wants to be found for "self drive car Nagercoil". An empty alt is
+            // an image Google cannot read, and a screen reader is told nothing
+            // about the one picture on the page.
+            alt={imageAlt ?? title}
             // The biggest thing above the fold, so it is fetched at high
             // priority rather than lazily: a lazy banner paints the page twice.
             fetchPriority="high"
             decoding="async"
+            // Stated so the browser reserves the space before the file arrives.
+            // Without them the heading jumps down as the banner loads, which is
+            // both unpleasant and a ranking signal Google measures directly.
+            width={1600}
+            height={900}
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div aria-hidden="true" className="page-scrim absolute inset-0" />

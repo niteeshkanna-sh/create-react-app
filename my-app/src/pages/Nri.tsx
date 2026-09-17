@@ -54,6 +54,7 @@ export function Nri() {
     <>
       <PageHeader
         photo="nri-hero"
+        imageAlt="A rental car ready for an NRI visitor arriving in Kanyakumari district"
         scene="/nri"
         title="Coming home from abroad?"
         intro={`Arrange a car or bike before you land. We look after families visiting ${seo.site.district} district from the Gulf, Singapore, Malaysia and further afield.`}

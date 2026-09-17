@@ -27,6 +27,7 @@ export function Blog() {
     <>
       <PageHeader
         photo="blog-hero"
+        imageAlt="Driving routes and travel tips around Kanyakumari district"
         scene="coast"
         title="Blog"
         intro="Road trip routes, driving tips, and news about the fleet."

@@ -1,6 +1,5 @@
 import { useId } from 'react';
-import { photoFor } from '../lib/photos';
-import { useBrand } from '../content';
+import { useSiteImage } from '../content';
 
 /**
  * The coiled snake in the header, turning slowly on its own centre.
@@ -28,7 +27,7 @@ export function SnakeMark({ className }: { className?: string }) {
   // Unique per instance: two copies on one page would both define
   // `#snake-gold` and the browser would paint both with whichever it saw last.
   const uid = useId().replace(/:/g, '');
-  const photo = useBrand().snake ?? photoFor('snake');
+  const photo = useSiteImage('snake');
 
   if (photo) {
     return (

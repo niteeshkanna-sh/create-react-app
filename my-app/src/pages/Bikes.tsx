@@ -4,6 +4,7 @@ export function Bikes() {
   return (
     <ServicePage
       photo="bikes-hero"
+      imageAlt="Scooters and motorcycles for rent in Nagercoil and Kanyakumari"
       scene="/bikes"
       title="Bike rental in Nagercoil & Kanyakumari"
       intro="Two-wheelers for hire by the hour, the day or the week, across Kanyakumari district."

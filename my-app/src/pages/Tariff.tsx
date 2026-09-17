@@ -13,6 +13,7 @@ export function Tariff() {
     <>
       <PageHeader
         photo="tariff-hero"
+        imageAlt="Self-drive car rental rates in Nagercoil and Kanyakumari district"
         scene="/cars"
         title="Tariff"
         intro="Rates are per day. Longer hires bring the daily rate down. Every figure below is what you pay — there is no separate booking fee."

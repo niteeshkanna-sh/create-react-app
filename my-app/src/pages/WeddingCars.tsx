@@ -4,6 +4,7 @@ export function WeddingCars() {
   return (
     <ServicePage
       photo="wedding-hero"
+      imageAlt="A decorated wedding car for hire in Kanyakumari district"
       scene="/wedding-cars"
       title="Wedding car rental in Nagercoil & Kanyakumari"
       intro="Decorated cars and premium vehicles for marriages across Kanyakumari district."
