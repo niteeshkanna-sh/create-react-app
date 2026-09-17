@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { photoFor } from '../lib/photos';
+import { useBrand } from '../content';
 
 /**
  * The lockup from the logo bar: a round badge, then PREMIUM RENTALS in tracked
@@ -13,7 +14,10 @@ import { photoFor } from '../lib/photos';
  * is one thing to remember rather than three.
  */
 export function Logo({ onClick }: { onClick?: () => void }) {
-  const logo = photoFor('logo');
+  // Uploaded in the panel first, then a file dropped into public/photos, then
+  // the drawn badge. The panel wins because it is the one an owner can change
+  // without touching the repository.
+  const logo = useBrand().logo ?? photoFor('logo');
 
   return (
     <Link to="/" onClick={onClick} className="flex items-center gap-3">

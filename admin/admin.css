@@ -140,6 +140,19 @@ button { font-family: inherit; }
 }
 .migration-warning span { display: block; color: var(--ink-dim); font-size: 0.82rem; margin-top: 2px; }
 
+/* ---------- Logo and mark uploads ---------- */
+.brand-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.brand-slot { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.brand-slot-label { font-weight: 600; font-size: 0.88rem; }
+/* Dark, because the mark sits on the dark header -- a light preview would show
+   pale artwork as nearly invisible and send someone looking for a fault. */
+.brand-slot-preview {
+  width: 120px; height: 120px; display: grid; place-items: center;
+  background: #1A2233; border-radius: 12px; border: 1px solid var(--border);
+}
+.brand-slot-preview img { max-width: 88px; max-height: 88px; object-fit: contain; }
+.brand-slot-empty { color: #8C8578; font-size: 0.8rem; }
+
 /* ---------- Vehicle photograph ---------- */
 .photo-field { display: flex; flex-direction: column; gap: 8px; }
 .photo-preview { display: flex; align-items: center; gap: 10px; }

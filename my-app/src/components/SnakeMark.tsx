@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { photoFor } from '../lib/photos';
+import { useBrand } from '../content';
 
 /**
  * The coiled snake in the header, turning slowly on its own centre.
@@ -18,14 +19,16 @@ import { photoFor } from '../lib/photos';
  * the size it was drawn at. A finer body and a tighter coil look better at
  * 120px and turn into a loading spinner at 48 -- which was the first attempt.
  *
- * Drop a file named `snake` into public/photos and it replaces the drawing,
- * the same way a car photograph replaces its card art.
+ * Upload one in the panel, under Website content, and it replaces the drawing.
+ * A file named `snake` in public/photos does the same for anyone working in the
+ * repository; the uploaded one wins, because it is the one that can be changed
+ * without a deploy.
  */
 export function SnakeMark({ className }: { className?: string }) {
   // Unique per instance: two copies on one page would both define
   // `#snake-gold` and the browser would paint both with whichever it saw last.
   const uid = useId().replace(/:/g, '');
-  const photo = photoFor('snake');
+  const photo = useBrand().snake ?? photoFor('snake');
 
   if (photo) {
     return (
