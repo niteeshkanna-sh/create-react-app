@@ -142,6 +142,7 @@ function openCarModal(car) {
   document.getElementById('carYear').value = car ? car.year : new Date().getFullYear();
   document.getElementById('carStatus').value = car ? car.status : 'Available';
   document.getElementById('carPrice').value = car ? car.price : '';
+  document.getElementById('carPriceMax').value = car ? car.priceMax : '';
   document.getElementById('carPrice7').value = car ? car.price7 : '';
   document.getElementById('carPrice15').value = car ? car.price15 : '';
   document.getElementById('carPrice30').value = car ? car.price30 : '';
@@ -352,6 +353,9 @@ carForm.addEventListener('submit', async (e) => {
     year: Number(document.getElementById('carYear').value),
     status: document.getElementById('carStatus').value,
     price: Number(document.getElementById('carPrice').value),
+    priceMax: document.getElementById('carPriceMax').value.trim() === ''
+      ? ''
+      : Number(document.getElementById('carPriceMax').value),
     price7: Number(document.getElementById('carPrice7').value) || 0,
     price15: Number(document.getElementById('carPrice15').value) || 0,
     price30: Number(document.getElementById('carPrice30').value) || 0,

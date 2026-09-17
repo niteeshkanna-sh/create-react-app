@@ -17,7 +17,28 @@ require_once __DIR__ . '/../src/vehicle-photos.php';
  * the status to Inactive instead.
  */
 
+/**
+ * Is the advertised upper daily rate available yet?
+ *
+ * api_guard applies pending migrations before anything here runs, so this is
+ * normally true. It is checked anyway because naming a column that does not
+ * exist fails the whole statement: if 007 had not applied, selecting it would
+ * take the entire fleet list down rather than hiding one optional figure.
+ * That exact shape of failure has happened here once already, with
+ * vehicles.photo_file.
+ */
+function rate_band_ready(): bool
+{
+    static $ready = null;
+    return $ready ??= table_has_column('vehicle_rates', 'rate_daily_max');
+}
 
+/** The rate columns to read, with the optional one only when it is there. */
+function rate_columns(): string
+{
+    return 'r.rate_daily, ' . (rate_band_ready() ? 'r.rate_daily_max, ' : '')
+        . 'r.rate_7day, r.rate_15day, r.rate_30day,';
+}
 
 $action = $_GET['action'] ?? ($_SERVER['REQUEST_METHOD'] === 'POST' ? 'save' : 'list');
 
@@ -33,7 +54,7 @@ switch ($action) {
         // price scheduled for next month does not leak into today's figures.
         $rows = fetch_all(
             "SELECT v.*,
-                    r.rate_daily, r.rate_7day, r.rate_15day, r.rate_30day,
+                    " . rate_columns() . "
                     r.km_limit_per_day, r.extra_km_rate, r.security_deposit,
                     r.effective_from AS rate_effective_from
                FROM vehicles v
@@ -71,6 +92,9 @@ switch ($action) {
             ->integer('current_km', 'Odometer', 0, 9999999)
             ->hexColour('colour', 'Colour')
             ->money('rate_daily', 'Daily rate')
+            // Display only: the top of the advertised band. Optional, because
+            // most cars have one price.
+            ->money('rate_daily_max', 'Daily rate (up to)', false)
             ->money('rate_7day', '7-day rate', false)
             ->money('rate_15day', '15-day rate', false)
             ->money('rate_30day', 'Monthly rate', false)
@@ -78,6 +102,14 @@ switch ($action) {
             ->money('extra_km_rate', 'Extra KM rate')
             ->money('security_deposit', 'Security deposit')
             ->orFail();
+
+        // A band that reads "1,800 to 1,600" is a typo, and it would print on
+        // the site exactly as entered.
+        if ($data['rate_daily_max'] !== null && $data['rate_daily_max'] < $data['rate_daily']) {
+            json_error('Please correct the highlighted fields.', 422, ['fields' => [
+                'rate_daily_max' => 'The upper rate cannot be below the daily rate.',
+            ]]);
+        }
 
         $reg = strtoupper(preg_replace('/\s+/', '', $data['reg_number']));
 
@@ -150,11 +182,30 @@ switch ($action) {
                 'security_deposit' => $data['security_deposit'],
             ];
 
+            if (rate_band_ready()) {
+                $incoming['rate_daily_max'] = $data['rate_daily_max'];
+            }
+
+            // Compared as numbers. This used to trim trailing zeros off both
+            // sides as strings, and the two sides are not the same shape:
+            // MySQL returns "1800.00", which trims to "1800", while the
+            // validator returns 1800, which trims to "18". So every rate
+            // ending in a zero looked changed on every save and wrote a
+            // redundant rate row -- the one thing the check exists to prevent.
+            $same = static function (mixed $a, mixed $b): bool {
+                $aEmpty = $a === null || $a === '';
+                $bEmpty = $b === null || $b === '';
+                if ($aEmpty || $bEmpty) {
+                    return $aEmpty && $bEmpty;
+                }
+                // Half a paisa: these are DECIMAL(12,2) either side.
+                return abs((float) $a - (float) $b) < 0.005;
+            };
+
             $changed = $currentRate === null;
             if (!$changed) {
                 foreach ($incoming as $key => $value) {
-                    if (rtrim(rtrim((string) $currentRate[$key], '0'), '.')
-                        !== rtrim(rtrim((string) $value, '0'), '.')) {
+                    if (!$same($currentRate[$key] ?? null, $value)) {
                         $changed = true;
                         break;
                     }
@@ -162,20 +213,18 @@ switch ($action) {
             }
 
             if ($changed) {
+                // Built from $incoming so the optional band column appears in
+                // the statement only when the database has it.
+                $columns = array_keys($incoming);
+                $set     = implode(', ', array_map(
+                    static fn (string $c): string => "$c = VALUES($c)", $columns));
+
                 query(
-                    'INSERT INTO vehicle_rates
-                       (vehicle_id, effective_from, rate_daily, rate_7day, rate_15day,
-                        rate_30day, km_limit_per_day, extra_km_rate, security_deposit, created_by)
-                     VALUES (?, CURDATE(), ?,?,?,?,?,?,?,?)
-                     ON DUPLICATE KEY UPDATE
-                        rate_daily = VALUES(rate_daily), rate_7day = VALUES(rate_7day),
-                        rate_15day = VALUES(rate_15day), rate_30day = VALUES(rate_30day),
-                        km_limit_per_day = VALUES(km_limit_per_day),
-                        extra_km_rate = VALUES(extra_km_rate),
-                        security_deposit = VALUES(security_deposit)',
-                    [$vehicleId, $data['rate_daily'], $data['rate_7day'], $data['rate_15day'],
-                     $data['rate_30day'], $data['km_limit_per_day'], $data['extra_km_rate'],
-                     $data['security_deposit'], $user['id']]
+                    'INSERT INTO vehicle_rates (vehicle_id, effective_from, created_by, '
+                    . implode(', ', $columns) . ')
+                     VALUES (?, CURDATE(), ?, ' . implode(', ', array_fill(0, count($columns), '?')) . ')
+                     ON DUPLICATE KEY UPDATE ' . $set,
+                    [$vehicleId, $user['id'], ...array_values($incoming)]
                 );
                 audit_log('vehicle_rate_changed', 'vehicles', 'vehicle', $vehicleId,
                     $currentRate === null ? null : array_intersect_key($currentRate, $incoming),
@@ -186,7 +235,7 @@ switch ($action) {
         });
 
         $row = fetch_one(
-            "SELECT v.*, r.rate_daily, r.rate_7day, r.rate_15day, r.rate_30day,
+            "SELECT v.*, " . rate_columns() . "
                     r.km_limit_per_day, r.extra_km_rate, r.security_deposit,
                     r.effective_from AS rate_effective_from
                FROM vehicles v
@@ -257,6 +306,7 @@ function present_vehicle(array $row): array
         'status'           => $row['status'],
         'current_km'       => (int) $row['current_km'],
         'rate_daily'       => isset($row['rate_daily']) ? (float) $row['rate_daily'] : 0.0,
+        'rate_daily_max'   => isset($row['rate_daily_max']) ? (float) $row['rate_daily_max'] : null,
         'rate_7day'        => isset($row['rate_7day'])  ? (float) $row['rate_7day']  : null,
         'rate_15day'       => isset($row['rate_15day']) ? (float) $row['rate_15day'] : null,
         'rate_30day'       => isset($row['rate_30day']) ? (float) $row['rate_30day'] : null,

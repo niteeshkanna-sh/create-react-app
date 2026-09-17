@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { inr, type BodyType } from '../data/cars';
+import { dailyRate, inr, type BodyType } from '../data/cars';
 import { carPhoto } from '../lib/carPhoto';
 import { useFleet } from '../lib/useFleet';
 import { SectionArt } from './art/SectionArt';
@@ -141,20 +141,30 @@ export function Fleet() {
                 </dl>
 
                 <div className="mt-4 border-t border-line pt-4">
-                  <p className="flex items-baseline gap-1.5">
+                  {/* A band when the panel carries an upper rate, one figure
+                      otherwise — dailyRate decides, so this card and the
+                      tariff table can never disagree about the price. */}
+                  <p className="flex flex-wrap items-baseline gap-x-1.5">
                     <span className="text-2xl font-bold text-navy">
-                      {inr(car.rateDaily)}
+                      {dailyRate(car)}
                     </span>
                     <span className="text-sm text-ink-faint">/ day</span>
                   </p>
                   {car.rateMonthly ? (
                     <p className="mt-1 text-sm text-gold-deep">
-                      {inr(car.rateMonthly)} / day on monthly hire
+                      {inr(car.rateMonthly)} on monthly hire
                     </p>
                   ) : null}
-                  <p className="mt-2 text-xs text-ink-faint">
-                    {car.kmLimitPerDay} km/day included &middot; {inr(car.extraKmRate)}/km
-                    after &middot; {inr(car.deposit)} deposit
+                  {/* Gold hairlines rather than interpuncts, matching the rule
+                      under the logo bar. Marked aria-hidden because a divider
+                      read aloud as a character is noise; the items are
+                      separate elements, which is what carries the grouping. */}
+                  <p className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-ink-faint">
+                    <span>{car.kmLimitPerDay} km/day included</span>
+                    <span aria-hidden="true" className="h-3.5 w-0.5 shrink-0 rounded-full bg-gold-mid" />
+                    <span>{inr(car.extraKmRate)}/km after</span>
+                    <span aria-hidden="true" className="h-3.5 w-0.5 shrink-0 rounded-full bg-gold-mid" />
+                    <span>{inr(car.deposit)} deposit</span>
                   </p>
                 </div>
 

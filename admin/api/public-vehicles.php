@@ -67,6 +67,11 @@ header('Cache-Control: public, max-age=60');
 $hasPhoto = table_has_column('vehicles', 'photo_file');
 $photoColumn = $hasPhoto ? 'v.photo_file,' : "NULL AS photo_file,";
 
+// Same reasoning for the advertised upper rate, added later still.
+$bandColumn = table_has_column('vehicle_rates', 'rate_daily_max')
+    ? 'r.rate_daily_max,'
+    : 'NULL AS rate_daily_max,';
+
 $rows = fetch_all(
     "SELECT v.id,
             v.name,
@@ -78,6 +83,7 @@ $rows = fetch_all(
             v.seats,
             v.model_year,
             r.rate_daily,
+            $bandColumn
             r.rate_7day,
             r.rate_15day,
             r.rate_30day,
@@ -116,6 +122,9 @@ foreach ($rows as $row) {
         'seats'         => (int) $row['seats'],
         'year'          => (int) $row['model_year'],
         'rateDaily'     => (float) $row['rate_daily'],
+        // The top of the advertised band, when there is one. Display only:
+        // rateDaily is still the figure a booking is charged at.
+        'rateDailyMax'  => $row['rate_daily_max'] !== null ? (float) $row['rate_daily_max'] : null,
         'rateWeekly'    => $row['rate_7day']  !== null ? (float) $row['rate_7day']  : null,
         'rateFortnight' => $row['rate_15day'] !== null ? (float) $row['rate_15day'] : null,
         'rateMonthly'   => $row['rate_30day'] !== null ? (float) $row['rate_30day'] : null,

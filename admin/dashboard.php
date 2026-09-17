@@ -371,19 +371,30 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div class="modal-row modal-row-4">
           <div class="field-group">
             <label for="carPrice">Daily</label>
-            <input type="number" id="carPrice" required min="0" placeholder="3000" />
+            <input type="number" id="carPrice" required min="0" placeholder="1600" />
+          </div>
+          <div class="field-group">
+            <label for="carPriceMax">Daily, up to</label>
+            <input type="number" id="carPriceMax" min="0" placeholder="1800" />
           </div>
           <div class="field-group">
             <label for="carPrice7">7-Day</label>
             <input type="number" id="carPrice7" min="0" placeholder="19000" />
           </div>
           <div class="field-group">
+            <label for="carPrice30">Monthly</label>
+            <input type="number" id="carPrice30" min="0" placeholder="38000" />
+          </div>
+        </div>
+        <p class="field-hint">
+          Leave <strong>Daily, up to</strong> empty for one price. Fill it and the
+          site shows a range &mdash; &ldquo;&#8377;1,600 &ndash; &#8377;1,800 / day&rdquo;.
+          Bookings are still charged at the <strong>Daily</strong> figure.
+        </p>
+        <div class="modal-row">
+          <div class="field-group">
             <label for="carPrice15">15-Day</label>
             <input type="number" id="carPrice15" min="0" placeholder="36000" />
-          </div>
-          <div class="field-group">
-            <label for="carPrice30">30-Day</label>
-            <input type="number" id="carPrice30" min="0" placeholder="66000" />
           </div>
         </div>
 
