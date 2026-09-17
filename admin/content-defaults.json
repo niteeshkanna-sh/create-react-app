@@ -7,9 +7,9 @@
       "tagline": "Take the wheel. We'll handle the rest.",
       "intro": "Self drive cars, bike rental, wedding cars and tourist vehicles with a driver — across Nagercoil, Marthandam, Colachel and the whole of Kanyakumari district. Transparent rates and a deposit you get back.",
       "primaryLabel": "Browse the fleet",
-      "primaryHref": "#fleet",
+      "primaryHref": "/cars",
       "secondaryLabel": "Check availability",
-      "secondaryHref": "#enquire",
+      "secondaryHref": "/contact#enquire",
       "points": [
         "Unlimited-choice pickup across the city",
         "Clear KM limits and deposits, stated upfront",

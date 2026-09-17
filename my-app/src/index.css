@@ -244,8 +244,15 @@ body {
    reduced-motion exception at all. Nothing moves, so nothing to exempt.
 --------------------------------------------------------------------------- */
 
+/* No display here.
+   
+   Tailwind's utilities sit in a cascade layer and unlayered CSS outranks
+   them, so `display: block` in this rule beat the `hidden` on the element and
+   the snake showed at every width -- including 320px, where it pushed the
+   menu button off the right edge and broke the business name onto two lines.
+   The header already says the snake is held back until 640px; this is what
+   was stopping that from being true. The element's own classes decide. */
 .snake-mark {
-  display: block;
   object-fit: contain;
 }
 
@@ -439,4 +446,20 @@ body {
     align-items: center;
     min-height: 44px;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Anchor targets clear the header.
+
+   The header is sticky, so scrolling an #anchor to the top of the viewport
+   puts its heading behind the logo bar. scroll-margin-top reserves that
+   height, and it applies to a keyboard "skip to" jump and a pasted link with
+   a hash just as much as to a click.
+--------------------------------------------------------------------------- */
+:target,
+#fleet,
+#enquire,
+#how,
+#top {
+  scroll-margin-top: 88px;
 }
