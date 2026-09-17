@@ -53,9 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json_error('Only GET is supported here.', 405);
 }
 
-// A short cache keeps a burst of visitors off the database without making an
-// edit in the panel take long to show up.
-header('Cache-Control: public, max-age=300');
+// A short cache keeps a burst of visitors off the database. Five minutes was
+// too long once photographs existed: changing a car's picture and then not
+// seeing it on the site reads as the upload having failed, and the natural
+// response is to upload it again. A minute still absorbs any burst worth
+// absorbing.
+header('Cache-Control: public, max-age=60');
 
 // Named only when it exists. A deploy adds the column, but the migration that
 // creates it does not run until someone opens the panel -- and this endpoint

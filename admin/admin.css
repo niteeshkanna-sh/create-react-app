@@ -148,7 +148,28 @@ button { font-family: inherit; }
   border-radius: 8px; border: 1px solid var(--border); background: var(--bg);
 }
 .field-note { color: var(--ink-dim); font-size: 0.8rem; }
+
+/* The framing window is the card's shape exactly, so what is inside it is what
+   a customer sees. Guessing how a photo will be cut is the thing this removes. */
+.photo-crop { display: flex; flex-direction: column; gap: 8px; }
+.crop-window {
+  position: relative; width: 100%; max-width: 360px; aspect-ratio: 16 / 10;
+  overflow: hidden; border-radius: 10px; border: 1px solid var(--border);
+  background: #2B2A28; cursor: grab; touch-action: none;
+}
+.crop-window:active { cursor: grabbing; }
+.crop-window img {
+  position: absolute; top: 0; left: 0; transform-origin: 0 0;
+  user-select: none; -webkit-user-drag: none; max-width: none;
+}
+.crop-zoom { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--ink-dim); }
+.crop-zoom input { flex: 1; max-width: 360px; }
+
+/* One shape for every card, whatever the photograph's own proportions. Without
+   this the row was ragged: a tall picture made its card taller than the rest. */
+.admin-car-thumb { aspect-ratio: 16 / 10; overflow: hidden; }
 .admin-car-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.admin-car-thumb svg { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 /* ---------- Car admin grid ---------- */
 .car-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
@@ -158,9 +179,8 @@ button { font-family: inherit; }
 }
 .admin-car-thumb {
   background: linear-gradient(135deg, #FFF3DC, #FBEFE0); border-radius: 10px;
-  padding: 8px; margin: -4px -4px 2px;
+  margin: -4px -4px 2px;
 }
-.admin-car-thumb svg { width: 100%; height: auto; display: block; }
 .car-admin-card .row1 { display: flex; align-items: center; gap: 10px; }
 .car-admin-card .name { font-weight: 700; font-size: 0.95rem; flex: 1; }
 .car-admin-card .meta { font-size: 0.8rem; color: var(--ink-dim); display: flex; gap: 10px; flex-wrap: wrap; }
