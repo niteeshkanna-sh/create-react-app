@@ -180,7 +180,15 @@ admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
-                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                <button class="btn btn-danger btn-sm btn-icon" type="submit"
+                        title="Delete this place" aria-label="Delete <?= e((string) $row['name']) ?>">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>
+                      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                </button>
               </form>
             </div>
           </div>

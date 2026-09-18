@@ -729,5 +729,6 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
   <script src="<?= asset('car-data.js') ?>"></script>
   <script src="<?= asset('booking-data.js') ?>"></script>
   <script src="<?= asset('admin.js') ?>"></script>
+  <script src="<?= asset('booking-dates.js') ?>"></script>
 </body>
 </html>

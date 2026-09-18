@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { submitEnquiry } from '../lib/enquiry';
 import { useFleet } from '../lib/useFleet';
+import { useAvailability, busyForVehicle } from '../lib/useAvailability';
+import { DatePick } from './DatePick';
 
 type Status =
   | { kind: 'idle' }
@@ -23,6 +25,16 @@ export function Enquiry() {
 
   const [searchParams] = useSearchParams();
   const [selectedCar, setSelectedCar] = useState(searchParams.get('car') ?? '');
+
+  // Which days are gone. Once a vehicle is chosen it is that vehicle's diary;
+  // before then it is only the days on which nothing at all is free, because
+  // one car being out says nothing about whether we can help.
+  const availability = useAvailability();
+  const chosen = cars.find((c) => `${c.brand} ${c.name}`.trim() === selectedCar);
+  const busy = busyForVehicle(availability, chosen?.id);
+
+  const [startDate, setStartDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -164,16 +176,39 @@ export function Enquiry() {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className={label} htmlFor="start">
+              <label className={label} id="start-label" htmlFor="start">
                 Pickup date
               </label>
-              <input id="start" name="start" type="date" className={`mt-1.5 ${field}`} />
+              <div className="mt-1.5">
+                <DatePick
+                  id="start"
+                  name="start"
+                  labelledBy="start-label"
+                  value={startDate}
+                  onChange={(next) => {
+                    setStartDate(next);
+                    // A return before the pickup is not a date anyone meant.
+                    if (returnDate !== '' && returnDate < next) setReturnDate(next);
+                  }}
+                  busy={busy}
+                />
+              </div>
             </div>
             <div>
-              <label className={label} htmlFor="return">
+              <label className={label} id="return-label" htmlFor="return">
                 Return date
               </label>
-              <input id="return" name="return" type="date" className={`mt-1.5 ${field}`} />
+              <div className="mt-1.5">
+                <DatePick
+                  id="return"
+                  name="return"
+                  labelledBy="return-label"
+                  value={returnDate}
+                  onChange={setReturnDate}
+                  busy={busy}
+                  min={startDate || undefined}
+                />
+              </div>
               {fieldError('return_date') ? (
                 <p className="mt-1 text-sm text-danger">{fieldError('return_date')}</p>
               ) : null}

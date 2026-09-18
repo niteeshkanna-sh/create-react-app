@@ -35,6 +35,21 @@ async function boot() {
 
 document.addEventListener('DOMContentLoaded', boot);
 
+/**
+ * The bin, for every delete in the panel.
+ *
+ * One drawing rather than the word "Delete" in some places, an "x" in others
+ * and "Void" in a third: a row of buttons is scanned by shape long before it is
+ * read. Every use pairs it with a title and an aria-label, because an icon on
+ * its own is a button a screen reader announces as nothing at all.
+ */
+const BIN_ICON =
+  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+  ' stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/>' +
+  '<path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>' +
+  '<path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+
 // ---- Tabs ----
 const TAB_PANELS = ['dashboard', 'bookings', 'cars', 'inquiries', 'finance', 'reports'];
 document.querySelectorAll('.admin-tab').forEach((tab) => {
@@ -89,7 +104,7 @@ function renderCarAdminGrid() {
       <div class="price">₹${car.price.toLocaleString('en-IN')}/day</div>
       <div class="actions">
         <button class="btn btn-outline btn-sm edit-car-btn">Edit</button>
-        <button class="btn btn-danger btn-sm delete-car-btn">Delete</button>
+        <button class="btn btn-danger btn-sm btn-icon delete-car-btn" title="Retire this vehicle" aria-label="Retire this vehicle">${BIN_ICON}</button>
       </div>
     </div>
   `).join('');
@@ -561,6 +576,7 @@ async function renderEnquiry(id) {
           <button class="btn btn-ghost btn-sm" data-enq-status="Pending">Mark Pending</button>
           <button class="btn btn-ghost btn-sm" data-enq-status="Rejected">Reject</button>
           <button class="btn btn-primary btn-sm" id="enqConvert">Accept &amp; Create Booking</button>
+          <button class="btn btn-danger btn-sm btn-icon" id="enqDelete" title="Delete this enquiry" aria-label="Delete this enquiry">${BIN_ICON}</button>
         </div>
       </div>` : ''}
   `;
@@ -571,6 +587,18 @@ async function renderEnquiry(id) {
     try {
       await api.enquiries.note(e.id, note.trim());
       await renderEnquiry(e.id);
+    } catch (err) { showError(err); }
+  });
+
+  document.getElementById('enqDelete')?.addEventListener('click', async () => {
+    // Named in the question. "Delete this?" with the thing off-screen is how
+    // the wrong row gets deleted.
+    if (!confirm(`Delete enquiry ${e.enquiry_number} from ${e.name}? This cannot be undone.`)) return;
+    try {
+      await api.enquiries.remove(e.id);
+      enquiryModalOverlay.hidden = true;
+      currentEnquiry = null;
+      await renderInquiries();
     } catch (err) { showError(err); }
   });
 
