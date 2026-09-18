@@ -77,9 +77,19 @@ foreach (site_images() as $slot => $file) {
     $brand[$slot] = site_image_url($file);
 }
 
+// Said separately from the map itself, because an empty map has two causes
+// that look identical to a caller and need opposite fixes: nobody has
+// uploaded anything yet, or 005_site_images.sql has never run on this
+// database. site_images() answers [] to both. "No pictures yet" sends someone
+// to the upload form; "the table is missing" sends them to open the panel
+// once so the migration applies. Guessing between them is how an afternoon
+// goes.
+$imagesReady = table_has_column('site_images', 'file');
+
 json_out([
-    'ok'        => true,
-    'ready'     => $ready,
-    'overrides' => $overrides === [] ? (object) [] : $overrides,
-    'brand'     => $brand === [] ? (object) [] : $brand,
+    'ok'          => true,
+    'ready'       => $ready,
+    'imagesReady' => $imagesReady,
+    'overrides'   => $overrides === [] ? (object) [] : $overrides,
+    'brand'       => $brand === [] ? (object) [] : $brand,
 ]);

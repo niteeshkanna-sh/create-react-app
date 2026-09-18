@@ -19,6 +19,7 @@
 // one of those files by hand is always wrong, because the next run replaces
 // it.
 
+import { execFileSync } from 'node:child_process';
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -63,6 +64,30 @@ for (const entry of await readdir(dist, { withFileTypes: true })) {
   if (!NEVER_REMOVE.has(entry.name)) published.push(entry.name);
 }
 
+// A note of which build this is, served at /build.json.
+//
+// Publishing here is two steps -- run this, then commit and push -- and the
+// deploy is a third that happens on a different machine. Every gap between
+// them looks the same from a browser: the change is not there. "The pictures
+// I uploaded do not show" was that, twice: the panel was storing them
+// correctly the whole time and the website on the server was an older build
+// that did not yet ask for them.
+//
+// So the server carries the date of the build it is running, and
+// fleet-check.html reads it back. It turns "is the deploy stale?" from a
+// question nobody can answer into one line on a page.
+const buildInfo = {
+  publishedAt: new Date().toISOString(),
+  commit: gitOutput(['rev-parse', '--short', 'HEAD']),
+  commitAt: gitOutput(['log', '-1', '--format=%cI']),
+  // The hashed bundle names. Two servers disagreeing about these is the whole
+  // of a stale deploy, in a form that can be compared at a glance.
+  assets: (await readdir(join(dist, 'assets')).catch(() => [])).sort(),
+};
+
+await writeFile(join(root, 'build.json'), JSON.stringify(buildInfo, null, 2) + '\n');
+published.push('build.json');
+
 // The three files whose absence takes the whole site or the whole panel down,
 // checked here rather than discovered in a browser: no index.html at the top
 // level is a 403 on the domain itself, which is the failure this script exists
@@ -88,3 +113,12 @@ await writeFile(manifestPath, JSON.stringify(published.sort(), null, 2) + '\n');
 console.log(
   `publish: ${published.length} entries at the top level — commit them, and the next push is the deploy`,
 );
+
+/** One line of `git`, or null outside a checkout. Never fatal: this is a note. */
+function gitOutput(args) {
+  try {
+    return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  } catch {
+    return null;
+  }
+}

@@ -162,7 +162,7 @@ admin_shell_open($me, 'content.php', 'Website content');
   <?php $brand = site_images(); ?>
   <details class="c-sec c-fold">
     <summary class="c-sum">
-      <span class="c-sum-name">Logo, mark and page banners</span>
+      <span class="c-sum-name">Pictures</span>
       <span class="c-flag"><?= count($brand) ?> of <?= count(SITE_IMAGE_SLOTS) ?> uploaded</span>
       <svg class="c-sum-chev" width="16" height="16" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -170,11 +170,19 @@ admin_shell_open($me, 'content.php', 'Website content');
     </summary>
     <div class="c-fold-body">
     <p class="c-note">
-      The badge in the header, and the mark beside it. Nothing is drawn in their
-      place any more, so the header shows the name alone until one is uploaded.
-      PNG with a transparent background looks best for the badge; the mark sits
-      on the dark header, so light artwork reads better than dark. Up to
-      6&nbsp;MB.
+      Every picture on the website, in the order it appears: the two brand
+      marks, the banner across the top of each page, the home page, the six
+      cards under &ldquo;What we hire&rdquo; and the three steps. A slot with
+      nothing in it keeps the drawing the site ships with, so an unfinished set
+      still looks finished. PNG with a transparent background looks best for
+      the badge; the mark sits on the dark header, so light artwork reads
+      better than dark. Up to 6&nbsp;MB each.
+    </p>
+    <p class="c-note">
+      An upload appears on the website within a minute. If one does not, open
+      <code>/fleet-check.html</code> on the site: it says whether the picture
+      reached the server and whether the website published there is new enough
+      to ask for it, which are the only two things that can be wrong.
     </p>
 
     <div class="brand-slots">
