@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Fleet check</title>
+<title>Site check</title>
 <!--
   Why this page exists.
 
@@ -19,6 +19,14 @@
   so it is served whatever else is broken -- including the case where the
   whole /admin folder is missing, which is exactly when a diagnostic living
   inside /admin would be useless.
+
+  It now asks two more questions, for the same reason. "The pictures I
+  uploaded do not show on the site" has the same shape as the missing car:
+  the panel says saved, the website shows the drawing, and nothing anywhere
+  says which of the two is wrong. It can be the panel (nothing stored, or the
+  table for it never created) or the website (this server is running a build
+  from before those pictures had anywhere to go). Those need opposite fixes,
+  so the page names which one it is rather than describing both.
 
   noindex because this is for the owner, not for Google.
 -->
@@ -59,8 +67,8 @@
 </head>
 <body>
 <main>
-  <h1>Fleet check</h1>
-  <p class="sub">Asks the website's own question and reports what the server said.</p>
+  <h1>Site check</h1>
+  <p class="sub">Asks the website's own questions and reports what this server said.</p>
   <div id="out"></div>
 </main>
 
@@ -99,21 +107,22 @@
         c.appendChild(f);
       },
       raw: function (text) { c.appendChild(el('pre', null, text)); },
-      table: function (rows) {
+      // Headings and rows of plain strings, rather than a shape per caller:
+      // three checks print tables now and only one of them is about cars.
+      table: function (headings, rows) {
         var t = el('table');
         var head = t.insertRow();
-        ['Vehicle', 'Body', 'Per day'].forEach(function (label) {
+        headings.forEach(function (label) {
           var th = document.createElement('th');
           th.textContent = label;
           head.appendChild(th);
         });
-        rows.forEach(function (r) {
+        rows.forEach(function (cells) {
           var tr = t.insertRow();
-          tr.insertCell().textContent = r.brand + ' ' + r.name;
-          tr.insertCell().textContent = r.bodyType;
-          tr.insertCell().textContent = '₹' + r.rateDaily;
+          cells.forEach(function (value) { tr.insertCell().textContent = value; });
         });
         c.appendChild(t);
+        return t;
       }
     };
   }
@@ -125,7 +134,7 @@
     return t.length > 500 ? t.slice(0, 500) + '…' : (t || '(empty response)');
   }
 
-  function run() {
+  function checkFleet() {
     var c = card('The website asks the panel for the fleet', ENDPOINT);
 
     fetch(ENDPOINT, { headers: { accept: 'application/json' } })
@@ -209,7 +218,9 @@
         c.say('The panel returned ' + body.vehicles.length +
           (body.vehicles.length === 1 ? ' car.' : ' cars.') +
           ' These are exactly what the website should be showing.');
-        c.table(body.vehicles);
+        c.table(['Vehicle', 'Body', 'Per day'], body.vehicles.map(function (v) {
+          return [v.brand + ' ' + v.name, v.bodyType, '₹' + v.rateDaily];
+        }));
         c.fix('If the website still shows none of these,',
           'it is holding an old copy of the page. Reload with Ctrl+Shift+R (Cmd+Shift+R on a Mac).');
       })
@@ -222,7 +233,225 @@
       });
   }
 
-  run();
+  // ------------------------------------------------------------- pictures --
+
+  var CONTENT = PANEL + '/api/public-content.php';
+
+  // Fetched once and shared: both the pictures check and the version check
+  // want it, and asking twice would be two chances to disagree with itself.
+  var panelContent = fetch(CONTENT, { headers: { accept: 'application/json' } })
+    .then(function (res) {
+      return res.text().then(function (text) { return { res: res, text: text }; });
+    });
+
+  // The website's own code, as this server is serving it right now.
+  //
+  // The bundle carries every slot name as a plain string -- minifying renames
+  // variables and leaves string literals alone -- so searching it answers the
+  // one question that otherwise cannot be answered from a browser: does the
+  // copy of the website on this server know that this picture exists?
+  var siteBundle = fetch(location.origin + '/index.html', { cache: 'no-store' })
+    .then(function (res) { return res.text(); })
+    .then(function (html) {
+      var m = html.match(/assets\/index-[A-Za-z0-9_-]+\.js/);
+      if (!m) throw new Error('the home page names no script');
+      return fetch(location.origin + '/' + m[0]).then(function (res) {
+        if (!res.ok) throw new Error('the script answered ' + res.status);
+        return res.text().then(function (code) { return { name: m[0], code: code }; });
+      });
+    });
+
+  /** Loads one image and resolves true or false. Never rejects. */
+  function loads(url) {
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () { resolve(true); };
+      img.onerror = function () { resolve(false); };
+      img.src = url;
+    });
+  }
+
+  function checkImages() {
+    var c = card('The website asks the panel for the pictures', CONTENT);
+
+    panelContent
+      .then(function (r) {
+        var type = (r.res.headers.get('content-type') || '').toLowerCase();
+        c.say('The server answered ' + r.res.status + ' ' + r.res.statusText + ', as ' + (type || 'no stated type') + '.');
+
+        if (!r.res.ok || type.indexOf('application/json') === -1) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          c.fix('The pictures endpoint is not answering.',
+            'Everything the panel stores for the site — the wording and the pictures — comes ' +
+            'through this one address. Whatever the fleet check above says about /admin applies ' +
+            'here too; fix that first and this will follow.');
+          return;
+        }
+
+        var body;
+        try {
+          body = JSON.parse(r.text);
+        } catch (e) {
+          c.mark('bad');
+          c.raw(snippet(r.text));
+          c.fix('The response claimed to be JSON but would not parse.',
+            'Usually a PHP notice printed before the real output. The text above shows it.');
+          return;
+        }
+
+        if (body.imagesReady === false) {
+          c.mark('bad');
+          c.fix('The panel has no table to keep pictures in.',
+            'The database is missing the site_images table, so every upload had nowhere to go. ' +
+            'Sign in at ' + PANEL + '/ and open any page: the panel applies the missing database ' +
+            'changes on the way in. Then upload the pictures again and reload this page.');
+          return;
+        }
+
+        var brand = body.brand || {};
+        var slots = Object.keys(brand);
+
+        if (slots.length === 0) {
+          c.mark('warn');
+          c.fix('The panel is working. It is holding no pictures.',
+            'Nothing has been uploaded yet, or the uploads did not save. Sign in at ' + PANEL +
+            '/content.php, open Pictures, choose a file for a slot and press the button under it. ' +
+            'The slot shows a thumbnail once it has one — if it does not, the upload was refused ' +
+            'and the panel says why at the top of the page.');
+          return;
+        }
+
+        return Promise.all(slots.map(function (slot) {
+          return loads(PANEL + '/' + brand[slot]).then(function (ok) {
+            return { slot: slot, ok: ok };
+          });
+        })).then(function (results) {
+          var broken = results.filter(function (r2) { return !r2.ok; });
+
+          // Which of these the website on this server actually asks for. A
+          // picture stored for a slot the code has never heard of is the exact
+          // shape of a stale deploy, and it is invisible from every other
+          // angle: the panel is right, the file is there, and the page shows
+          // the drawing.
+          return siteBundle.then(function (bundle) {
+            return { results: results, broken: broken, bundle: bundle };
+          }, function () {
+            return { results: results, broken: broken, bundle: null };
+          });
+        }).then(function (state) {
+          // A plain substring, not a quoted one: a minifier is free to
+          // choose either quote and to fold the name into a longer literal.
+          // The cost of being loose is a slot reported as known when it is
+          // only a coincidence -- a hint that reads as reassuring rather than
+          // as a wrong instruction, which is the right way round for a check
+          // whose job is to point at the stale deploy.
+          var unknown = state.bundle === null ? [] : state.results.filter(function (r2) {
+            return state.bundle.code.indexOf(r2.slot) === -1;
+          });
+
+          c.say('The panel is holding ' + state.results.length +
+            (state.results.length === 1 ? ' picture.' : ' pictures.'));
+
+          c.table(['Where it goes', 'The file', 'On the website'], state.results.map(function (r2) {
+            var known = state.bundle === null ? 'cannot tell'
+              : (unknown.indexOf(r2) === -1 ? 'asked for' : 'not asked for');
+            return [r2.slot, r2.ok ? 'loads' : 'will not load', known];
+          }));
+
+          if (state.broken.length > 0) {
+            c.mark('bad');
+            c.fix(state.broken.length + ' of them will not load.',
+              'The panel has a row pointing at a file that is not on the disk any more. That is ' +
+              'what happens when the storage folder is emptied or moved. Upload those pictures ' +
+              'again — the ones that load are fine and do not need touching.');
+            return;
+          }
+
+          if (unknown.length > 0) {
+            c.mark('bad');
+            c.fix('The website on this server is older than these pictures.',
+              'Every file loads, so the panel has done its job. But the copy of the website ' +
+              'running here does not mention ' + unknown.length +
+              (unknown.length === 1 ? ' of these slots' : ' of these slots') +
+              ', which means it was built before they existed and has no place to put them. ' +
+              'This is a publishing step that has not happened, not a fault: see the check below.');
+            return;
+          }
+
+          c.mark('ok');
+          c.fix('The pictures are stored and the website asks for all of them.',
+            'If one of them still does not appear, the browser is holding an old copy of the ' +
+            'page. Reload with Ctrl+Shift+R (Cmd+Shift+R on a Mac).');
+        });
+      })
+      .catch(function (err) {
+        c.mark('bad');
+        c.fix('The request never completed.',
+          'The browser could not reach ' + CONTENT + ' at all — ' +
+          (err && err.message ? err.message : 'no reason given') + '.');
+      });
+  }
+
+  // -------------------------------------------------------------- version --
+
+  function checkBuild() {
+    var c = card('Which build of the website is on this server', location.origin + '/build.json');
+
+    Promise.all([
+      fetch(location.origin + '/build.json', { cache: 'no-store' })
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .catch(function () { return null; }),
+      siteBundle.catch(function () { return null; }),
+    ]).then(function (both) {
+      var info = both[0];
+      var bundle = both[1];
+
+      if (bundle === null) {
+        c.mark('bad');
+        c.fix('The home page names no script this server will serve.',
+          'That is the whole site being broken rather than anything to do with pictures. ' +
+          'Open the home page and see what it does.');
+        return;
+      }
+
+      c.say('The page is running ' + bundle.name + '.');
+
+      if (info === null) {
+        c.mark('warn');
+        c.fix('This server has no build.json.',
+          'It was published before that file existed, which by itself means the copy here is ' +
+          'at least one publish behind. Run npm run publish:site, commit what it changes and ' +
+          'push; the deploy follows the push.');
+        return;
+      }
+
+      var rows = [];
+      if (info.publishedAt) rows.push(['Published', new Date(info.publishedAt).toLocaleString()]);
+      if (info.commitAt) rows.push(['Built from work dated', new Date(info.commitAt).toLocaleString()]);
+      if (info.commit) rows.push(['Commit', info.commit]);
+      c.table(['', ''], rows);
+
+      var stated = (info.assets || []).indexOf(bundle.name.replace('assets/', '')) !== -1;
+      if (!stated) {
+        c.mark('warn');
+        c.fix('build.json and the page disagree about which script this is.',
+          'One of the two was deployed and the other was not, so this server is holding a ' +
+          'half-finished publish. Run npm run publish:site again, commit everything it changes ' +
+          'in one go, and push.');
+        return;
+      }
+
+      c.mark('ok');
+      c.fix('This is a complete publish.',
+        'If something you changed is still missing, compare the date above with when you ' +
+        'changed it. Anything newer than that date has not been published yet.');
+    });
+  }
+
+  checkFleet();
+  checkImages();
+  checkBuild();
 })();
 </script>
 </body>

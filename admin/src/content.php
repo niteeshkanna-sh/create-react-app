@@ -151,6 +151,17 @@ function content_schema(): array
                         'secondaryHref'  => ['label' => 'Second button link', 'type' => 'text'],
                     ],
                 ],
+                'footer' => [
+                    'label'  => 'Footer',
+                    'note'   => 'The band at the bottom of every page. The map is built from what you type in "Where the map should point" -- a place name or an address is enough, the same thing you would type into Google Maps.',
+                    'fields' => [
+                        'blurb'           => ['label' => 'Line under the business name', 'type' => 'textarea'],
+                        'locationHeading' => ['label' => 'Heading above the map', 'type' => 'text'],
+                        'address'         => ['label' => 'Address', 'type' => 'list'],
+                        'mapQuery'        => ['label' => 'Where the map should point', 'type' => 'text'],
+                        'directionsLabel' => ['label' => 'Directions link text', 'type' => 'text'],
+                    ],
+                ],
                 'social' => [
                     'label'  => 'Social media',
                     'note'   => 'Paste the address of each page you have. Leave a box empty and that icon is simply not shown -- an icon linking nowhere is worse than no icon. A named box per network rather than a list you add to, so the icon always matches the link.',
