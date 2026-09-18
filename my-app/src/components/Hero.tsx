@@ -1,14 +1,19 @@
-import { useHome } from '../content';
+import { useHome, useSiteImage } from '../content';
 import { ContentLink } from './ContentLink';
 
 export function Hero() {
   const home = useHome();
   const h = home.hero;
 
+  // Uploadable, like every other picture on the site. It was a hardcoded path,
+  // so the one image a visitor sees first was the only one the owner could not
+  // change without a deploy.
+  const background = useSiteImage('home-hero') ?? '/hero-car.webp';
+
   return (
     <section id="top" className="relative overflow-hidden bg-navy text-white">
       <img
-        src="/hero-car.webp"
+        src={background}
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover opacity-25"

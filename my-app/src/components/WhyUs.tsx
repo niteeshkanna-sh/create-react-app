@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useHome } from '../content';
+import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
 import { CircleBadge } from './CircleBadge';
 
@@ -13,6 +13,11 @@ import { CircleBadge } from './CircleBadge';
  */
 export function WhyUs() {
   const home = useHome();
+
+  // Both uploadable. These were two hardcoded paths, so the only way to show
+  // the real fleet here was a deploy.
+  const photoOne = useSiteImage('why-us-1') ?? '/hero-car.webp';
+  const photoTwo = useSiteImage('why-us-2') ?? '/car-brezza.avif';
   const { badge, heading, intro, items } = home.whyUs;
   const [open, setOpen] = useState(0);
 
@@ -23,13 +28,13 @@ export function WhyUs() {
         <Reveal>
           <div className="relative pb-16 sm:pb-20 lg:pb-24">
             <img
-              src="/hero-car.webp"
+              src={photoOne}
               alt="A car on the road in Kanyakumari district"
               loading="lazy"
               className="aspect-4/3 w-[78%] rounded-[14px] object-cover shadow-[0_10px_30px_rgba(16,24,40,0.12)]"
             />
             <img
-              src="/car-brezza.avif"
+              src={photoTwo}
               alt="One of our vehicles"
               loading="lazy"
               className="absolute right-0 bottom-0 aspect-4/3 w-[62%] rounded-[14px] border-4 border-cream object-cover shadow-[0_10px_30px_rgba(16,24,40,0.16)]"

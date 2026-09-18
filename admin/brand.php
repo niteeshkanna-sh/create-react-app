@@ -14,7 +14,7 @@ require_once __DIR__ . '/src/site-images.php';
 
 $name = (string) ($_GET['f'] ?? '');
 
-if (!preg_match('/^b[a-z][a-z-]*-[0-9a-f]{16}\.(jpg|png|webp|avif)$/', $name, $m)) {
+if (!preg_match('/^b[a-z][a-z0-9-]*-[0-9a-f]{16}\.(jpg|png|webp|avif)$/', $name, $m)) {
     http_response_code(404);
     header('Content-Type: text/plain; charset=utf-8');
     exit("Not found\n");
