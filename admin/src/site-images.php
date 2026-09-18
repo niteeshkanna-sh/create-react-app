@@ -62,6 +62,52 @@ const SITE_IMAGE_SLOTS = [
     'step-3'        => 'How it works: step 3',
 ];
 
+/**
+ * The shape each slot is cropped to, and the size it is saved at.
+ *
+ * One crop for everything would be wrong in both directions: a logo squeezed
+ * into a banner's letterbox loses its top and bottom, and a banner squared off
+ * loses its sides. The panel frames each upload to the shape the site actually
+ * lays it out in, so what is chosen here is what appears there.
+ *
+ * Anything not named falls back to the card shape, which is the commonest.
+ */
+const SITE_IMAGE_SHAPES = [
+    // The marks sit in a square plate.
+    'logo'  => [1, 1, 512, 512],
+    'snake' => [1, 1, 512, 512],
+
+    // The wide band across the top of a page.
+    'cars-hero'     => [16, 5, 1600, 500],
+    'bikes-hero'    => [16, 5, 1600, 500],
+    'wedding-hero'  => [16, 5, 1600, 500],
+    'tourist-hero'  => [16, 5, 1600, 500],
+    'monthly-hero'  => [16, 5, 1600, 500],
+    'nri-hero'      => [16, 5, 1600, 500],
+    'tariff-hero'   => [16, 5, 1600, 500],
+    'about-hero'    => [16, 5, 1600, 500],
+    'contact-hero'  => [16, 5, 1600, 500],
+    'blog-hero'     => [16, 5, 1600, 500],
+    'places-hero'   => [16, 5, 1600, 500],
+    'services-hero' => [16, 5, 1600, 500],
+
+    // Full-bleed sections, which are seen at whatever the window is.
+    'home-hero' => [16, 9, 1600, 900],
+    'open-road' => [16, 9, 1600, 900],
+
+    // The photographs beside "Why hire from us" are laid out 4:3.
+    'why-us-1' => [4, 3, 1200, 900],
+    'why-us-2' => [4, 3, 1200, 900],
+];
+
+/** [width ratio, height ratio, saved width, saved height] for one slot. */
+function site_image_shape(string $slot): array
+{
+    // 16:10 is the card shape -- the six services, the three steps and the
+    // areas panel all use it, which is most of the list.
+    return SITE_IMAGE_SHAPES[$slot] ?? [16, 10, 1200, 750];
+}
+
 function site_image_dir(): string
 {
     $base = (string) (config('storage_path') ?? (dirname(__DIR__, 3) . '/nitesha-storage'));

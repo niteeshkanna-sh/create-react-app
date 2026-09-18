@@ -179,31 +179,55 @@ admin_shell_open($me, 'content.php', 'Website content');
 
     <div class="brand-slots">
       <?php foreach (SITE_IMAGE_SLOTS as $slot => $label): ?>
-        <div class="brand-slot">
+        <?php [$rw, $rh, $ow, $oh] = site_image_shape($slot); ?>
+        <!-- One form per slot. The file input is hidden and driven by the
+             button beside it: the native control prints "No file chosen" in
+             a width nobody chose, which is what made this grid ragged. -->
+        <form class="brand-slot" method="post" enctype="multipart/form-data"
+              data-slot="<?= e($slot) ?>" data-ratio="<?= $rw ?>:<?= $rh ?>"
+              data-out="<?= $ow ?>x<?= $oh ?>">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="brand-upload">
+          <input type="hidden" name="slot" value="<?= e($slot) ?>">
+
           <span class="brand-slot-label"><?= e($label) ?></span>
-          <div class="brand-slot-preview">
+
+          <div class="brand-slot-preview" style="aspect-ratio: <?= $rw ?> / <?= $rh ?>">
             <?php if (isset($brand[$slot])): ?>
               <img src="<?= e((string) site_image_url($brand[$slot])) ?>" alt="">
             <?php else: ?>
-              <span class="brand-slot-empty">Drawn</span>
+              <span class="brand-slot-empty">Nothing yet</span>
             <?php endif; ?>
           </div>
-          <form method="post" enctype="multipart/form-data">
-            <?= csrf_field() ?>
-            <input type="hidden" name="action" value="brand-upload">
-            <input type="hidden" name="slot" value="<?= e($slot) ?>">
-            <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/avif" required>
-            <button class="btn btn-primary btn-sm" type="submit">Upload</button>
-          </form>
-          <?php if (isset($brand[$slot])): ?>
-            <form method="post">
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="brand-clear">
-              <input type="hidden" name="slot" value="<?= e($slot) ?>">
-              <button class="btn btn-ghost btn-sm" type="submit">Remove</button>
-            </form>
-          <?php endif; ?>
-        </div>
+
+          <p class="brand-slot-shape"><?= $rw ?>:<?= $rh ?> &middot; saved <?= $ow ?>&times;<?= $oh ?></p>
+
+          <input class="brand-slot-file" type="file" name="image"
+                 accept="image/jpeg,image/png,image/webp,image/avif"
+                 aria-label="<?= e($label) ?>">
+
+          <div class="brand-slot-actions">
+            <button class="btn btn-outline btn-sm brand-pick" type="button">
+              <?= isset($brand[$slot]) ? 'Replace' : 'Choose image' ?>
+            </button>
+            <?php if (isset($brand[$slot])): ?>
+              <button class="btn btn-ghost btn-sm brand-edit" type="button"
+                      data-src="<?= e((string) site_image_url($brand[$slot])) ?>">Edit</button>
+              <!-- Same form, different action: a form cannot contain another,
+                   and a second form beside it would be a second cell in the
+                   grid. The script sets the action before it submits. -->
+              <button class="btn btn-danger btn-sm btn-icon brand-remove" type="button"
+                      title="Remove <?= e($label) ?>" aria-label="Remove <?= e($label) ?>">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/>
+                  <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>
+                  <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            <?php endif; ?>
+          </div>
+        </form>
       <?php endforeach; ?>
     </div>
     </div>
@@ -286,6 +310,33 @@ admin_shell_open($me, 'content.php', 'Website content');
     </form>
 
   <?php endforeach; ?>
+<!-- One framing dialog, reused by every slot. -->
+<div class="modal-overlay" id="frameOverlay" hidden>
+  <div class="modal">
+    <h3 id="frameTitle">Frame the image</h3>
+    <p class="field-hint" id="frameHint"></p>
+
+    <div class="photo-crop">
+      <div class="crop-window" id="frameWindow">
+        <img id="frameImg" alt="">
+      </div>
+      <div class="crop-zoom">
+        <button class="btn btn-ghost btn-sm btn-icon" type="button" id="frameOut"
+                title="Zoom out" aria-label="Zoom out">&minus;</button>
+        <input type="range" id="frameZoom" min="100" max="300" value="100" aria-label="Zoom">
+        <button class="btn btn-ghost btn-sm btn-icon" type="button" id="frameIn"
+                title="Zoom in" aria-label="Zoom in">+</button>
+      </div>
+      <p class="field-note">Drag the picture to move it. Whatever is inside the frame is what the site shows.</p>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" id="frameCancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="frameSave">Use this image</button>
+    </div>
+  </div>
+</div>
+
 <script src="<?= asset('content.js') ?>"></script>
 <?php admin_shell_close(); ?>
 </body>
