@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { photoFor } from '../../lib/photos';
+import { useSiteImage } from '../../content';
 import type { SceneName } from './scenes';
 
 /**
@@ -427,7 +427,16 @@ export function SectionArt({ name, className, photo, alt, eager }: SectionArtPro
   const uid = useId().replace(/:/g, '');
   const Scene = SCENES[name];
 
-  const src = photo ?? photoFor(name);
+  // Uploaded in the panel first, then a file in public/photos, then the
+  // drawing. This used to ask the file manifest only, which meant every one of
+  // these -- the six service cards, the three steps, the areas panel -- had a
+  // slot in the panel that nothing on the site ever read. Someone could upload
+  // a photograph of their own fleet and watch the drawing stay put.
+  //
+  // The slot name is the scene name without its leading slash, which is the
+  // same thing photoFor() did and what useSiteImage falls back to.
+  const uploaded = useSiteImage(name.replace(/^\/+/, ''));
+  const src = photo ?? uploaded;
 
   if (src) {
     // A photograph of the actual vehicle carries information the surrounding

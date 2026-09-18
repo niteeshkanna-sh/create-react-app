@@ -38,8 +38,28 @@ const SITE_IMAGE_SLOTS = [
     'places-hero'   => 'Places to visit banner',
     'services-hero' => 'What we hire banner',
 
+    // The home page, top to bottom.
+    'home-hero'     => 'Home page background',
+    'why-us-1'      => 'Why hire from us — large photo',
+    'why-us-2'      => 'Why hire from us — small photo',
+    'open-road'     => 'Open road band',
+
     // The panel on the home page listing the towns served.
     'coast'         => 'Areas we serve panel',
+
+    // The six cards under "What we hire", on the home page and on /services.
+    // Named after the page each one links to, which is what the site asks for.
+    'cars'             => 'Card: self drive cars',
+    'bikes'            => 'Card: bike rental',
+    'wedding-cars'     => 'Card: wedding cars',
+    'tourist-vehicles' => 'Card: tourist vehicles',
+    'monthly'          => 'Card: monthly rental',
+    'nri'              => 'Card: for NRI visitors',
+
+    // The three "How it works" steps.
+    'step-1'        => 'How it works: step 1',
+    'step-2'        => 'How it works: step 2',
+    'step-3'        => 'How it works: step 3',
 ];
 
 function site_image_dir(): string
@@ -105,9 +125,11 @@ function site_image_save(string $slot, array $file, int $userId): ?string
     // Our name, never the uploader's: a filename from a browser can contain
     // path separators, and writing outside this directory is the one thing
     // that must not be possible.
-    // Hyphens kept: stripping them turned cars-hero into carshero, which is
-    // still unique but tells a reader nothing. brand.php's pattern allows them.
-    $name = sprintf('b%s-%s.%s', preg_replace('/[^a-z-]/', '', $slot),
+    // Hyphens and digits kept: stripping hyphens turned cars-hero into
+    // carshero, and stripping digits turned step-1, step-2 and step-3 into
+    // three files all called step-. Still unique, and it tells a reader
+    // nothing. brand.php's pattern allows both.
+    $name = sprintf('b%s-%s.%s', preg_replace('/[^a-z0-9-]/', '', $slot),
         bin2hex(random_bytes(8)), $extension);
 
     if (!move_uploaded_file((string) $file['tmp_name'], site_image_dir() . '/' . $name)) {

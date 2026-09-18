@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useHome } from '../content';
+import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
 
 /**
@@ -21,11 +21,17 @@ export function OpenRoad() {
   const home = useHome();
   const c = home.openRoad;
 
+  // Uploadable. Still a background rather than an <img>: if the file is
+  // missing the band falls back to the navy beneath it and still looks
+  // deliberate, where an <img> would leave a broken-image icon on a live page.
+  const road = useSiteImage('open-road') ?? '/open-road.webp';
+
   return (
     <section className="relative isolate overflow-hidden bg-navy text-white">
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[url('/open-road.webp')] bg-cover bg-center"
+        style={{ backgroundImage: `url(${road})` }}
+        className="absolute inset-0 bg-cover bg-center"
       />
       <div aria-hidden="true" className="road-scrim absolute inset-0" />
 
