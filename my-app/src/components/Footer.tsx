@@ -46,7 +46,7 @@ export function Footer() {
 
   return (
     <footer className="bg-navy text-white/70">
-      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-[86rem] gap-8 px-5 sm:px-8 lg:px-12 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
             {/* No drawn stand-in here either -- the letter N was a placeholder
@@ -162,7 +162,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-6xl px-5 py-5 text-sm">
+        <p className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-5 text-sm">
           &copy; {new Date().getFullYear()} {seo.site.name}. All rights reserved.
         </p>
       </div>

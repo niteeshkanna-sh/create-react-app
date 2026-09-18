@@ -13,7 +13,7 @@ export function Contact() {
         intro="Call us, write to us, or send the form below. Only your name and phone number are needed to start."
       />
 
-      <section className="mx-auto max-w-6xl px-5 pt-16">
+      <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 pt-16">
         <div className="grid gap-6 sm:grid-cols-2">
           <a
             href="tel:+916374942976"

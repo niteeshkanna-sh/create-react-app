@@ -24,7 +24,7 @@ export function Home() {
       <AreasServed />
       <PlacesTeaser />
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
         <div className="rounded-[14px] border border-line bg-white p-8 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)] sm:p-12">
           <h2 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">
             {c.heading}

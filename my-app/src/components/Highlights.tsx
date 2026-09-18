@@ -15,7 +15,7 @@ export function Highlights() {
 
   return (
     <section className="bg-navy py-20">
-      <div className="mx-auto max-w-6xl space-y-10 px-5">
+      <div className="mx-auto max-w-[86rem] space-y-10 px-5 sm:px-8 lg:px-12">
         {items.map((h, i) => (
           <Reveal key={h.to} delay={i * 90}>
             <article className="grid gap-8 rounded-[14px] border border-white/10 bg-white/[0.03] p-7 sm:p-9 lg:grid-cols-[1.15fr_1fr] lg:items-center">

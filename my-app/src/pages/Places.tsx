@@ -32,7 +32,7 @@ export function Places() {
         intro="Everything here is within a comfortable drive of Nagercoil. Hire a car for the day and see them in your own order, without waiting on a tour bus."
       />
 
-      <div className="mx-auto max-w-6xl px-5 py-20">
+      <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
         {places.length === 0 ? (
           <p className="text-center text-ink-dim">
             The list is being updated. Call us and we will tell you what is worth

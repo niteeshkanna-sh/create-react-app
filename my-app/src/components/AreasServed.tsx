@@ -22,7 +22,7 @@ export function AreasServed() {
 
   return (
     <section className="bg-white py-16">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:gap-14">
+      <div className="mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 lg:px-12 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:gap-14">
         <div>
           <Reveal>
             <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">

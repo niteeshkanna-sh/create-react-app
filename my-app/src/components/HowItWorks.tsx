@@ -10,7 +10,7 @@ export function HowItWorks() {
 
   return (
     <section id="how" className="bg-white py-20">
-      <div className="mx-auto max-w-6xl px-5">
+      <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">
             Booking, start to finish

@@ -35,7 +35,7 @@ export function OpenRoad() {
       />
       <div aria-hidden="true" className="road-scrim absolute inset-0" />
 
-      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
+      <div className="relative mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20 sm:py-28">
         <Reveal className="max-w-xl">
           <p className="eyebrow-gold mb-4 text-[11px]">{c.eyebrow}</p>
 

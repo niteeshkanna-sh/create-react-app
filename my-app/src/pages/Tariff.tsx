@@ -19,7 +19,7 @@ export function Tariff() {
         intro="Rates are per day. Longer hires bring the daily rate down. Every figure below is what you pay — there is no separate booking fee."
       />
 
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-16">
         {loading ? (
           <p className="text-center text-ink-faint">Loading the rate card…</p>
         ) : empty ? (
