@@ -19,10 +19,17 @@ export function Hero() {
           The scrim alone carries the legibility now -- the same weighted one
           the page banners use, which is measured against a white photograph
           rather than guessed at. */}
+      {/* The largest thing above the fold, and therefore what Google measures
+          the page's loading speed by. Told to fetch first and not lazily: left
+          to its own devices the browser treats a background image as ordinary
+          work and the page paints twice. */}
       <img
         src={background}
         alt=""
         aria-hidden="true"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div aria-hidden="true" className="hero-scrim absolute inset-0" />

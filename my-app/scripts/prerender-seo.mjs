@@ -18,8 +18,35 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const root = join(import.meta.dirname, '..');
+
+/**
+ * The app, rendered to HTML here rather than in the visitor's browser.
+ *
+ * Every route was served the same empty <div id="root">, so nothing was on
+ * screen until 300 KB of JavaScript had been fetched, parsed and run -- three
+ * seconds on a mid-range phone on a rural connection, which is most of the
+ * traffic this site gets. Everything a page is scored on happens inside that
+ * window.
+ *
+ * Built by `vite build --ssr` into dist-ssr immediately before this runs. If
+ * it is not there the pages are still written, just empty the way they were:
+ * the metadata and the sitemap are the job this script existed for, and losing
+ * them because the extra build step failed would be the worse trade.
+ */
+let renderRoute = null;
+try {
+  ({ render: renderRoute } = await import(
+    pathToFileURL(join(root, 'dist-ssr/entry-server.js')).href
+  ));
+} catch (error) {
+  console.warn(
+    `prerender-seo: no server build to render with (${error.message}) -- ` +
+      'writing the pages without their markup',
+  );
+}
 const dist = join(root, 'dist');
 const seo = JSON.parse(readFileSync(join(root, 'src/data/seo.json'), 'utf8'));
 const template = readFileSync(join(dist, 'index.html'), 'utf8');
@@ -139,11 +166,19 @@ function enrichJsonLd(html) {
 
 let written = 0;for (const route of seo.routes) {
   const url = seo.site.origin + route.path;
-  const html = rewrite(template, {
+  let html = rewrite(template, {
     title: escape(route.title),
     description: escape(route.description),
     url,
   });
+
+  if (renderRoute) {
+    const body = await renderRoute(route.path);
+    // A function replacement, not a string: markup is full of $ sequences and
+    // "$&" in a replacement string means "the whole match", which would splice
+    // the div back into the middle of the page.
+    html = html.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
+  }
 
   if (route.path === '/') {
     writeFileSync(join(dist, 'index.html'), html);

@@ -1,5 +1,137 @@
 @import 'tailwindcss';
 
+/* Poppins, served from this site rather than from Google.
+ *
+ * It was a stylesheet <link> to fonts.googleapis.com, which is the single
+ * slowest thing on a cold load: the browser cannot paint until it has that
+ * file, and getting it costs a DNS lookup, a TLS handshake and a round trip to
+ * a third party -- then a second set of all three to fonts.gstatic.com for the
+ * files it names. On a phone on a rural connection that is most of the wait
+ * before the first word appears. Here it is one same-origin request the
+ * browser already has a connection for, cached for a year by the rule in
+ * .htaccess, and the font files are named in the CSS it is already parsing.
+ *
+ * The rupee sign is the reason for the third set of files. Google puts U+20B9
+ * in the devanagari subset, so a page showing a price pulls 38 KB of Hindi per
+ * weight -- 155 KB to draw one character, on a site where every tariff line
+ * has one. Subset down to that single glyph it is 570 bytes.
+ *
+ * unicode-range is what makes the rest free: a browser downloads a file only
+ * once it needs a character from it, so an English page never fetches the
+ * accented-Latin set and a page with no price never fetches the rupee.
+ *
+ * swap, so the words are readable in a fallback face immediately and reflow
+ * when Poppins lands, rather than the page sitting blank while it loads.
+ */
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-ext-400.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/poppins-rupee-400.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-500.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-ext-500.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/poppins-rupee-500.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-600.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-ext-600.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/poppins-rupee-600.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/poppins-latin-ext-700.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/poppins-rupee-700.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
 /* Brand tokens carried over from the admin panel (admin.css :root), so the
    public site and the admin share one palette. */
 @theme {
@@ -384,6 +516,39 @@ body {
    this sits outside the motion query. */
 .card-lift:focus-within::before {
   opacity: 1;
+}
+
+/* The same lift on the navy band. The shadow there is invisible -- a dark
+   shadow under a dark card is nothing -- so the card lifts into a gold glow
+   and a brighter face instead, which is the same signal in the only currency
+   a dark background has. */
+.card-lift.on-navy:hover,
+.card-lift.on-navy:focus-within {
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+  background-color: color-mix(in srgb, #fff 7%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card-lift.on-navy {
+    transition:
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.3s ease;
+  }
+}
+
+/* A gold hairline, for dividing a card's description from its list. Fading at
+   both ends rather than a flat rule, so it reads as a seam in the card rather
+   than a line drawn across it. */
+.gold-hair {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--color-gold) 55%, transparent) 20%,
+    color-mix(in srgb, var(--color-gold) 55%, transparent) 80%,
+    transparent
+  );
 }
 
 /* Scrim over an inner page's banner photograph.

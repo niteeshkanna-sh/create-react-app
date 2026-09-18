@@ -62,12 +62,15 @@
       }
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Poppins is served from this site now (the @font-face rules are in
+         index.css), so there is no third-party stylesheet to wait on and no
+         preconnect to make. These two weights are on every page above the
+         fold -- body copy and headings -- and a preload starts them with the
+         stylesheet rather than after the browser has parsed it, which is the
+         difference between the text swapping in during the first paint and a
+         moment after it. The rest of the weights are discovered normally. -->
+    <link rel="preload" href="/fonts/poppins-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/poppins-latin-700.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>
