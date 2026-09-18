@@ -31,6 +31,28 @@ Options -Indexes
   </FilesMatch>
 </IfModule>
 
+# Readable addresses for the pictures.
+#
+# Everything uploaded here is stored above the document root so a deploy cannot
+# erase it, which means Apache cannot serve it and a small PHP reader has to.
+# That used to show in the address: photo.php?f=v12-9f3a1c4b7d2e5a60.jpg, which
+# says nothing about the picture to a person or to Google. The file names carry
+# the words now, and these three rules let the address carry them too:
+#
+#   /admin/images/self-drive-car-rental-nagercoil-9f3a1c4b7d2e5a60.webp
+#   /admin/photos/maruti-swift-self-drive-car-rental-nagercoil-<hex>.jpg
+#   /admin/place-photos/vattakottai-fort-kanyakumari-<hex>.jpg
+#
+# The readers still answer ?f= as well, so every address stored before this
+# keeps working -- and they check the name against one strict pattern whichever
+# way it arrives, so the rewrite is a convenience and never the security.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^images/([A-Za-z0-9._-]+)$ brand.php?f=$1 [L]
+  RewriteRule ^photos/([A-Za-z0-9._-]+)$ photo.php?f=$1 [L]
+  RewriteRule ^place-photos/([A-Za-z0-9._-]+)$ place-photo.php?f=$1 [L]
+</IfModule>
+
 <IfModule mod_authz_core.c>
     # config.php holds the database password. PHP executes it rather than
     # printing it, so this changes nothing while PHP is healthy -- it matters

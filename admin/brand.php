@@ -6,31 +6,27 @@ require_once __DIR__ . '/src/site-images.php';
 /**
  * Streams one of the site's own images.
  *
- * Public, like the car photographs: these are the logo and the mark on every
- * page of the website. What is checked is that the name is one this code
- * generates, matching the exact shape and nothing else -- a request for
- * ../../nitesha-config/config.php has to come back a 404.
+ * Public, like the car photographs: these are the logo, the banners and the
+ * cards on every page of the website. What is checked is that the name is one
+ * this code generates, matching the exact shape and nothing else -- a request
+ * for ../../nitesha-config/config.php has to come back a 404.
+ *
+ * Reached two ways. /admin/images/<name> is what the site asks for now, sent
+ * here by admin/.htaccess, because the words in a file name are worth having
+ * in the address. ?f=<name> still answers: every image uploaded before this
+ * has that address stored in a page somewhere, and breaking them to tidy up
+ * the newer ones would be the wrong trade.
  */
 
-$name = (string) ($_GET['f'] ?? '');
+$name = image_requested_name();
 
-if (!preg_match('/^b[a-z][a-z0-9-]*-[0-9a-f]{16}\.(jpg|png|webp|avif)$/', $name, $m)) {
-    http_response_code(404);
-    header('Content-Type: text/plain; charset=utf-8');
-    exit("Not found\n");
+if (!preg_match(IMAGE_NAME_PATTERN, $name, $m)) {
+    image_not_found();
 }
 
 $path = site_image_dir() . '/' . $name;
 if (!is_file($path)) {
-    http_response_code(404);
-    header('Content-Type: text/plain; charset=utf-8');
-    exit("Not found\n");
+    image_not_found();
 }
 
-header('Content-Type: ' . VEHICLE_PHOTO_MIME[$m[1]]);
-header('Content-Length: ' . (string) filesize($path));
-header('Cache-Control: public, max-age=31536000, immutable');
-header('X-Content-Type-Options: nosniff');
-header('Content-Disposition: inline');
-
-readfile($path);
+image_stream($path, VEHICLE_PHOTO_MIME[$m[1]]);

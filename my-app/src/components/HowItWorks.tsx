@@ -27,7 +27,7 @@ export function HowItWorks() {
                 {/* The scene list is indexed rather than keyed off s.n, so a
                     renamed step number in the content file cannot silently
                     drop the illustration. */}
-                <SectionArt name={SCENES[i % SCENES.length]} />
+                <SectionArt name={SCENES[i % SCENES.length]} alt={s.title} />
 
                 <div className="flex flex-1 flex-col p-6">
                   <p className="text-sm font-bold tracking-widest text-gold-deep">

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/image-names.php';
 require_once __DIR__ . '/vehicle-photos.php';
 
 /**
@@ -30,7 +31,10 @@ function place_photo_dir(): string
 
 function place_photo_url(?string $name): ?string
 {
-    return ($name === null || $name === '') ? null : 'place-photo.php?f=' . rawurlencode($name);
+    // A path rather than place-photo.php?f=, for the same reason as the other
+    // two: the words in the file name belong in the address. The ?f= form
+    // still answers.
+    return ($name === null || $name === '') ? null : 'place-photos/' . rawurlencode($name);
 }
 
 /** Every place, in display order. Published only, unless asked otherwise. */
@@ -112,7 +116,11 @@ function place_save(array $input, ?array $file, int $userId): ?string
         }
 
         $previous = (string) (fetch_one('SELECT photo_file FROM places WHERE id = ?', [$id])['photo_file'] ?? '');
-        $stored   = sprintf('p%d-%s.%s', $id, bin2hex(random_bytes(8)), $extension);
+        // Named for the place, so the file is called
+        // vattakottai-fort-places-to-visit-kanyakumari-<random>.jpg. These end
+        // up in the image sitemap, and a picture of a landmark is exactly the
+        // kind of thing found through image search.
+        $stored   = image_name($name . ' places to visit Kanyakumari', $extension, 'place-' . $id);
 
         if (!move_uploaded_file((string) $file['tmp_name'], place_photo_dir() . '/' . $stored)) {
             return 'The place was saved, but the image could not be written.';

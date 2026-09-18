@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/image-names.php';
 require_once __DIR__ . '/vehicle-photos.php';
 
 /**
@@ -100,6 +101,61 @@ const SITE_IMAGE_SHAPES = [
     'why-us-2' => [4, 3, 1200, 900],
 ];
 
+/**
+ * The words each slot's file is named with, and therefore its address.
+ *
+ * Not the slot name and not the label beside it in the panel. "Cars page
+ * banner" describes where the picture goes, which is of no use to anyone
+ * searching; "self drive car rental Nagercoil" describes what is in it, in the
+ * words this business wants to be found for. Google reads the file name as one
+ * of the handful of signals it has about a picture, so this is the one place
+ * the phrase can be stated once and ride on every upload.
+ *
+ * A slot with no entry falls back to its own name plus the district, which is
+ * always better than a random one and is a reminder to add a real phrase here
+ * when a slot is added.
+ */
+const SITE_IMAGE_KEYWORDS = [
+    'logo'  => 'NiteSha Cars and Bikes logo Nagercoil',
+    'snake' => 'NiteSha Cars and Bikes emblem',
+
+    'cars-hero'     => 'self drive car rental Nagercoil',
+    'bikes-hero'    => 'bike rental Nagercoil Kanyakumari',
+    'wedding-hero'  => 'wedding car rental Kanyakumari district',
+    'tourist-hero'  => 'tourist vehicle hire with driver Kanyakumari',
+    'monthly-hero'  => 'monthly car rental Nagercoil',
+    'nri-hero'      => 'car rental for NRI visitors Kanyakumari',
+    'tariff-hero'   => 'self drive car rental tariff Kanyakumari',
+    'about-hero'    => 'about NiteSha Cars and Bikes Nagercoil',
+    'contact-hero'  => 'contact self drive car rental Nagercoil',
+    'blog-hero'     => 'car rental travel blog Kanyakumari',
+    'places-hero'   => 'places to visit in Kanyakumari district',
+    'services-hero' => 'vehicle hire services Kanyakumari district',
+
+    'home-hero' => 'self drive car and bike rental Kanyakumari district',
+    'why-us-1'  => 'why hire from NiteSha Cars Nagercoil',
+    'why-us-2'  => 'self drive car handover Nagercoil',
+    'open-road' => 'self drive road trip Kanyakumari',
+    'coast'     => 'car rental delivery areas Kanyakumari district',
+
+    'cars'             => 'self drive cars for rent Nagercoil',
+    'bikes'            => 'two wheeler rental Kanyakumari',
+    'wedding-cars'     => 'decorated wedding cars Nagercoil',
+    'tourist-vehicles' => 'tempo traveller and tourist vehicle hire Kanyakumari',
+    'monthly'          => 'monthly self drive car hire Nagercoil',
+    'nri'              => 'airport car hire for NRI families Kanyakumari',
+
+    'step-1' => 'choose a self drive car Nagercoil',
+    'step-2' => 'enquire about a self drive car Nagercoil',
+    'step-3' => 'drive away self drive car Nagercoil',
+];
+
+/** The words a slot's uploaded file is named with. */
+function site_image_keywords(string $slot): string
+{
+    return SITE_IMAGE_KEYWORDS[$slot] ?? ($slot . ' NiteSha Cars Kanyakumari');
+}
+
 /** [width ratio, height ratio, saved width, saved height] for one slot. */
 function site_image_shape(string $slot): array
 {
@@ -145,9 +201,16 @@ function site_image_url(?string $name): ?string
     if ($name === null || $name === '') {
         return null;
     }
+    // A path rather than brand.php?f=. The words in a file name are worth
+    // having in the address, and an address that reads as a file reads as a
+    // picture -- to a person scanning a search result and to the crawler that
+    // put it there. admin/.htaccess sends /admin/images/... to brand.php,
+    // which still answers ?f= as well so nothing that stored an old address
+    // breaks.
+    //
     // The name carries random bytes chosen at upload, so a new image is a new
     // URL and the response can be cached hard.
-    return 'brand.php?f=' . rawurlencode($name);
+    return 'images/' . rawurlencode($name);
 }
 
 /**
@@ -171,12 +234,11 @@ function site_image_save(string $slot, array $file, int $userId): ?string
     // Our name, never the uploader's: a filename from a browser can contain
     // path separators, and writing outside this directory is the one thing
     // that must not be possible.
-    // Hyphens and digits kept: stripping hyphens turned cars-hero into
-    // carshero, and stripping digits turned step-1, step-2 and step-3 into
-    // three files all called step-. Still unique, and it tells a reader
-    // nothing. brand.php's pattern allows both.
-    $name = sprintf('b%s-%s.%s', preg_replace('/[^a-z0-9-]/', '', $slot),
-        bin2hex(random_bytes(8)), $extension);
+    //
+    // Named for what the picture shows rather than for the slot it fills. It
+    // was b + the slot name + random bytes, which is unique and tells a reader
+    // -- or a search engine -- nothing at all. See SITE_IMAGE_KEYWORDS.
+    $name = image_name(site_image_keywords($slot), $extension, 'nitesha-cars-' . $slot);
 
     if (!move_uploaded_file((string) $file['tmp_name'], site_image_dir() . '/' . $name)) {
         return 'The image could not be saved on the server.';

@@ -35,8 +35,13 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
             >
               {/* Falls back to a plain navy panel rather than breaking if a
                   service is added to the content file before it has a scene. */}
+              {/* Described when it is a photograph, decorative when it is
+                  the drawing. SectionArt makes that call; what it needs from
+                  here is the sentence. An uploaded picture of a wedding car
+                  with alt="" is a picture Google cannot read, on a site whose
+                  traffic comes from searching for exactly that. */}
               {hasScene(s.to) ? (
-                <SectionArt name={s.to} />
+                <SectionArt name={s.to} alt={s.title} />
               ) : (
                 <div className="art-frame" />
               )}
