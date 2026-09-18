@@ -1,9 +1,27 @@
 {
-  "publishedAt": "2026-09-18T09:34:10.073Z",
-  "commit": "0c594e30",
-  "commitAt": "2026-09-18T09:22:27+00:00",
+  "publishedAt": "2026-09-18T09:53:44.965Z",
+  "commit": "9b10ce63",
+  "commitAt": "2026-09-18T09:34:27+00:00",
   "assets": [
-    "index-B2Ly4LJZ.css",
-    "index-HQpJ4o0h.js"
+    "About-D_ar0iSD.js",
+    "Bikes-Dw0RoQNs.js",
+    "Blog-E5zgsjeA.js",
+    "Cars-D6ODUl2D.js",
+    "Contact-BEcv6Z0J.js",
+    "Monthly-uf7--VSf.js",
+    "NotFound-Dz3aroRM.js",
+    "Nri-D-jBAAAC.js",
+    "PageHeader-CUHGiFb3.js",
+    "Places-D93awZsQ.js",
+    "SectionArt-qkFgxD0U.js",
+    "ServicePage-B-zZgee8.js",
+    "Services-Cxi9Webd.js",
+    "Tariff-CXJMsM8X.js",
+    "TouristVehicles-BYDI_hrp.js",
+    "WeddingCars-CNPPJa-B.js",
+    "WhatsAppButton-DIxFYh_B.js",
+    "index-BUll9_CM.css",
+    "index-_5xvq8V0.js",
+    "useFleet-BCiybsYB.js"
   ]
 }

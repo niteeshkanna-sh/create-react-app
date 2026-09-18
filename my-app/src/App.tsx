@@ -1,23 +1,41 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useSeo } from './lib/useSeo';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { FloatingActions } from './components/FloatingActions';
 import { Home } from './pages/Home';
-import { About } from './pages/About';
-import { Cars } from './pages/Cars';
-import { Bikes } from './pages/Bikes';
-import { WeddingCars } from './pages/WeddingCars';
-import { TouristVehicles } from './pages/TouristVehicles';
-import { Nri } from './pages/Nri';
-import { Monthly } from './pages/Monthly';
-import { Tariff } from './pages/Tariff';
-import { Blog } from './pages/Blog';
-import { Contact } from './pages/Contact';
-import { Places } from './pages/Places';
-import { Services } from './pages/Services';
-import { NotFound } from './pages/NotFound';
+
+/**
+ * Every page but the home page is fetched when it is asked for.
+ *
+ * One bundle held all fourteen, so a visitor landing on the home page
+ * downloaded and parsed the tariff table, the blog, the places list and the
+ * enquiry form before the first word appeared -- on a phone, on a rural
+ * connection, which is most of this site's traffic. None of it is needed to
+ * paint the page they asked for.
+ *
+ * Home is imported normally rather than lazily. It is the page most people
+ * arrive on, and splitting it would only add a second round trip before the
+ * thing they came for.
+ *
+ * The chunks are named so that what a browser fetches is legible in the
+ * network panel, which is the difference between diagnosing a slow page and
+ * guessing at it.
+ */
+const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const Cars = lazy(() => import('./pages/Cars').then(m => ({ default: m.Cars })));
+const Bikes = lazy(() => import('./pages/Bikes').then(m => ({ default: m.Bikes })));
+const WeddingCars = lazy(() => import('./pages/WeddingCars').then(m => ({ default: m.WeddingCars })));
+const TouristVehicles = lazy(() => import('./pages/TouristVehicles').then(m => ({ default: m.TouristVehicles })));
+const Nri = lazy(() => import('./pages/Nri').then(m => ({ default: m.Nri })));
+const Monthly = lazy(() => import('./pages/Monthly').then(m => ({ default: m.Monthly })));
+const Tariff = lazy(() => import('./pages/Tariff').then(m => ({ default: m.Tariff })));
+const Blog = lazy(() => import('./pages/Blog').then(m => ({ default: m.Blog })));
+const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
+const Places = lazy(() => import('./pages/Places').then(m => ({ default: m.Places })));
+const Services = lazy(() => import('./pages/Services').then(m => ({ default: m.Services })));
+const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 /**
  * A browser restores scroll position on navigation, which on a client-side
@@ -57,6 +75,11 @@ function App() {
           animation replays; without the key the DOM is reused and nothing
           animates. */}
       <main key={pathname} data-page="">
+        {/* A plain navy band rather than a spinner. The chunk for a page on
+            this site is a few kilobytes and arrives in well under the time a
+            spinner takes to stop looking like a fault; what matters is that
+            the header does not jump, so the fallback holds the height. */}
+        <Suspense fallback={<div aria-hidden="true" className="min-h-[70vh] bg-navy" />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -73,6 +96,7 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </main>
       <Footer />
       <FloatingActions />
