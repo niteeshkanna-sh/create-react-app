@@ -160,6 +160,8 @@ const api = {
       apiRequest('api/enquiries.php?action=status', { method: 'POST', body: { id, status, note } }),
     note: (id, note) =>
       apiRequest('api/enquiries.php?action=note', { method: 'POST', body: { id, note } }),
+    remove: (id) =>
+      apiRequest('api/enquiries.php?action=delete', { method: 'POST', body: { id } }),
     convert: (payload) =>
       apiRequest('api/enquiries.php?action=convert', { method: 'POST', body: payload }),
   },

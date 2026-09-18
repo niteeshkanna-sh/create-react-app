@@ -41,6 +41,10 @@ button { font-family: inherit; }
 }
 .btn-sm { padding: 8px 14px; font-size: 0.8rem; }
 .btn-block { width: 100%; }
+/* A square button whose whole content is an icon. The label lives in title
+   and aria-label -- an icon button with neither is announced as nothing. */
+.btn-icon { padding: 0; width: 38px; flex: 0 0 38px; }
+.btn-sm.btn-icon { width: 34px; flex: 0 0 34px; }
 /* Gold pill with near-black text — matches "Book Now" on the public site
    and clears contrast, which gold-on-white text would not. */
 .btn-primary { background: var(--accent); color: #14100D; }
@@ -328,6 +332,11 @@ button { font-family: inherit; }
 .c-msg-lead { margin: 0 0 .6rem; }
 .c-msg-body { margin: 0 0 .8rem; }
 
+/* A repeated item's header: its number, and the bin that empties it. */
+.c-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.c-row.is-cleared { opacity: 0.55; border-left-color: var(--danger); }
+.c-row-note { color: var(--danger); font-weight: 600; }
+
 /* ---------- Places to visit ---------- */
 .place-list { display: flex; flex-direction: column; gap: 10px; }
 .place-row {
@@ -467,11 +476,6 @@ button { font-family: inherit; }
 .transaction-amount { font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .transaction-amount.income { color: #2F6B4F; }
 .transaction-amount.expense { color: var(--danger); }
-.transaction-delete {
-  background: var(--bg); color: var(--ink-faint); border: none; border-radius: 8px;
-  width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem;
-}
-.transaction-delete:hover { background: #FBECEA; color: var(--danger); }
 
 /* ---------- Inquiries ---------- */
 .inquiry-card {
@@ -546,6 +550,52 @@ label.finance-toggle {
 }
 .proof-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .proof-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+
+/* ---------------------------------------------------------------------------
+   The booked-days calendar under a date box.
+
+   A date input takes min, max and step and nothing else, so days that are
+   already gone cannot be greyed out in it. They are drawn here instead: gold
+   for taken, and struck through, because colour on its own is not a message to
+   someone who cannot see this one.
+--------------------------------------------------------------------------- */
+.cal {
+  margin-top: 8px; border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px; background: var(--surface);
+}
+.cal-head { display: flex; align-items: center; justify-content: space-between; }
+.cal-head span { font-size: 0.85rem; font-weight: 700; }
+.cal-nav {
+  width: 32px; height: 32px; border: 0; border-radius: 8px; cursor: pointer;
+  background: none; color: var(--ink-dim); font: inherit; font-size: 1.1rem;
+}
+.cal-nav:hover { background: var(--bg); color: var(--ink); }
+.cal-names, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-names {
+  margin-top: 6px; text-align: center;
+  font-size: 0.66rem; font-weight: 700; color: var(--ink-faint);
+}
+.cal-grid { margin-top: 2px; }
+.cal-day {
+  height: 30px; border: 0; border-radius: 7px; background: none; cursor: pointer;
+  font: inherit; font-size: 0.8rem; color: var(--ink-dim);
+}
+.cal-day:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
+.cal-day.is-on { background: var(--primary); color: #fff; font-weight: 700; }
+.cal-day.is-busy {
+  background: var(--accent); color: #14100D; font-weight: 700;
+  text-decoration: line-through; cursor: not-allowed;
+}
+.cal-day:disabled:not(.is-busy) { color: var(--ink-faint); opacity: 0.45; cursor: not-allowed; }
+.cal-key {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; font-size: 0.7rem; color: var(--ink-faint);
+}
+.cal-swatch {
+  display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+  background: var(--accent);
+}
+.cal-warn { margin-top: 6px; font-size: 0.8rem; font-weight: 600; color: var(--danger); }
 
 /* ---------- Bookings ---------- */
 .booking-filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
@@ -869,7 +919,6 @@ label.finance-toggle {
   .btn-sm { min-height: 44px; padding: 10px 16px; font-size: 0.84rem; }
   .link-btn { min-height: 44px; display: inline-flex; align-items: center; }
   .filter-chip, .report-tab { min-height: 44px; }
-  .transaction-delete { width: 44px; height: 44px; }
   input[type="file"] { width: 100%; }
 }
 

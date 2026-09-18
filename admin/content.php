@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             site_image_clear($slot);
             audit_log('site_image_cleared', 'content', 'site_image', null, null,
                 ['slot' => $slot], null, (int) $me['id'], (string) $me['name']);
-            $notice = SITE_IMAGE_SLOTS[$slot] . ' removed. The site goes back to the drawn one.';
+            $notice = SITE_IMAGE_SLOTS[$slot] . ' removed.';
         } else {
             $problem = site_image_save($slot, $_FILES['image'] ?? [], (int) $me['id']);
             if ($problem !== null) {
@@ -170,10 +170,11 @@ admin_shell_open($me, 'content.php', 'Website content');
     </summary>
     <div class="c-fold-body">
     <p class="c-note">
-      The badge in the header, and the mark beside it. Until one is uploaded the
-      site draws its own. PNG with a transparent background looks best for the
-      badge; the mark sits on the dark header, so light artwork reads better than
-      dark. Up to 6&nbsp;MB.
+      The badge in the header, and the mark beside it. Nothing is drawn in their
+      place any more, so the header shows the name alone until one is uploaded.
+      PNG with a transparent background looks best for the badge; the mark sits
+      on the dark header, so light artwork reads better than dark. Up to
+      6&nbsp;MB.
     </p>
 
     <div class="brand-slots">
@@ -199,7 +200,7 @@ admin_shell_open($me, 'content.php', 'Website content');
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="brand-clear">
               <input type="hidden" name="slot" value="<?= e($slot) ?>">
-              <button class="btn btn-ghost btn-sm" type="submit">Use the drawn one</button>
+              <button class="btn btn-ghost btn-sm" type="submit">Remove</button>
             </form>
           <?php endif; ?>
         </div>
@@ -242,13 +243,27 @@ admin_shell_open($me, 'content.php', 'Website content');
           <p class="c-label c-label-group"><?= e($fspec['label']) ?></p>
           <?php foreach ($rows as $i => $row): ?>
             <div class="c-row">
-              <p class="c-row-n"><?= $i + 1 === count($rows) ? 'Add another' : 'Item ' . ($i + 1) ?></p>
+              <div class="c-row-top">
+                <p class="c-row-n"><?= $i + 1 === count($rows) ? 'Add another' : 'Item ' . ($i + 1) ?></p>
+                <?php if ($i + 1 !== count($rows)): ?>
+                  <!-- Empties the boxes rather than posting a delete of its own.
+                       A section is saved whole and an item with nothing in it is
+                       dropped, so clearing IS the delete -- this is the button
+                       for what the hint used to ask people to do by hand. -->
+                  <button type="button" class="btn btn-danger btn-sm btn-icon c-row-del"
+                          title="Remove this item" aria-label="Remove item <?= $i + 1 ?>">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>
+                      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                <?php endif; ?>
+              </div>
               <?php foreach ($fspec['fields'] as $rkey => $rspec): ?>
                 <?php field_input("f[{$fkey}][{$i}][{$rkey}]", $rspec, $row[$rkey] ?? ''); ?>
               <?php endforeach; ?>
-              <?php if ($i + 1 !== count($rows)): ?>
-                <p class="c-hint">Clear every box in an item to remove it.</p>
-              <?php endif; ?>
             </div>
           <?php endforeach; ?>
         <?php else: ?>
@@ -271,6 +286,7 @@ admin_shell_open($me, 'content.php', 'Website content');
     </form>
 
   <?php endforeach; ?>
+<script src="<?= asset('content.js') ?>"></script>
 <?php admin_shell_close(); ?>
 </body>
 </html>

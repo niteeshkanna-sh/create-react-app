@@ -239,6 +239,46 @@ switch ($action) {
         ]);
     }
 
+    // --------------------------------------------------------------- delete --
+    case 'delete': {
+        $user  = api_guard('enquiry.edit', true);
+        $input = json_input();
+
+        $data = (new Validator($input))
+            ->integer('id', 'Enquiry', 1)
+            ->orFail();
+
+        $enquiry = enquiry_or_404((int) $data['id']);
+
+        // An enquiry that became a booking is not the enquiry's to delete any
+        // more: bookings.enquiry_id points at this row, so removing it would
+        // either be refused by the database or leave a booking pointing at
+        // nothing. The booking is the record of money owed; the enquiry is how
+        // it started, and that story has to stay readable.
+        $booking = fetch_one('SELECT booking_number FROM bookings WHERE enquiry_id = ?', [$data['id']]);
+        if ($booking !== null) {
+            json_error(
+                'This enquiry became booking ' . $booking['booking_number']
+                . ', so it cannot be deleted. Cancel the booking instead.',
+                409,
+            );
+        }
+
+        // Logged before the row goes, with enough of it to say what was
+        // removed -- afterwards there is nothing left to describe.
+        audit_log('enquiry_deleted', 'enquiries', 'enquiry', (int) $data['id'],
+            [
+                'enquiry_number' => $enquiry['enquiry_number'],
+                'name'           => $enquiry['name'],
+                'status'         => $enquiry['status'],
+            ],
+            null, null, (int) $user['id'], $user['name']);
+
+        query('DELETE FROM enquiries WHERE id = ?', [$data['id']]);
+
+        json_out(['ok' => true]);
+    }
+
     default:
         json_error('Unknown action', 404);
 }
