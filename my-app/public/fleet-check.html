@@ -322,12 +322,26 @@
           return;
         }
 
+        // Each picture is loaded twice when the first attempt fails: once at
+        // the address the site uses -- /admin/images/<words>-<id>.webp, which
+        // needs the rewrite in admin/.htaccess -- and once at the older
+        // /admin/brand.php?f=<name>, which needs nothing. If the first fails
+        // and the second works, the file is fine and the rewrite is not, and
+        // those are different afternoons.
         return Promise.all(slots.map(function (slot) {
-          return loads(PANEL + '/' + brand[slot]).then(function (ok) {
-            return { slot: slot, ok: ok };
+          var pretty = PANEL + '/' + brand[slot];
+          var plain = PANEL + '/brand.php?f=' + encodeURIComponent(
+            String(brand[slot]).replace(/^.*[/=]/, ''),
+          );
+          return loads(pretty).then(function (ok) {
+            if (ok) return { slot: slot, ok: true, viaPlain: false };
+            return loads(plain).then(function (plainOk) {
+              return { slot: slot, ok: plainOk, viaPlain: plainOk };
+            });
           });
         })).then(function (results) {
           var broken = results.filter(function (r2) { return !r2.ok; });
+          var rewriteOff = results.filter(function (r2) { return r2.viaPlain; });
 
           // Which of these the website on this server actually asks for. A
           // picture stored for a slot the code has never heard of is the exact
@@ -335,9 +349,9 @@
           // angle: the panel is right, the file is there, and the page shows
           // the drawing.
           return siteBundle.then(function (bundle) {
-            return { results: results, broken: broken, bundle: bundle };
+            return { results: results, broken: broken, rewriteOff: rewriteOff, bundle: bundle };
           }, function () {
-            return { results: results, broken: broken, bundle: null };
+            return { results: results, broken: broken, rewriteOff: rewriteOff, bundle: null };
           });
         }).then(function (state) {
           // A plain substring, not a quoted one: a minifier is free to
@@ -356,8 +370,20 @@
           c.table(['Where it goes', 'The file', 'On the website'], state.results.map(function (r2) {
             var known = state.bundle === null ? 'cannot tell'
               : (unknown.indexOf(r2) === -1 ? 'asked for' : 'not asked for');
-            return [r2.slot, r2.ok ? 'loads' : 'will not load', known];
+            var file = !r2.ok ? 'will not load' : (r2.viaPlain ? 'loads, old address only' : 'loads');
+            return [r2.slot, file, known];
           }));
+
+          if (state.rewriteOff.length > 0 && state.broken.length === 0) {
+            c.mark('bad');
+            c.fix('The pictures are there, but this server is not routing their addresses.',
+              'Every file loads at the old address and none at the new one, which means the ' +
+              'rewrite rules in admin/.htaccess are not being applied — either the file did not ' +
+              'reach the server or the host has AllowOverride switched off for this folder. ' +
+              'Re-upload admin/.htaccess; if that changes nothing, ask Hostinger support to ' +
+              'allow .htaccess overrides in public_html/admin.');
+            return;
+          }
 
           if (state.broken.length > 0) {
             c.mark('bad');

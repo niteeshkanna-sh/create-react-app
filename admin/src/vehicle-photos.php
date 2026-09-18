@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/image-names.php';
 
 /**
  * Where a vehicle's photograph lives, and what counts as one.
@@ -92,6 +93,31 @@ function vehicle_photo_check(array $file): array
 }
 
 /**
+ * The words a vehicle's photograph is named with.
+ *
+ * The car's own make and model, then what it is for and where -- so the file
+ * is called maruti-swift-self-drive-car-rental-nagercoil-<random>.jpg rather
+ * than v12-<random>.jpg. That is the only description of the picture that
+ * exists outside the page it sits on, and it is one Google reads.
+ *
+ * Falls back to the id if the row cannot be read. A photograph that saves with
+ * a dull name is a far better outcome than one that refuses to save.
+ */
+function vehicle_photo_keywords(int $vehicleId): string
+{
+    try {
+        $row = fetch_one('SELECT brand, name FROM vehicles WHERE id = ?', [$vehicleId]);
+    } catch (Throwable $e) {
+        $row = null;
+    }
+
+    $make = trim((string) ($row['brand'] ?? '') . ' ' . (string) ($row['name'] ?? ''));
+
+    return ($make === '' ? 'vehicle ' . $vehicleId : $make)
+        . ' self drive car rental Nagercoil Kanyakumari';
+}
+
+/**
  * Stores an upload for a vehicle and returns the stored filename.
  *
  * The name is ours, never the uploader's: a filename arriving from a browser
@@ -100,7 +126,7 @@ function vehicle_photo_check(array $file): array
  */
 function vehicle_photo_store(int $vehicleId, array $file, string $extension): string
 {
-    $name = sprintf('v%d-%s.%s', $vehicleId, bin2hex(random_bytes(8)), $extension);
+    $name = image_name(vehicle_photo_keywords($vehicleId), $extension, 'vehicle-' . $vehicleId);
     $path = vehicle_photo_dir() . '/' . $name;
 
     if (!move_uploaded_file((string) $file['tmp_name'], $path)) {
@@ -132,7 +158,12 @@ function vehicle_photo_url(?string $name): ?string
     if ($name === null || $name === '') {
         return null;
     }
+    // A path rather than photo.php?f=, so the words in the file name are in the
+    // address too. admin/.htaccess sends /admin/photos/... here, and the ?f=
+    // form still answers, so an address stored anywhere before this keeps
+    // working.
+    //
     // The filename carries random bytes, so it changes whenever the photograph
     // does -- which is what lets the response be cached hard.
-    return 'photo.php?f=' . rawurlencode($name);
+    return 'photos/' . rawurlencode($name);
 }
