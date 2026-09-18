@@ -14,7 +14,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
   const { heading, items } = home.services;
 
   return (
-    <section className="mx-auto max-w-6xl px-5 py-20">
+    <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
       {showHeading ? (
         <Reveal>
           <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">

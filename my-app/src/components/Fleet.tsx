@@ -19,7 +19,7 @@ export function Fleet() {
   const shown = filter === 'All' ? cars : cars.filter((c) => c.bodyType === filter);
 
   return (
-    <section id="fleet" className="mx-auto max-w-6xl px-5 py-20">
+    <section id="fleet" className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl">

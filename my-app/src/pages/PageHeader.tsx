@@ -83,7 +83,7 @@ export function PageHeader({ title, intro, photo, scene, imageAlt }: PageHeaderP
         </div>
       ) : null}
 
-      <div className="relative mx-auto max-w-6xl px-5 py-14 sm:py-20">
+      <div className="relative mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-14 sm:py-20">
         <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">{title}</h1>
         {intro ? (
           <p className="mt-4 max-w-2xl leading-relaxed text-white/80">{intro}</p>

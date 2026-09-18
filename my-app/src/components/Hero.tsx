@@ -12,18 +12,26 @@ export function Hero() {
 
   return (
     <section id="top" className="relative overflow-hidden bg-navy text-white">
+      {/* Two things used to sit on this photograph: the image at 25% opacity
+          and a navy gradient over it that reached 95% in the middle. Together
+          they left about one part in fifty of the picture showing, which is
+          why an uploaded home page background looked like it had not saved.
+          The scrim alone carries the legibility now -- the same weighted one
+          the page banners use, which is measured against a white photograph
+          rather than guessed at. */}
       <img
         src={background}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover opacity-25"
+        className="absolute inset-0 h-full w-full object-cover"
       />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-br from-navy-deep via-navy/95 to-navy/75"
-      />
+      <div aria-hidden="true" className="hero-scrim absolute inset-0" />
 
-      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
+      {/* Tight to the header, roomy below it. The old padding was even top and
+          bottom, which put a band of empty navy between the menu and the first
+          word -- on a screen where the whole point of the top of the page is
+          to be read without scrolling. */}
+      <div className="relative mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 pt-10 pb-20 sm:pt-14 sm:pb-28">
         <p data-hero-item="" style={{ ["--hero-delay" as string]: "40ms" }} className="eyebrow-gold mb-4 inline-flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 px-3.5 py-1.5 text-[11px]">
           {h.eyebrow}
         </p>

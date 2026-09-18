@@ -73,7 +73,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-navy-deep">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+      <div className="mx-auto flex max-w-[86rem] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12 py-4">
         {/* The snake sits with the logo rather than alone in the gap before
             the navigation, where it floated with nothing to belong to.
             Decorative, so no label and hidden from screen readers --

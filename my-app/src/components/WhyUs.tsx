@@ -23,7 +23,7 @@ export function WhyUs() {
 
   return (
     <section className="bg-cream py-20">
-      <div className="mx-auto grid max-w-6xl gap-12 px-5 lg:grid-cols-2 lg:items-center lg:gap-16">
+      <div className="mx-auto grid max-w-[86rem] gap-12 px-5 sm:px-8 lg:px-12 lg:grid-cols-2 lg:items-center lg:gap-16">
         {/* Photographs */}
         <Reveal>
           <div className="relative pb-16 sm:pb-20 lg:pb-24">
