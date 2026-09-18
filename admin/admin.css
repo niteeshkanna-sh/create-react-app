@@ -358,18 +358,49 @@ button { font-family: inherit; }
   .place-actions { grid-column: 1 / -1; }
 }
 
-/* ---------- Logo and mark uploads ---------- */
-.brand-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-.brand-slot { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.brand-slot-label { font-weight: 600; font-size: 0.88rem; }
-/* Dark, because the mark sits on the dark header -- a light preview would show
-   pale artwork as nearly invisible and send someone looking for a fault. */
-.brand-slot-preview {
-  width: 120px; height: 120px; display: grid; place-items: center;
-  background: #1A2233; border-radius: 12px; border: 1px solid var(--border);
+/* ---------------------------------------------------------------------------
+   The site-image slots.
+
+   Every card is the same width and the same height whatever shape its picture
+   is, so the grid lines up. It did not: the native file control prints
+   "No file chosen" at a width the browser picks, and with nineteen of them on
+   one page no two rows agreed where anything sat.
+
+   The control is still there and still the thing that opens the file chooser.
+   It is just not the thing anyone looks at.
+--------------------------------------------------------------------------- */
+.brand-slots {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); gap: 16px;
 }
-.brand-slot-preview img { max-width: 88px; max-height: 88px; object-fit: contain; }
-.brand-slot-empty { color: #8C8578; font-size: 0.8rem; }
+.brand-slot {
+  display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--surface);
+}
+.brand-slot-label { font-weight: 600; font-size: 0.85rem; line-height: 1.3; }
+
+/* aspect-ratio is set per slot, so the frame here is the frame on the site. */
+.brand-slot-preview {
+  display: grid; place-items: center; overflow: hidden;
+  background: #1A2233; border: 1px solid var(--border); border-radius: 10px;
+}
+.brand-slot-preview img { width: 100%; height: 100%; object-fit: contain; }
+.brand-slot-empty { color: #8C8578; font-size: 0.78rem; }
+
+.brand-slot-shape {
+  margin: 0; font-size: 0.7rem; color: var(--ink-faint); font-variant-numeric: tabular-nums;
+}
+
+/* Present for the chooser it opens and for a screen reader, never drawn. */
+.brand-slot-file {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* Pinned to the bottom, so buttons line up across a row whatever the label
+   above them did. */
+.brand-slot-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.brand-slot-actions .btn { flex: 1 1 auto; }
+.brand-slot-actions .btn-icon { flex: 0 0 34px; }
 
 /* ---------- Vehicle photograph ---------- */
 .photo-field { display: flex; flex-direction: column; gap: 8px; }
@@ -384,7 +415,10 @@ button { font-family: inherit; }
    a customer sees. Guessing how a photo will be cut is the thing this removes. */
 .photo-crop { display: flex; flex-direction: column; gap: 8px; }
 .crop-window {
-  position: relative; width: 100%; max-width: 360px; aspect-ratio: 16 / 10;
+  /* aspect-ratio is the default; the site-image frame overrides it per slot,
+     because a logo and a page banner are not the same shape. */
+  position: relative; width: 100%; max-width: 420px; aspect-ratio: 16 / 10;
+  margin: 0 auto;
   overflow: hidden; border-radius: 10px; border: 1px solid var(--border);
   background: #2B2A28; cursor: grab; touch-action: none;
 }
@@ -394,7 +428,8 @@ button { font-family: inherit; }
   user-select: none; -webkit-user-drag: none; max-width: none;
 }
 .crop-zoom { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--ink-dim); }
-.crop-zoom input { flex: 1; max-width: 360px; }
+.crop-zoom input { flex: 1; min-width: 0; }
+.crop-zoom { justify-content: center; }
 
 /* One shape for every card, whatever the photograph's own proportions. Without
    this the row was ragged: a tall picture made its card taller than the rest. */
@@ -919,7 +954,9 @@ label.finance-toggle {
   .btn-sm { min-height: 44px; padding: 10px 16px; font-size: 0.84rem; }
   .link-btn { min-height: 44px; display: inline-flex; align-items: center; }
   .filter-chip, .report-tab { min-height: 44px; }
-  input[type="file"] { width: 100%; }
+  /* Not the one that is only there to open the file chooser: stretching it to
+     the full width pushed a 390px page out to 447. */
+  input[type="file"]:not(.brand-slot-file) { width: 100%; }
 }
 
 /* ---------------------------------------------------------------------------
