@@ -21,9 +21,26 @@ function readablePhone(raw: string): string {
 }
 
 export function Footer() {
+  const home = useHome();
   // The same list the home page and /services read, so adding a service in the
   // panel puts it in all three rather than in two that then disagree.
-  const services = useHome().services.items;
+  const services = home.services.items;
+  const f = home.footer;
+
+  // Built here from a place name rather than taking a URL from the panel.
+  //
+  // An <iframe src> is the one field where a pasted address is genuinely
+  // dangerous: whatever it points at renders inside our page. Encoding a
+  // search term into a URL we construct means the panel can only ever move the
+  // pin, never change what is embedded.
+  const mapSrc =
+    f.mapQuery.trim() === ''
+      ? null
+      : `https://www.google.com/maps?q=${encodeURIComponent(f.mapQuery)}&output=embed`;
+  const directions =
+    f.mapQuery.trim() === ''
+      ? null
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.mapQuery)}`;
   // The footer showed a letter N while an uploaded logo sat in the header.
   const logo = useSiteImage('logo');
 
@@ -41,10 +58,13 @@ export function Footer() {
             ) : null}
             <span className="text-lg font-semibold text-white">{seo.site.name}</span>
           </div>
-          <p className="mt-3 text-sm leading-relaxed">
-            Self drive cars, bike rental, wedding cars and tourist vehicles
-            across Kanyakumari district.
-          </p>
+          <p className="mt-3 text-sm leading-relaxed">{f.blurb}</p>
+
+          {/* The social row moves up here so the last column is the map. Brand
+              and social together is where a reader looks for both anyway. */}
+          <div className="mt-5">
+            <SocialLinks />
+          </div>
         </div>
 
         <div>
@@ -99,7 +119,46 @@ export function Footer() {
           ) : null}
         </div>
 
-        <SocialLinks />
+        {/* Find us: the address, and a map of it. Last column, so it sits at
+            the right-hand end on a wide screen. */}
+        <div>
+          <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
+            {f.locationHeading}
+          </h2>
+          <address className="mt-3 text-sm not-italic leading-relaxed">
+            {f.address.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </address>
+
+          {mapSrc ? (
+            <>
+              <div className="mt-3 overflow-hidden rounded-xl border border-white/15">
+                <iframe
+                  // Lazy, and only as tall as it needs to be: a footer map is
+                  // the last thing on the page and should not cost anything
+                  // before someone scrolls to it.
+                  src={mapSrc}
+                  title={`Map of ${f.mapQuery}`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="block h-40 w-full border-0"
+                />
+              </div>
+              <a
+                href={directions ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tap-target mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-light transition hover:text-gold"
+              >
+                {f.directionsLabel}
+                <span aria-hidden="true">&rarr;</span>
+              </a>
+            </>
+          ) : null}
+        </div>
       </div>
 
       <div className="border-t border-white/10">

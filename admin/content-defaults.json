@@ -130,6 +130,17 @@
       "secondaryLabel": "See our cars",
       "secondaryHref": "/cars"
     },
+    "footer": {
+      "blurb": "Self drive cars, bike rental, wedding cars and tourist vehicles across Kanyakumari district.",
+      "locationHeading": "Find us",
+      "address": [
+        "Nagercoil",
+        "Kanyakumari district",
+        "Tamil Nadu 629001"
+      ],
+      "mapQuery": "Nagercoil, Kanyakumari district, Tamil Nadu",
+      "directionsLabel": "Get directions"
+    },
     "social": {
       "heading": "Follow us",
       "whatsapp": "https://wa.me/916374942976",
