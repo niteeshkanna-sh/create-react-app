@@ -133,20 +133,152 @@
       var id = a.booking_id ? ' data-booking="' + a.booking_id + '"'
              : a.vehicle_id ? ' data-vehicle="' + a.vehicle_id + '"'
              : a.enquiry_id ? ' data-enquiry="' + a.enquiry_id + '"' : '';
-      return '<li><button type="button" class="ns-bell-row is-' + esc(a.level) + '"' + id + '>'
-        + '<span class="ns-bell-flag">' + (FLAGS[a.level] || '') + '</span>'
+
+      // A reminder somebody set is the one kind that can be finished from
+      // here: there is nothing to look at, only something to tick off.
+      var mine = a.kind === 'reminder';
+      var row = '<button type="button" class="ns-bell-row is-' + esc(a.level) + '"' + id
+        + (mine ? ' data-reminder="' + a.reminder_id + '"' : '')
+        + (mine && !id ? ' data-noop="1"' : '') + '>'
+        + '<span class="ns-bell-flag">' + (mine ? 'Mine' : (FLAGS[a.level] || '')) + '</span>'
         + '<span class="ns-bell-subject">' + esc(a.subject) + '</span>'
         + '<span class="ns-bell-msg">' + esc(a.message) + '</span>'
-        + '</button></li>';
+        + '</button>';
+
+      if (mine) {
+        row += '<span class="ns-bell-tools">'
+          + '<button type="button" class="ns-bell-tick" data-done="' + a.reminder_id + '"'
+          + ' title="Mark as done" aria-label="Mark &ldquo;' + esc(a.subject) + '&rdquo; as done">'
+          + '\u2713</button>'
+          + '<button type="button" class="ns-bell-edit" data-edit="' + a.reminder_id + '"'
+          + ' title="Change this reminder" aria-label="Change &ldquo;' + esc(a.subject) + '&rdquo;">'
+          + '\u270E</button></span>';
+      }
+      return '<li' + (mine ? ' class="is-mine"' : '') + '>' + row + '</li>';
     }).join('');
+  }
+
+  // ------------------------------------------- reminders somebody set --
+  //
+  // The bell carries what the panel works out for itself. These are the other
+  // half: the things only the person running the business knows are coming,
+  // which otherwise live on a phone and are forgotten when it is in a pocket.
+
+  var CSRF = document.querySelector('meta[name="csrf-token"]');
+  CSRF = CSRF ? CSRF.content : '';
+
+  var form    = document.getElementById('nsReminderForm');
+  var overlay = document.getElementById('nsReminderOverlay');
+
+  function post(action, body) {
+    return fetch('api/reminders.php?action=' + action, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+      body: JSON.stringify(body),
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) throw new Error(data.message || 'That did not save.');
+        return data;
+      });
+    });
+  }
+
+  // After any change the whole list is fetched again rather than patched in
+  // place. A reminder ticked off can change what is overdue and what the count
+  // says, and re-deriving it is one rule instead of three.
+  function refresh() {
+    return fetch('api/alerts.php', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) { if (data) drawBell(data.alerts || []); });
+  }
+
+  function openForm(reminder) {
+    if (!overlay) return;
+    form.reset();
+    document.getElementById('nsReminderError').textContent = '';
+    document.getElementById('nsReminderId').value = reminder ? reminder.id : '';
+    document.getElementById('nsReminderTitle').textContent =
+      reminder ? 'Change this reminder' : 'New reminder';
+    if (reminder) {
+      document.getElementById('nsReminderText').value = reminder.title || '';
+      document.getElementById('nsReminderDate').value = reminder.due_on || '';
+      document.getElementById('nsReminderTime').value = (reminder.due_at || '').slice(0, 5);
+      document.getElementById('nsReminderNote').value = reminder.note || '';
+    } else {
+      // Today, because that is what most reminders are, and an empty date
+      // field is one more thing to fill in before the thought is written down.
+      document.getElementById('nsReminderDate').value = new Date()
+        .toLocaleDateString('en-CA');
+    }
+    overlay.hidden = false;
+    openPanel(false);
+    document.getElementById('nsReminderText').focus();
+  }
+
+  function closeForm() { if (overlay) overlay.hidden = true; }
+
+  if (overlay) {
+    document.getElementById('nsBellAdd').addEventListener('click', function () { openForm(null); });
+    document.getElementById('nsReminderCancel').addEventListener('click', closeForm);
+    overlay.addEventListener('click', function (ev) { if (ev.target === overlay) closeForm(); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !overlay.hidden) closeForm();
+    });
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var err  = document.getElementById('nsReminderError');
+      var save = document.getElementById('nsReminderSave');
+      var id   = document.getElementById('nsReminderId').value;
+      err.textContent = '';
+      save.disabled = true;
+
+      post('save', {
+        id: id ? Number(id) : 0,
+        title: document.getElementById('nsReminderText').value,
+        due_on: document.getElementById('nsReminderDate').value,
+        due_at: document.getElementById('nsReminderTime').value,
+        note: document.getElementById('nsReminderNote').value,
+      }).then(function () {
+        closeForm();
+        return refresh();
+      }).catch(function (e) {
+        err.textContent = e.message;
+      }).then(function () { save.disabled = false; });
+    });
   }
 
   // Clicking a reminder goes to the thing it is about. On the dashboard that
   // is a modal opening in place; anywhere else there is no modal to open, so
   // it navigates there and the dashboard opens it on arrival.
   list.addEventListener('click', function (ev) {
+    var tick = ev.target.closest('[data-done]');
+    if (tick) {
+      tick.disabled = true;
+      post('done', { id: Number(tick.dataset.done) })
+        .then(refresh)
+        .catch(function (e) { tick.disabled = false; window.alert(e.message); });
+      return;
+    }
+
+    var pencil = ev.target.closest('[data-edit]');
+    if (pencil) {
+      fetch('api/reminders.php?action=list', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var want = Number(pencil.dataset.edit);
+          var found = (data.open || []).find(function (r) { return r.id === want; });
+          if (found) openForm(found);
+        })
+        .catch(function () { window.alert('Could not open that reminder.'); });
+      return;
+    }
+
     var row = ev.target.closest('.ns-bell-row');
     if (!row) return;
+    // A reminder about nothing in particular has nowhere to go; the tick and
+    // the pencil beside it are the whole of what it does.
+    if (row.dataset.noop) return;
     openPanel(false);
     var d = row.dataset;
     if (d.booking && window.openBookingDetail) window.openBookingDetail(Number(d.booking));

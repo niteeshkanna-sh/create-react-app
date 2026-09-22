@@ -70,6 +70,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
             <div class="ops-card"><span class="ops-value" id="opsDeposits">₹0</span><span class="ops-label">Deposits to refund</span></div>
             <div class="ops-card"><span class="ops-value" id="opsServicing">0</span><span class="ops-label">In service</span></div>
             <div class="ops-card"><span class="ops-value" id="opsEnquiries">0</span><span class="ops-label">New inquiries</span></div>
+            <div class="ops-card"><span class="ops-value" id="opsReminders">0</span><span class="ops-label">Reminders</span></div>
           </div>
         </section>
 
