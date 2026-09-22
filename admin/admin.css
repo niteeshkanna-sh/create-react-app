@@ -269,6 +269,42 @@ button { font-family: inherit; }
 }
 .ns-bell-empty { padding: 18px 14px; font-size: 0.84rem; color: var(--ink-dim); text-align: center; }
 
+/* Writing one down. In the panel head rather than at the bottom of the list,
+   because the thought arrives before the list has been read. */
+.ns-bell-add {
+  margin-left: auto; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--surface); color: var(--primary); cursor: pointer;
+  padding: 4px 12px; font: inherit; font-size: 0.76rem; font-weight: 700;
+}
+.ns-bell-add:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.ns-bell-add:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* A reminder somebody set is the one kind that can be finished from here:
+   there is nothing to go and look at, only something to tick off. */
+.ns-bell-list li.is-mine { position: relative; }
+.ns-bell-list li.is-mine .ns-bell-row { padding-right: 62px; }
+.ns-bell-list li.is-mine .ns-bell-flag { color: var(--accent-deep); }
+.ns-bell-tools {
+  position: absolute; top: 7px; right: 8px; display: flex; gap: 2px;
+  opacity: 0; transition: opacity 0.12s ease;
+}
+/* Shown on hover on a mouse, and always where there is no hover to rely on --
+   a control that only appears on hover is a control a phone does not have. */
+.ns-bell-list li.is-mine:hover .ns-bell-tools,
+.ns-bell-tools:focus-within { opacity: 1; }
+@media (hover: none) { .ns-bell-tools { opacity: 1; } }
+.ns-bell-tick, .ns-bell-edit {
+  width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 7px;
+  background: var(--surface); color: var(--ink-dim); cursor: pointer;
+  font: inherit; font-size: 0.82rem; line-height: 1;
+}
+.ns-bell-tick:hover { background: #E8F4EC; color: #2F6B4F; border-color: #2F6B4F; }
+.ns-bell-edit:hover { background: var(--bg); color: var(--ink); }
+.ns-bell-tick:disabled { opacity: 0.5; cursor: default; }
+.ns-bell-tick:focus-visible, .ns-bell-edit:focus-visible {
+  outline: 2px solid var(--primary); outline-offset: 1px; opacity: 1;
+}
+
 .ns-content { flex: 1; width: 100%; max-width: 1180px; padding: 24px; }
 
 /* The scrim only exists while the drawer is open, and only on a phone. */

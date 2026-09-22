@@ -198,12 +198,18 @@ function role_can(string $role, string $ability): bool
     $abilities = [
         'super_admin' => ['*'],
         'admin'       => ['booking.*', 'vehicle.*', 'enquiry.*', 'customer.*', 'km.*',
+                          'reminder.*',
                           'payment.view', 'deposit.view', 'expense.view', 'report.view'],
         'accounts'    => ['payment.*', 'deposit.*', 'refund.*', 'expense.*',
+                          'reminder.*',
                           'booking.view', 'vehicle.view', 'customer.view', 'report.view'],
         'auditor'     => ['*.view', 'report.view', 'audit.view'],
+        // Anybody who runs the day can keep a note of what is coming. Deleting
+        // one is not theirs: a reminder somebody else set and relied on should
+        // not disappear, and ticking it off says the same thing reversibly.
         'staff'       => ['booking.view', 'booking.create', 'vehicle.view',
-                          'enquiry.view', 'enquiry.create', 'km.create'],
+                          'enquiry.view', 'enquiry.create', 'km.create',
+                          'reminder.view', 'reminder.create', 'reminder.edit'],
     ];
 
     foreach ($abilities[$role] ?? [] as $granted) {

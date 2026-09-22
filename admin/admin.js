@@ -2040,6 +2040,7 @@ function renderTodayOps(today) {
   set('opsDeposits', today.deposits_label ?? '₹0');
   set('opsServicing', today.servicing);
   set('opsEnquiries', today.enquiries);
+  set('opsReminders', today.reminders ?? 0);
 }
 
 async function renderAlerts() {

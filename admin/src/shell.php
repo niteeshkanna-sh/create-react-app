@@ -178,6 +178,7 @@ function admin_shell_open(
           <div class="ns-bell-head">
             <strong>Reminders</strong>
             <span class="ns-bell-sub" id="nsBellSub">Loading&hellip;</span>
+            <button type="button" class="ns-bell-add" id="nsBellAdd">+ Add</button>
           </div>
           <ul class="ns-bell-list" id="nsBellList"></ul>
         </div>
@@ -205,6 +206,41 @@ function admin_shell_close(): void
     </main>
   </div>
 </div>
+<div class="modal-overlay" id="nsReminderOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nsReminderTitle">
+    <h3 id="nsReminderTitle">New reminder</h3>
+    <form id="nsReminderForm">
+      <input type="hidden" id="nsReminderId" />
+      <div class="field-group">
+        <label for="nsReminderText">What is it?</label>
+        <input type="text" id="nsReminderText" maxlength="190" required
+               placeholder="Call Prasanth about the November booking" />
+      </div>
+      <div class="modal-row">
+        <div class="field-group">
+          <label for="nsReminderDate">When</label>
+          <input type="date" id="nsReminderDate" required />
+        </div>
+        <div class="field-group">
+          <label for="nsReminderTime">Time</label>
+          <input type="time" id="nsReminderTime" />
+          <p class="field-hint">Optional. Most reminders are just &ldquo;that day&rdquo;.</p>
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="nsReminderNote">Anything else</label>
+        <input type="text" id="nsReminderNote" maxlength="2000"
+               placeholder="Optional — a number, an amount, what it is about" />
+      </div>
+      <p class="login-error" id="nsReminderError"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="nsReminderCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="nsReminderSave">Save reminder</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="<?= asset('shell.js') ?>"></script>
 <?php
 }

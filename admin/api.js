@@ -197,6 +197,15 @@ const api = {
   // One box, everything. The server decides what matches; this only asks.
   search: (q) => apiRequest(`api/search.php?q=${encodeURIComponent(q)}`),
 
+  reminders: {
+    list: () => apiRequest('api/reminders.php?action=list'),
+    save: (reminder) =>
+      apiRequest('api/reminders.php?action=save', { method: 'POST', body: reminder }),
+    done: (id) => apiRequest('api/reminders.php?action=done', { method: 'POST', body: { id } }),
+    reopen: (id) => apiRequest('api/reminders.php?action=reopen', { method: 'POST', body: { id } }),
+    remove: (id) => apiRequest('api/reminders.php?action=delete', { method: 'POST', body: { id } }),
+  },
+
   services: {
     list: (vehicleId) => apiRequest(`api/vehicle-services.php?action=list&vehicle_id=${vehicleId}`),
     add: (service) =>

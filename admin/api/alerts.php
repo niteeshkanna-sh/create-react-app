@@ -19,6 +19,8 @@ require_once __DIR__ . '/../src/fleet-upkeep.php';
 
 api_guard('booking.view');
 
+require_once __DIR__ . '/../src/reminder.php';
+
 $today  = date('Y-m-d');
 $alerts = fleet_alerts();
 
@@ -145,6 +147,19 @@ try {
     error_log('alerts: enquiries failed: ' . $e->getMessage());
 }
 
+// ------------------------------------------------- reminders somebody set --
+//
+// Carried in the same list as everything the panel works out for itself. A
+// separate place for "things I wrote down" and "things the system noticed"
+// would be two lists to check every morning, and the second one would win.
+try {
+    foreach (reminder_alerts($today) as $alert) {
+        $alerts[] = $alert;
+    }
+} catch (Throwable $e) {
+    error_log('alerts: reminders failed: ' . $e->getMessage());
+}
+
 // Overdue first, then what is coming, then the merely new. Within a level the
 // most overdue leads, because that is the order somebody would work them in.
 usort($alerts, static function (array $a, array $b): int {
@@ -165,6 +180,7 @@ $today_ops = [
     'deposits'  => '0.00',
     'servicing' => 0,
     'enquiries' => 0,
+    'reminders' => 0,
 ];
 
 try {
@@ -192,6 +208,11 @@ try {
 // Summed from the same alerts rather than queried again, so the figure at the
 // top and the list under it can never disagree about what is owed.
 foreach ($alerts as $alert) {
+    // Reminders due today or already past, counted from the same list rather
+    // than queried again.
+    if ($alert['kind'] === 'reminder' && ($alert['days'] ?? 1) <= 0) {
+        $today_ops['reminders']++;
+    }
     if ($alert['kind'] === 'payment_due') {
         $today_ops['payments'] = money_add($today_ops['payments'], $alert['amount'] ?? '0.00');
     }
