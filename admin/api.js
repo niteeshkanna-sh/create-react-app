@@ -133,6 +133,10 @@ const api = {
       apiRequest('api/bookings.php?action=cancel', { method: 'POST', body: { id, reason } }),
     complete: (id) =>
       apiRequest('api/bookings.php?action=complete', { method: 'POST', body: { id } }),
+    // Cancelled bookings only, and only once no money is attached. The
+    // endpoint enforces both; this is here so the panel can offer it.
+    remove: (id) =>
+      apiRequest('api/bookings.php?action=delete', { method: 'POST', body: { id } }),
   },
 
   // Screenshots and photographs hanging off a booking. Multipart, so it goes
