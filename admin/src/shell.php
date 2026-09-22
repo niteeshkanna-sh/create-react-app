@@ -156,7 +156,33 @@ function admin_shell_open(
       <button class="ns-burger" id="nsBurger" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="nsSide">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
       </button>
-      <h1 class="ns-bar-title"><?= e($title) ?></h1>
+      <h1 class="ns-bar-title" id="nsTitle"><?= e($title) ?></h1>
+
+      <!-- What needs doing, reachable from every page rather than only from
+           the dashboard. The panel is built by shell.js, which every admin
+           page loads; the dashboard additionally opens a booking in place
+           instead of navigating to it. -->
+      <div class="ns-bell-wrap">
+        <button class="ns-bell" id="nsBell" type="button"
+                aria-expanded="false" aria-controls="nsBellPanel"
+                aria-label="Reminders and notifications">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/>
+            <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+          </svg>
+          <span class="ns-bell-count" id="nsBellCount" hidden></span>
+        </button>
+
+        <div class="ns-bell-panel" id="nsBellPanel" hidden>
+          <div class="ns-bell-head">
+            <strong>Reminders</strong>
+            <span class="ns-bell-sub" id="nsBellSub">Loading&hellip;</span>
+          </div>
+          <ul class="ns-bell-list" id="nsBellList"></ul>
+        </div>
+      </div>
+
       <span class="admin-tag">Admin</span>
     </header>
 

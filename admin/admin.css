@@ -197,6 +197,78 @@ button { font-family: inherit; }
 }
 .ns-burger:hover { background: var(--bg); }
 
+
+/* ---- Reminders, in the bar on every page ----
+   The same list the dashboard shows under "Needs attention". It lives here so
+   a payment due today is visible while you are editing the website, which is
+   where most of the time goes. */
+.ns-bell-wrap { flex-shrink: 0; }
+.ns-bell {
+  display: flex; align-items: center; justify-content: center; position: relative;
+  width: 40px; height: 40px; border: 0; border-radius: 10px;
+  /* The icon fills more of the button than the default 20px, so the badge in
+     the corner covers a smaller share of it. */
+  background: none; color: var(--ink-dim); cursor: pointer;
+}
+.ns-bell:hover { background: var(--bg); color: var(--ink); }
+.ns-bell:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ns-bell[aria-expanded="true"] { background: var(--bg); color: var(--ink); }
+/* Lit only when something is late or due. A bell that is always on is one
+   nobody looks at -- the same mistake the Inquiries badge used to make. */
+.ns-bell.is-lit { color: var(--ink); }
+/* Small enough to sit on the bell's top corner rather than cover it. At the
+   size this started, a two-digit count hid the icon entirely and the control
+   read as a red dot with no idea what it was for. The border is the bar's own
+   colour, so the badge looks cut out of the bell rather than stuck on it. */
+.ns-bell-count {
+  position: absolute; top: 1px; right: 1px; min-width: 14px; height: 14px;
+  padding: 0 3px; border-radius: 999px; background: var(--danger); color: #fff;
+  font-size: 0.6rem; font-weight: 700; line-height: 14px; text-align: center;
+  border: 2px solid var(--surface); box-sizing: content-box;
+}
+
+/* Hung from the bar, not from the bell. Anchored to the bell it ran off the
+   left edge of a phone: the bell sits inside the bar with the Admin tag beside
+   it, so a 358px panel aligned to the bell's right edge started at -53px. */
+.ns-bell-panel {
+  position: absolute; top: calc(100% + 10px); right: 24px; z-index: 40;
+  width: min(380px, calc(100vw - 32px));
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.ns-bell-head {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--bg);
+}
+.ns-bell-sub { font-size: 0.78rem; color: var(--ink-dim); }
+.ns-bell-list {
+  list-style: none; margin: 0; padding: 6px;
+  /* Tall enough to read, short enough that the page behind it is still there.
+     Ten reminders is a long list and this is not the place to work through
+     all of them -- the dashboard panel is. */
+  max-height: min(60vh, 420px); overflow-y: auto;
+}
+.ns-bell-row {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; width: 100%;
+  padding: 10px 12px; border: 0; border-left: 3px solid transparent;
+  border-radius: 8px; background: none; cursor: pointer;
+  font: inherit; text-align: left;
+}
+.ns-bell-row:hover { background: var(--bg); }
+.ns-bell-row:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.ns-bell-row.is-overdue { border-left-color: var(--danger); }
+.ns-bell-row.is-soon    { border-left-color: var(--accent); }
+.ns-bell-row.is-new     { border-left-color: var(--primary); }
+.ns-bell-flag {
+  grid-row: 1; font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--ink-faint); align-self: center;
+}
+.ns-bell-subject { grid-row: 1; font-weight: 700; font-size: 0.86rem; }
+.ns-bell-msg {
+  grid-row: 2; grid-column: 2; font-size: 0.8rem; color: var(--ink-dim); line-height: 1.4;
+}
+.ns-bell-empty { padding: 18px 14px; font-size: 0.84rem; color: var(--ink-dim); text-align: center; }
+
 .ns-content { flex: 1; width: 100%; max-width: 1180px; padding: 24px; }
 
 /* The scrim only exists while the drawer is open, and only on a phone. */
@@ -222,6 +294,7 @@ button { font-family: inherit; }
   .ns-open { overflow: hidden; }
   .ns-content { padding: 18px 16px 48px; }
   .ns-bar { padding: 10px 16px; }
+  .ns-bell-panel { right: 16px; }
 }
 
 /* Nothing to slide on a screen wide enough for the column. */
