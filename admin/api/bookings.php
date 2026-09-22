@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/booking.php';
 require_once __DIR__ . '/../src/booking-files.php';
+require_once __DIR__ . '/../src/booking-extras.php';
+require_once __DIR__ . '/../src/customer-files.php';
 
 /**
  * Bookings.
@@ -36,7 +38,7 @@ switch ($action) {
 
         $rows = fetch_all(
             "SELECT b.*, c.name AS customer_name, c.phone AS customer_phone,
-                    v.name AS vehicle_name" . booking_vehicle_columns() . "
+                    v.name AS vehicle_name" . booking_vehicle_columns() . booking_customer_columns() . "
                FROM bookings b
                JOIN customers c ON c.id = b.customer_id
                JOIN vehicles  v ON v.id = b.vehicle_id
@@ -59,7 +61,7 @@ switch ($action) {
         $row = fetch_one(
             "SELECT b.*, c.name AS customer_name, c.phone AS customer_phone,
                     c.address AS customer_address, c.licence_number,
-                    v.name AS vehicle_name" . booking_vehicle_columns() . "
+                    v.name AS vehicle_name" . booking_vehicle_columns() . booking_customer_columns() . "
                FROM bookings b
                JOIN customers c ON c.id = b.customer_id
                JOIN vehicles  v ON v.id = b.vehicle_id
@@ -168,6 +170,10 @@ switch ($action) {
             ->required('start_at', 'Start date and time')
             ->required('return_at', 'Return date and time')
             ->optional('balance_due_on', 10)
+            ->optional('whatsapp', 20)
+            ->optional('licence_expiry', 10)
+            ->optional('id_number', 40)
+            ->integer('estimated_km', 'Estimated KM', 0, 999999, false)
             ->money('base_rental', 'Rental amount')
             ->integer('km_limit_per_day', 'KM limit', 0, 5000)
             ->money('extra_km_rate', 'Extra KM rate')
@@ -209,6 +215,11 @@ switch ($action) {
                 'phone'          => $data['phone'],
                 'address'        => $data['address'],
                 'licence_number' => $data['licence_number'],
+                'whatsapp'       => $data['whatsapp'] ?? '',
+                'licence_expiry' => $data['licence_expiry'] ?? '',
+                'id_number'      => $data['id_number'] ?? '',
+                'customer_type'  => in_array($input['customer_type'] ?? '', ['New', 'Returning', 'Corporate'], true)
+                    ? $input['customer_type'] : '',
             ], (int) $user['id']);
 
             // Written only where the column exists, so a panel whose database
@@ -217,6 +228,9 @@ switch ($action) {
             $dueOn    = trim((string) ($data['balance_due_on'] ?? ''));
             $dueOn    = $dueOn === '' ? null : $dueOn;
 
+            $estReady = table_has_column('bookings', 'estimated_km');
+            $estimate = ($data['estimated_km'] ?? null) === null ? null : (int) $data['estimated_km'];
+
             if ($id === null) {
                 $number = next_number('NSC');
                 query(
@@ -224,13 +238,16 @@ switch ($action) {
                        (booking_number, customer_id, vehicle_id, vehicle_reg_number,
                         start_at, return_at, duration_days, pickup_location,
                         return_location, status, notes, created_by'
-                      . ($dueReady ? ', balance_due_on' : '') . ')
-                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?' . ($dueReady ? ',?' : '') . ')',
+                      . ($dueReady ? ', balance_due_on' : '')
+                      . ($estReady ? ', estimated_km' : '') . ')
+                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?'
+                      . ($dueReady ? ',?' : '') . ($estReady ? ',?' : '') . ')',
                     array_merge(
                         [$number, $customerId, $vehicleId, $vehicle['reg_number'],
                          $startAt, $returnAt, $days, $data['pickup_location'],
                          $data['return_location'], 'Confirmed', $data['notes'], $user['id']],
-                        $dueReady ? [$dueOn] : []
+                        $dueReady ? [$dueOn] : [],
+                        $estReady ? [$estimate] : []
                     )
                 );
                 $bookingId = last_insert_id();
@@ -253,12 +270,14 @@ switch ($action) {
                     'UPDATE bookings SET customer_id = ?, vehicle_id = ?, vehicle_reg_number = ?,
                             start_at = ?, return_at = ?, duration_days = ?, pickup_location = ?,
                             return_location = ?, notes = ?'
-                      . ($dueReady ? ', balance_due_on = ?' : '') . '
+                      . ($dueReady ? ', balance_due_on = ?' : '')
+                      . ($estReady ? ', estimated_km = ?' : '') . '
                       WHERE id = ?',
                     array_merge(
                         [$customerId, $vehicleId, $vehicle['reg_number'], $startAt, $returnAt,
                          $days, $data['pickup_location'], $data['return_location'], $data['notes']],
                         $dueReady ? [$dueOn] : [],
+                        $estReady ? [$estimate] : [],
                         [$bookingId]
                     )
                 );
@@ -440,6 +459,34 @@ function normalise_datetime(string $value): ?string
  * showing every car as ours -- and showing every car as ours is exactly what
  * the panel did before the column existed.
  */
+/**
+ * A pickup or return reading, with its checklist decoded.
+ *
+ * Stored as JSON so the list of checks can change without a schema change;
+ * decoded here so every caller does not have to know that.
+ */
+function km_leg(int $bookingId, string $leg): ?array
+{
+    $row = km_reading($bookingId, $leg);
+    if ($row === null) {
+        return null;
+    }
+    $checklist = json_decode((string) ($row['checklist'] ?? ''), true);
+    $row['checklist'] = is_array($checklist) ? $checklist : null;
+    return $row;
+}
+
+function booking_customer_columns(): string
+{
+    $out = '';
+    foreach (['whatsapp', 'licence_expiry', 'id_number', 'customer_type'] as $column) {
+        if (table_has_column('customers', $column)) {
+            $out .= ", c.{$column}";
+        }
+    }
+    return $out;
+}
+
 function booking_vehicle_columns(): string
 {
     return table_has_column('vehicles', 'ownership')
@@ -475,9 +522,12 @@ function present_booking(array $row, bool $detailed): array
         // Every total on the dashboard and in the reports works from this
         // rather than from 'total', which is what the customer pays.
         'earned'          => (float) $money['earned'],
+        'extras_total'    => (float) $money['extras'],
         'ownership'       => $row['ownership'] ?? 'own',
         'owner_name'      => $row['owner_name'] ?? null,
         'balance_due_on'  => $row['balance_due_on'] ?? null,
+        'estimated_km'    => $row['estimated_km'] === null ? null : (int) $row['estimated_km'],
+        'customer_type'   => $row['customer_type'] ?? 'New',
         'paid'            => (float) $money['paid'],
         'balance'         => (float) $money['balance'],
         'payment_status'  => payment_status($money),
@@ -500,8 +550,28 @@ function present_booking(array $row, bool $detailed): array
     }
 
     return $out + [
+        'customer_id'      => (int) $row['customer_id'],
         'customer_address' => $row['customer_address'] ?? null,
         'licence_number'   => $row['licence_number'] ?? null,
+        'whatsapp'         => $row['whatsapp'] ?? null,
+        'licence_expiry'   => $row['licence_expiry'] ?? null,
+        'id_number'        => $row['id_number'] ?? null,
+        'documents'        => customer_files((int) $row['customer_id']),
+        // Itemised, so a total nobody can explain is not possible here.
+        'extras'  => array_map(static fn(array $e): array => [
+            'id'     => (int) $e['id'],
+            'kind'   => $e['kind'],
+            'label'  => EXTRA_KINDS[$e['kind']] ?? 'Other',
+            'amount' => (float) $e['amount'],
+            'note'   => $e['note'],
+        ], booking_extras($id)),
+        'damages' => array_map(static fn(array $d): array => [
+            'id'             => (int) $d['id'],
+            'description'    => $d['description'],
+            'estimated_cost' => (float) $d['estimated_cost'],
+            'noticed_at'     => $d['noticed_at'],
+            'note'           => $d['note'],
+        ], booking_damages($id)),
         'pickup_location'  => $row['pickup_location'],
         'return_location'  => $row['return_location'],
         'notes'            => $row['notes'],
@@ -556,8 +626,8 @@ function present_booking(array $row, bool $detailed): array
             'refunded_on'   => $r['refunded_on'],
             'method'        => $r['method'],
         ], fetch_all('SELECT * FROM refunds WHERE booking_id = ? ORDER BY id', [$id])),
-        'pickup' => km_reading($id, 'pickup'),
-        'return' => km_reading($id, 'return'),
+        'pickup' => km_leg($id, 'pickup'),
+        'return' => km_leg($id, 'return'),
         // Grouped by kind, so each section of the detail screen shows its own
         // attachments and nothing else.
         'files' => booking_files($id),

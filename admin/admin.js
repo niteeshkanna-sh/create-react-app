@@ -1180,6 +1180,11 @@ function openBookingModal(booking) {
     document.getElementById('bkPhone').value = booking.customer_phone || '';
     document.getElementById('bkAddress').value = booking.customer_address || '';
     document.getElementById('bkLicence').value = booking.licence_number || '';
+    document.getElementById('bkWhatsapp').value = booking.whatsapp || '';
+    document.getElementById('bkLicenceExpiry').value = booking.licence_expiry || '';
+    document.getElementById('bkIdNumber').value = booking.id_number || '';
+    document.getElementById('bkCustomerType').value = booking.customer_type || 'New';
+    document.getElementById('bkEstimatedKm').value = booking.estimated_km ?? '';
     document.getElementById('bkStartDate').value = sd;
     document.getElementById('bkStartTime').value = st;
     document.getElementById('bkReturnDate').value = rd;
@@ -1248,6 +1253,11 @@ bookingForm.addEventListener('submit', async (e) => {
     phone: document.getElementById('bkPhone').value.trim(),
     address: document.getElementById('bkAddress').value.trim(),
     licence_number: document.getElementById('bkLicence').value.trim(),
+    whatsapp: document.getElementById('bkWhatsapp').value.trim(),
+    licence_expiry: document.getElementById('bkLicenceExpiry').value,
+    id_number: document.getElementById('bkIdNumber').value.trim(),
+    customer_type: document.getElementById('bkCustomerType').value,
+    estimated_km: document.getElementById('bkEstimatedKm').value,
     vehicle_id: Number(bookingVehicleSelect.value),
     start_at: startAt,
     return_at: returnAt,
@@ -1420,6 +1430,8 @@ async function renderBookingDetail(id) {
           <div class="detail-field"><span class="k">Extra KM (${Number(booking.extra_km || 0).toLocaleString('en-IN')} km)</span><span class="v">+ ${formatINR(booking.extra_km_charge)}</span></div>` : ''}
         ${Number(charges.other_charges) ? `
           <div class="detail-field"><span class="k">Other Charges</span><span class="v">+ ${formatINR(charges.other_charges)}</span></div>` : ''}
+        ${(booking.extras || []).map((x) => `
+          <div class="detail-field"><span class="k">${escapeHTML(x.label)}${x.note ? ' — ' + escapeHTML(x.note) : ''}</span><span class="v">+ ${formatINR(x.amount)}</span></div>`).join('')}
         ${Number(charges.discount) ? `
           <div class="detail-field"><span class="k">Discount</span><span class="v">- ${formatINR(charges.discount)}</span></div>` : ''}
         <div class="detail-field"><span class="k">Rental Amount Due</span><span class="v">${formatINR(booking.total)}</span></div>
@@ -1486,6 +1498,7 @@ async function renderBookingDetail(id) {
           <div class="detail-field"><span class="k">Fuel Level</span><span class="v">${booking.pickup.fuel_level || '—'}</span></div>
           <div class="detail-field"><span class="k">Condition</span><span class="v">${booking.pickup.condition_note || '—'}</span></div>
         </div>
+        ${checklistHTML(booking.pickup.checklist)}
         ${open ? `<button class="btn btn-ghost btn-sm correct-km" data-id="${booking.pickup.id}" data-current="${booking.pickup.odometer_km}">Correct reading</button>` : ''}
       ` : '<p class="detail-empty">Not recorded yet.</p>'}
       ${attachmentsHTML(booking.files, 'pickup', 'Pickup photos')}
@@ -1510,10 +1523,33 @@ async function renderBookingDetail(id) {
           <div class="detail-field"><span class="k">Extra KM</span><span class="v">${Number(km.extra_km || 0).toLocaleString('en-IN')}</span></div>
           <div class="detail-field"><span class="k">Extra KM Charge</span><span class="v">${formatINR(km.extra_km_charge || 0)}</span></div>
         </div>
+        ${checklistHTML(booking.return.checklist)}
         ${open ? `<button class="btn btn-ghost btn-sm correct-km" data-id="${booking.return.id}" data-current="${booking.return.odometer_km}">Correct reading</button>` : ''}
       ` : `<p class="detail-empty">${booking.pickup ? 'Not recorded yet.' : 'Record pickup first.'}</p>`}
       ${attachmentsHTML(booking.files, 'return', 'Return photos')}
     </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">
+        <span>Customer Documents</span>
+        <button class="btn btn-outline btn-sm" id="detailAddDocBtn">+ Add Document</button>
+      </div>
+      ${documentsHTML(booking.documents)}
+    </div>
+
+    ${(booking.damages || []).length ? `
+    <div class="detail-section">
+      <div class="detail-section-title"><span>Damage</span></div>
+      ${booking.damages.map((d) => `
+        <div class="payment-row">
+          <span class="payment-meta">${escapeHTML(d.description)}
+            <span class="payment-note">noticed at ${d.noticed_at}${d.note ? ' · ' + escapeHTML(d.note) : ''}</span>
+          </span>
+          <span class="amount">${formatINR(d.estimated_cost)}</span>
+          ${open ? `<button class="btn btn-ghost btn-sm void-damage" data-id="${d.id}">Remove</button>` : ''}
+        </div>`).join('')}
+      ${attachmentsHTML(booking.files, 'damage', 'Damage photos')}
+    </div>` : ''}
 
     <div class="detail-section">
       <div class="detail-section-title"><span>Booking Timeline</span></div>
@@ -1551,6 +1587,57 @@ function wireDetailActions(booking) {
       if (result.warning) alert(result.warning);
       await refreshAfterBookingChange();
     } catch (err) { showError(err); }
+  });
+
+  // Adding a document. A hidden input rather than a modal: one file, one
+  // kind, and a dialog around that is more clicks than the job needs.
+  on('detailAddDocBtn', () => {
+    if (!booking.customer_id) { alert('This booking has no customer record yet.'); return; }
+    const kind = prompt(
+      'Which document?\n\n' + DOCUMENT_KINDS.map(([k, l]) => `${k} — ${l}`).join('\n'),
+      'licence',
+    );
+    if (kind === null) return;
+    if (!DOCUMENT_KINDS.some(([k]) => k === kind.trim())) {
+      alert('That is not one of the documents this keeps.');
+      return;
+    }
+
+    const expiry = kind.trim() === 'licence'
+      ? (prompt('Licence expiry date (YYYY-MM-DD). Leave blank if you do not have it.', '') || '')
+      : '';
+
+    const picker = document.createElement('input');
+    picker.type = 'file';
+    picker.accept = 'image/jpeg,image/png,image/webp,image/avif,application/pdf';
+    picker.addEventListener('change', async () => {
+      if (!picker.files || picker.files.length === 0) return;
+      try {
+        await api.customerFiles.add(booking.customer_id, kind.trim(), picker.files[0], expiry.trim());
+        await renderBookingDetail(booking.id);
+      } catch (err) { showError(err); }
+    });
+    picker.click();
+  });
+
+  document.querySelectorAll('.remove-doc').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Remove this document? It cannot be brought back.')) return;
+      try {
+        await api.customerFiles.remove(Number(btn.dataset.id));
+        await renderBookingDetail(booking.id);
+      } catch (err) { showError(err); }
+    });
+  });
+
+  document.querySelectorAll('.void-damage').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Remove this damage record? Any charge raised for it stays — void that separately.')) return;
+      try {
+        await api.extras.voidDamage(Number(btn.dataset.id));
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
   });
 
   on('detailDeleteBtn', async () => {
@@ -1621,6 +1708,88 @@ function todayStr() {
 
 function nowTimeStr() {
   return new Date().toTimeString().slice(0, 5);
+}
+
+// ---- Customer documents ----
+//
+// A licence is commonly a PDF, which has no thumbnail to show, so these are a
+// list of rows rather than the strip of pictures the booking attachments use.
+// The row says what it is, whether it has expired, and gives a link that
+// opens it.
+const DOCUMENT_KINDS = [
+  ['licence', 'Driving licence'],
+  ['id', 'Aadhaar / ID'],
+  ['passport', 'Passport'],
+  ['other', 'Other document'],
+];
+
+function documentsHTML(documents) {
+  const held = documents || [];
+  if (held.length === 0) {
+    return '<p class="detail-empty">No documents on file for this customer yet.</p>';
+  }
+
+  const today = todayStr();
+  return `
+    <div class="doc-list">
+      ${held.map((d) => {
+        const expired = d.expires_on && d.expires_on < today;
+        return `
+        <div class="doc-row">
+          <span class="doc-kind">${escapeHTML(d.label)}</span>
+          <span class="doc-meta">${d.is_pdf ? 'PDF' : 'Image'}${d.caption ? ' · ' + escapeHTML(d.caption) : ''}</span>
+          ${d.expires_on ? `<span class="doc-meta ${expired ? 'doc-expired' : ''}">
+              ${expired ? 'Expired' : 'Expires'} ${formatDate(d.expires_on)}</span>` : ''}
+          <span class="doc-actions">
+            <a class="btn btn-ghost btn-sm" href="${d.url}" target="_blank" rel="noopener">Open</a>
+            <button class="btn btn-ghost btn-sm remove-doc" data-id="${d.id}">Remove</button>
+          </span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ---- The handover checklist ----
+//
+// Read out of the boxes rather than kept in a variable, so what is sent is
+// exactly what is on screen. Unticked is sent as false rather than omitted:
+// "not checked" and "checked and wrong" are different things, and only the
+// first is what a blank means here.
+function readChecklist(prefix) {
+  const out = {};
+  for (const box of document.querySelectorAll(`#${prefix}Checklist [data-check]`)) {
+    out[box.dataset.check] = box.checked;
+  }
+  return out;
+}
+
+function clearChecklist(prefix) {
+  for (const box of document.querySelectorAll(`#${prefix}Checklist [data-check]`)) {
+    box.checked = false;
+  }
+}
+
+/** The checklist as it was recorded, for the booking detail. */
+function checklistHTML(checklist) {
+  if (!checklist || typeof checklist !== 'object') return '';
+  const items = Object.entries(checklist);
+  if (items.length === 0) return '';
+
+  const label = (key) => {
+    const box = document.querySelector(`[data-check="${key}"]`);
+    return box ? box.parentElement.textContent.trim() : key;
+  };
+  const checked = items.filter(([, v]) => v);
+
+  return `
+    <p class="modal-section-label">Checked at handover (${checked.length} of ${items.length})</p>
+    <div class="check-grid">
+      ${items.map(([key, value]) => `
+        <span class="check-item" style="cursor:default">
+          <span aria-hidden="true">${value ? '\u2713' : '\u2014'}</span>
+          ${escapeHTML(label(key))}
+        </span>`).join('')}
+    </div>`;
 }
 
 // ---- Booking attachments ----
@@ -1855,6 +2024,7 @@ const pickupModalOverlay = document.getElementById('pickupModalOverlay');
 
 function openPickupModal(bookingId, booking) {
   resetAttachmentBox('pickup');
+  clearChecklist('pickup');
   document.getElementById('pickupForm').reset();
   document.getElementById('pickupBookingId').value = bookingId;
   document.getElementById('pickupDateField').value = todayStr();
@@ -1878,6 +2048,7 @@ document.getElementById('pickupForm').addEventListener('submit', async (e) => {
       fuel_level: document.getElementById('pickupFuelLevel').value,
       condition_note: document.getElementById('pickupCondition').value.trim(),
       notes: document.getElementById('pickupNotes').value.trim(),
+      checklist: readChecklist('pickup'),
     });
     await uploadAttachments('pickup', Number(document.getElementById('pickupBookingId').value));
     pickupModalOverlay.hidden = true;
@@ -1904,6 +2075,7 @@ function updateReturnKmPreview() {
 
 function openReturnModal(bookingId, booking) {
   resetAttachmentBox('return');
+  clearChecklist('return');
   document.getElementById('returnForm').reset();
   document.getElementById('returnBookingId').value = bookingId;
   document.getElementById('returnDateField').value = todayStr();
@@ -1931,12 +2103,71 @@ document.getElementById('returnForm').addEventListener('submit', async (e) => {
       fuel_level: document.getElementById('returnFuelLevel').value,
       condition_note: document.getElementById('returnCondition').value.trim(),
       notes: document.getElementById('returnNotes').value.trim(),
+      checklist: readChecklist('return'),
     });
+
+    // After the reading, not with it: the charges hang off a booking that has
+    // been returned, and a refused charge must not cost someone the reading
+    // they just took.
+    await raiseReturnCharges(Number(document.getElementById('returnBookingId').value));
     await uploadAttachments('return', Number(document.getElementById('returnBookingId').value));
     returnModalOverlay.hidden = true;
     await refreshAfterBookingChange();
   } catch (err) { showError(err); } finally { btn.disabled = false; }
 });
+
+/**
+ * Turns the boxes on the return form into charges and a damage record.
+ *
+ * Each on its own line rather than one lump, because a customer does not
+ * accept "other charges" and nobody can explain one a month later.
+ *
+ * Every failure is reported and none of them stops the rest: a rejected
+ * cleaning charge should not take the fuel charge down with it, and the return
+ * itself is already saved by the time this runs.
+ */
+async function raiseReturnCharges(bookingId) {
+  const lines = [
+    ['cleaning', 'returnCleaning', 'Cleaning on return'],
+    ['fuel', 'returnFuel', 'Fuel on return'],
+    ['late', 'returnLate', 'Late return'],
+    ['other', 'returnOther', document.getElementById('returnOtherNote').value.trim()],
+  ];
+
+  const problems = [];
+
+  for (const [kind, field, note] of lines) {
+    const amount = Number(document.getElementById(field).value) || 0;
+    if (amount <= 0) continue;
+    if (kind === 'other' && note === '') {
+      problems.push('The other charge needs a line saying what it is for, so it was not added.');
+      continue;
+    }
+    try {
+      await api.extras.add({ booking_id: bookingId, kind, amount, note });
+    } catch (err) { problems.push(`${kind}: ${err.message}`); }
+  }
+
+  const damage = document.getElementById('returnDamage').value.trim();
+  if (damage !== '') {
+    try {
+      await api.extras.addDamage({
+        booking_id: bookingId,
+        description: damage,
+        estimated_cost: document.getElementById('returnDamageCost').value || '0',
+        noticed_at: 'return',
+        // Recording damage and billing for it are separate decisions. Some
+        // comes off the deposit, some is absorbed, and assuming the first
+        // would make the other two wrong.
+        charge_customer: document.getElementById('returnDamageCharge').checked,
+      });
+    } catch (err) { problems.push(`damage: ${err.message}`); }
+  }
+
+  if (problems.length) {
+    alert('The return was saved. These did not go through:\n\n' + problems.join('\n'));
+  }
+}
 
 // ---- Dashboard: Rental Overview (point 9) ----
 function renderRentalOverview() {

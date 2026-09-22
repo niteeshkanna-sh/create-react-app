@@ -511,6 +511,37 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
 
         <p class="modal-section-label">Vehicle &amp; Rental Period</p>
         <div class="modal-row">
+          <div class="field-group">
+            <label for="bkWhatsapp">WhatsApp Number</label>
+            <input type="tel" id="bkWhatsapp" placeholder="If different from the phone number" />
+          </div>
+          <div class="field-group">
+            <label for="bkLicenceExpiry">Licence Expiry</label>
+            <input type="date" id="bkLicenceExpiry" />
+            <p class="field-hint">A licence that runs out mid-hire is the owner's liability.</p>
+          </div>
+        </div>
+        <div class="modal-row modal-row-3">
+          <div class="field-group">
+            <label for="bkIdNumber">Aadhaar / ID Number</label>
+            <input type="text" id="bkIdNumber" placeholder="Optional" />
+          </div>
+          <div class="field-group">
+            <label for="bkCustomerType">Customer Type</label>
+            <select id="bkCustomerType">
+              <option value="New">New customer</option>
+              <option value="Returning">Returning customer</option>
+              <option value="Corporate">Corporate</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="bkEstimatedKm">Estimated KM</label>
+            <input type="number" id="bkEstimatedKm" min="0" placeholder="What they expect to drive" />
+          </div>
+        </div>
+
+        <p class="modal-section-label">Vehicle</p>
+        <div class="modal-row">
           <div class="field-group"><label for="bkVehicle">Vehicle</label><select id="bkVehicle" required></select></div>
           <div class="field-group"><label for="bkVehicleReg">Vehicle Registration Number</label><input type="text" id="bkVehicleReg" readonly /></div>
         </div>
@@ -734,6 +765,24 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         </div>
         <div class="field-group"><label for="pickupCondition">Vehicle Condition</label><input type="text" id="pickupCondition" placeholder="e.g. Clean, no visible damage" /></div>
         <div class="field-group"><label for="pickupNotes">Pickup Notes</label><input type="text" id="pickupNotes" placeholder="Optional" /></div>
+        <p class="modal-section-label">Handover checklist</p>
+        <p class="field-hint">What was checked when the keys changed hands. Unticked is
+          not a failure &mdash; it is simply not checked, and saying so is the point.</p>
+        <div class="check-grid" id="pickupChecklist">
+            <label class="check-item"><input type="checkbox" id="pickupChk_exterior" data-check="exterior"> Exterior condition</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_interior" data-check="interior"> Interior condition</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_tyres" data-check="tyres"> Tyres</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_spare" data-check="spare"> Spare tyre</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_tools" data-check="tools"> Jack and tools</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_documents" data-check="documents"> RC, insurance, FC in the car</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_ac" data-check="ac"> Air conditioning</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_lights" data-check="lights"> Headlights</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_indicators" data-check="indicators"> Indicators</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_horn" data-check="horn"> Horn</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_mirrors" data-check="mirrors"> Mirrors</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_wipers" data-check="wipers"> Wipers</label>
+            <label class="check-item"><input type="checkbox" id="pickupChk_stepney" data-check="stepney"> Toolkit complete</label>
+        </div>
         <div class="field-group">
           <label for="pickupPhotos">Pickup Photos</label>
           <input type="file" id="pickupPhotos" accept="image/*" multiple />
@@ -772,6 +821,59 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         </div>
         <div class="field-group"><label for="returnCondition">Return Condition</label><input type="text" id="returnCondition" placeholder="e.g. Minor scratch on rear bumper" /></div>
         <div class="field-group"><label for="returnNotes">Return Notes</label><input type="text" id="returnNotes" placeholder="Optional" /></div>
+        <p class="modal-section-label">Charges on return</p>
+        <p class="field-hint">Each on its own line, because a customer does not accept
+          &ldquo;other charges&rdquo; and nobody can explain one a month later.</p>
+        <div class="modal-row modal-row-3">
+          <div class="field-group"><label for="returnCleaning">Cleaning (₹)</label><input type="number" id="returnCleaning" min="0" placeholder="0" /></div>
+          <div class="field-group"><label for="returnFuel">Fuel (₹)</label><input type="number" id="returnFuel" min="0" placeholder="0" /></div>
+          <div class="field-group"><label for="returnLate">Late return (₹)</label><input type="number" id="returnLate" min="0" placeholder="0" /></div>
+        </div>
+        <div class="modal-row">
+          <div class="field-group"><label for="returnOther">Other charge (₹)</label><input type="number" id="returnOther" min="0" placeholder="0" /></div>
+          <div class="field-group"><label for="returnOtherNote">What for</label><input type="text" id="returnOtherNote" placeholder="Needed if there is an other charge" /></div>
+        </div>
+
+        <p class="modal-section-label">Damage</p>
+        <div class="modal-row">
+          <div class="field-group">
+            <label for="returnDamage">New damage</label>
+            <input type="text" id="returnDamage" placeholder="e.g. Front bumper scratch" />
+          </div>
+          <div class="field-group">
+            <label for="returnDamageCost">Estimated cost (₹)</label>
+            <input type="number" id="returnDamageCost" min="0" placeholder="2500" />
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="field-group">
+            <label class="finance-toggle" for="returnDamageCharge">
+              <input type="checkbox" id="returnDamageCharge" />
+              Charge this to the customer
+            </label>
+            <p class="field-hint">Left unticked the damage is recorded but not billed &mdash;
+              hold it back from the deposit instead, or absorb it.</p>
+          </div>
+        </div>
+
+        <p class="modal-section-label">Handover checklist</p>
+        <p class="field-hint">What was checked when the keys changed hands. Unticked is
+          not a failure &mdash; it is simply not checked, and saying so is the point.</p>
+        <div class="check-grid" id="returnChecklist">
+            <label class="check-item"><input type="checkbox" id="returnChk_exterior" data-check="exterior"> Exterior condition</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_interior" data-check="interior"> Interior condition</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_tyres" data-check="tyres"> Tyres</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_spare" data-check="spare"> Spare tyre</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_tools" data-check="tools"> Jack and tools</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_documents" data-check="documents"> RC, insurance, FC in the car</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_ac" data-check="ac"> Air conditioning</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_lights" data-check="lights"> Headlights</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_indicators" data-check="indicators"> Indicators</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_horn" data-check="horn"> Horn</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_mirrors" data-check="mirrors"> Mirrors</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_wipers" data-check="wipers"> Wipers</label>
+            <label class="check-item"><input type="checkbox" id="returnChk_stepney" data-check="stepney"> Toolkit complete</label>
+        </div>
         <div class="field-group">
           <label for="returnPhotos">Return Photos</label>
           <input type="file" id="returnPhotos" accept="image/*" multiple />
