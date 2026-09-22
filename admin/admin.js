@@ -86,6 +86,12 @@ function renderCarAdminGrid() {
         <span class="name">${car.name}</span>
         <span class="status-badge status-badge-${car.status.replace(' ', '')}">${car.status}</span>
       </div>
+      ${car.ownership === 'partner' ? `
+        <div class="meta">
+          <span class="owner-badge">${car.isTemporary ? 'Temporary' : "Someone else's"}</span>
+          <span>${car.ownerName ? escapeHTML(car.ownerName) : 'Owner not named'}</span>
+          ${car.ownerPhone ? `<span>${escapeHTML(car.ownerPhone)}</span>` : ''}
+        </div>` : ''}
       <div class="meta">
         <span>${car.brand}</span>
         <span>${car.bodyType}</span>
@@ -156,6 +162,11 @@ function openCarModal(car) {
   document.getElementById('carSeats').value = car ? car.seats : 5;
   document.getElementById('carYear').value = car ? car.year : new Date().getFullYear();
   document.getElementById('carStatus').value = car ? car.status : 'Available';
+  document.getElementById('carOwnership').value = car ? (car.ownership || 'own') : 'own';
+  document.getElementById('carOwnerName').value = car ? (car.ownerName || '') : '';
+  document.getElementById('carOwnerPhone').value = car ? (car.ownerPhone || '') : '';
+  document.getElementById('carTemporary').checked = Boolean(car && car.isTemporary);
+  syncOwnerFields();
   document.getElementById('carPrice').value = car ? car.price : '';
   document.getElementById('carPriceMax').value = car ? car.priceMax : '';
   document.getElementById('carPrice7').value = car ? car.price7 : '';
@@ -346,6 +357,23 @@ function closeCarModal() {
   carModalOverlay.hidden = true;
 }
 
+/**
+ * The owner fields belong to a partner car and nothing else.
+ *
+ * Left on screen for our own cars they are three boxes that do nothing, and a
+ * box that does nothing is one somebody eventually fills in.
+ */
+function syncOwnerFields() {
+  const partner = document.getElementById('carOwnership').value === 'partner';
+  for (const el of document.querySelectorAll('[data-partner-only]')) el.hidden = !partner;
+  if (!partner) {
+    document.getElementById('carOwnerName').value = '';
+    document.getElementById('carOwnerPhone').value = '';
+    document.getElementById('carTemporary').checked = false;
+  }
+}
+document.getElementById('carOwnership').addEventListener('change', syncOwnerFields);
+
 document.getElementById('addCarBtn').addEventListener('click', () => openCarModal(null));
 document.getElementById('carModalCancel').addEventListener('click', closeCarModal);
 carModalOverlay.addEventListener('click', (e) => {
@@ -367,6 +395,10 @@ carForm.addEventListener('submit', async (e) => {
     seats: Number(document.getElementById('carSeats').value),
     year: Number(document.getElementById('carYear').value),
     status: document.getElementById('carStatus').value,
+    ownership: document.getElementById('carOwnership').value,
+    ownerName: document.getElementById('carOwnerName').value.trim(),
+    ownerPhone: document.getElementById('carOwnerPhone').value.trim(),
+    isTemporary: document.getElementById('carTemporary').checked,
     price: Number(document.getElementById('carPrice').value),
     priceMax: document.getElementById('carPriceMax').value.trim() === ''
       ? ''
@@ -1157,6 +1189,9 @@ function openBookingModal(booking) {
     document.getElementById('bkExtraKmRate').value = booking.charges ? booking.charges.extra_km_rate : 0;
     document.getElementById('bkNotes').value = booking.notes || '';
     document.getElementById('bkVehicleReg').value = booking.vehicle_reg || '';
+    document.getElementById('bkCommission').value =
+      booking.charges && booking.charges.commission ? booking.charges.commission : '';
+    document.getElementById('bkBalanceDue').value = booking.balance_due_on || '';
   } else {
     document.getElementById('bkStartTime').value = '10:00';
     document.getElementById('bkReturnTime').value = '10:00';
@@ -1164,8 +1199,31 @@ function openBookingModal(booking) {
   }
 
   updateBookingDurationPreview();
+  syncCommissionField();
   bookingModalOverlay.hidden = false;
 }
+
+/**
+ * The commission box belongs to somebody else's car and nothing else.
+ *
+ * On our own cars the whole rental is ours, so there is nothing to split and
+ * an empty box inviting a number would put one there -- and a commission on
+ * our own car would quietly shrink the revenue this booking reports.
+ */
+function syncCommissionField() {
+  const car = loadCars().find((c) => c.id === Number(bookingVehicleSelect.value));
+  const partner = Boolean(car && car.ownership === 'partner');
+  const row = document.getElementById('bkCommissionRow');
+  row.hidden = !partner;
+  if (!partner) {
+    document.getElementById('bkCommission').value = '';
+    return;
+  }
+  document.getElementById('bkCommissionHint').textContent = car.ownerName
+    ? `The rest of the rental goes to ${car.ownerName}.`
+    : "The rest of the rental goes to the car's owner.";
+}
+bookingVehicleSelect.addEventListener('change', syncCommissionField);
 
 function closeBookingModal() {
   bookingModalOverlay.hidden = true;
@@ -1196,6 +1254,10 @@ bookingForm.addEventListener('submit', async (e) => {
     base_rental: document.getElementById('bkRentalAmount').value,
     km_limit_per_day: document.getElementById('bkKmLimit').value,
     extra_km_rate: document.getElementById('bkExtraKmRate').value,
+    // Empty on our own cars, which the endpoint reads as no commission.
+    commission: document.getElementById('bkCommissionRow').hidden
+      ? '' : document.getElementById('bkCommission').value,
+    balance_due_on: document.getElementById('bkBalanceDue').value,
     notes: document.getElementById('bkNotes').value.trim(),
   };
   if (idValue) payload.id = Number(idValue);
@@ -1325,6 +1387,7 @@ async function renderBookingDetail(id) {
           ${open ? '<button class="btn btn-outline btn-sm" id="detailEditBtn">Edit</button>' : ''}
           ${open ? '<button class="btn btn-ghost btn-sm" id="detailCancelBtn">Cancel Booking</button>' : ''}
           ${open ? '<button class="btn btn-primary btn-sm" id="detailCompleteBtn">Mark Completed</button>' : ''}
+          ${booking.status === 'Cancelled' ? '<button class="btn btn-danger btn-sm" id="detailDeleteBtn">Delete Booking</button>' : ''}
         </div>
       </div>
       <div class="detail-grid">
@@ -1363,9 +1426,25 @@ async function renderBookingDetail(id) {
         <div class="detail-field"><span class="k">Total Paid</span><span class="v">${formatINR(booking.paid)}</span></div>
         <div class="detail-field"><span class="k">Balance</span><span class="v">${formatBalance(booking.balance)}</span></div>
         <div class="detail-field"><span class="k">Status</span><span class="v">${booking.payment_status}</span></div>
+        ${booking.balance_due_on && booking.balance > 0 ? `
+          <div class="detail-field"><span class="k">Balance Due By</span><span class="v">${formatDate(booking.balance_due_on)}</span></div>` : ''}
       </div>
       ${attachmentsHTML(booking.files, 'payment', 'Payment screenshots')}
     </div>
+
+    ${booking.ownership === 'partner' ? `
+    <div class="detail-section">
+      <div class="detail-section-title"><span>Commission</span></div>
+      <p class="detail-empty" style="margin-bottom:10px">
+        ${booking.owner_name ? escapeHTML(booking.owner_name) + "'s car" : "Somebody else's car"},
+        hired out through us.
+      </p>
+      <div class="detail-grid">
+        <div class="detail-field"><span class="k">Customer Pays</span><span class="v">${formatINR(booking.total)}</span></div>
+        <div class="detail-field"><span class="k">Your Commission</span><span class="v">${formatINR(booking.commission)}</span></div>
+        <div class="detail-field"><span class="k">Payable to Owner</span><span class="v">${formatINR(booking.owner_payout)}</span></div>
+      </div>
+    </div>` : ''}
 
     <div class="detail-section">
       <div class="detail-section-title">
@@ -1470,6 +1549,20 @@ function wireDetailActions(booking) {
     try {
       const result = await api.bookings.cancel(booking.id, reason.trim());
       if (result.warning) alert(result.warning);
+      await refreshAfterBookingChange();
+    } catch (err) { showError(err); }
+  });
+
+  on('detailDeleteBtn', async () => {
+    if (!confirm(
+      `Delete ${booking.booking_number} for good?\n\n` +
+      'Cancelling already keeps the record and the reason. This removes the booking, '
+      + 'its charges, its readings and its attachments, and cannot be undone. '
+      + 'The audit trail keeps a note that it existed and who removed it.'
+    )) return;
+    try {
+      await api.bookings.remove(booking.id);
+      closeBookingDetail();
       await refreshAfterBookingChange();
     } catch (err) { showError(err); }
   });
@@ -1857,15 +1950,28 @@ function renderRentalOverview() {
   const activeRentals = bookings.filter((b) => b.status === 'Active').length;
   const upcomingBookings = bookings.filter((b) => b.status === 'Confirmed' && b.start_at >= today).length;
 
-  // Rental Revenue and Extra KM Revenue are kept separate (rule 15) —
-  // neither is summed twice, and Net Revenue derives from these plus expenses.
-  const rentalRevenue = bookings.reduce((sum, b) => sum + b.total, 0);
+  // Rental Revenue and Extra KM Revenue are kept separate, and until now they
+  // were not: b.total already includes the extra-KM charge, and Net Revenue
+  // then added extraKmRevenue on top of it. Every booking that ran over its
+  // allowance was counted twice for the overage.
+  //
+  // Two things changed here. The extra KM comes out of the rental figure so
+  // the two cards add up rather than overlap. And the sum works from what the
+  // business earns rather than what the customer pays: on somebody else's car
+  // most of the rental is the owner's, and only the commission is ours.
+  const earnedOf = (b) => (typeof b.earned === 'number' ? b.earned : b.total);
+  const commissionOf = (b) => (b.ownership === 'partner' ? (b.commission || 0) : 0);
+  const extraKmOf = (b) => (b.ownership === 'partner' ? 0 : (b.extra_km_charge || 0));
+
+  const commissionEarned = bookings.reduce((sum, b) => sum + commissionOf(b), 0);
+  const ownerPayable = bookings.reduce((sum, b) => sum + (b.owner_payout || 0), 0);
+  const rentalRevenue = bookings.reduce((sum, b) => sum + earnedOf(b) - extraKmOf(b), 0);
   const advanceReceived = bookings.reduce((sum, b) => sum + (b.paid || 0), 0);
   const pendingBalance = bookings.reduce((sum, b) => sum + Math.max(0, b.balance), 0);
   const depositHeld = bookings.reduce((sum, b) => sum + (b.deposit_held || 0), 0);
   const depositRefunded = bookings.reduce((sum, b) => sum + (b.deposit_refunded || 0), 0);
   const returnedBookings = bookings.filter((b) => b.total_km > 0);
-  const extraKmRevenue = returnedBookings.reduce((sum, b) => sum + b.extra_km_charge, 0);
+  const extraKmRevenue = returnedBookings.reduce((sum, b) => sum + extraKmOf(b), 0);
   const totalKm = returnedBookings.reduce((sum, b) => sum + b.total_km, 0);
   const totalExpenses = Number(FINANCE_SUMMARY?.expenses.total) || 0;
   const netRevenue = rentalRevenue + extraKmRevenue - totalExpenses;
@@ -1876,6 +1982,8 @@ function renderRentalOverview() {
   document.getElementById('statRentalRevenue').textContent = formatINR(rentalRevenue);
   document.getElementById('statAdvanceReceived').textContent = formatINR(advanceReceived);
   document.getElementById('statPendingBalance').textContent = formatINR(pendingBalance);
+  document.getElementById('statCommission').textContent = formatINR(commissionEarned);
+  document.getElementById('statOwnerPayable').textContent = formatINR(ownerPayable);
   document.getElementById('statDepositHeld').textContent = formatINR(depositHeld);
   document.getElementById('statDepositRefunded').textContent = formatINR(depositRefunded);
   document.getElementById('statExtraKmRevenue').textContent = formatINR(extraKmRevenue);
@@ -2006,8 +2114,16 @@ function computeRevenueReport() {
   const to = document.getElementById('rfTo')?.value || '';
 
   const bookings = loadBookings().filter((b) => b.status !== 'Cancelled' && (!from || b.start_at >= from) && (!to || b.start_at <= to));
-  const rentalRevenue = bookings.reduce((sum, b) => sum + b.total, 0);
-  const extraKmRevenue = bookings.filter((b) => b.total_km > 0).reduce((sum, b) => sum + b.extra_km_charge, 0);
+  // Same two corrections as the dashboard: the extra KM is already inside
+  // b.total, and a brokered hire earns the commission rather than the rental.
+  const earnedOf = (b) => (typeof b.earned === 'number' ? b.earned : b.total);
+  const extraKmOf = (b) => (b.ownership === 'partner' ? 0 : (b.extra_km_charge || 0));
+
+  const rentalRevenue = bookings.reduce((sum, b) => sum + earnedOf(b) - extraKmOf(b), 0);
+  const extraKmRevenue = bookings.filter((b) => b.total_km > 0).reduce((sum, b) => sum + extraKmOf(b), 0);
+  const commissionEarned = bookings.reduce(
+    (sum, b) => sum + (b.ownership === 'partner' ? (b.commission || 0) : 0), 0);
+  const ownerPayable = bookings.reduce((sum, b) => sum + (b.owner_payout || 0), 0);
   const expenses = Number(REPORT_SUMMARY?.expenses.total) || 0;
   const netRevenue = rentalRevenue + extraKmRevenue - expenses;
 
@@ -2017,6 +2133,8 @@ function computeRevenueReport() {
     rows: [
       ['Rental Revenue', rentalRevenue],
       ['Extra KM Revenue', extraKmRevenue],
+      ['of which commission on other owners\u2019 cars', commissionEarned],
+      ['Payable to car owners', ownerPayable],
       ['Expenses', expenses],
       ['Net Revenue', netRevenue],
     ],

@@ -76,6 +76,8 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           <div class="stat-card stat-card-income"><span class="stat-label">Total Rental Revenue</span><span class="stat-value" id="statRentalRevenue">₹0</span></div>
           <div class="stat-card stat-card-income"><span class="stat-label">Advance Received</span><span class="stat-value" id="statAdvanceReceived">₹0</span></div>
           <div class="stat-card stat-card-expense"><span class="stat-label">Pending Balance</span><span class="stat-value" id="statPendingBalance">₹0</span></div>
+          <div class="stat-card"><span class="stat-label">Commission Earned</span><span class="stat-value" id="statCommission">₹0</span></div>
+          <div class="stat-card"><span class="stat-label">Payable to Car Owners</span><span class="stat-value" id="statOwnerPayable">₹0</span></div>
           <div class="stat-card stat-card-deposit"><span class="stat-label">Security Deposit Held</span><span class="stat-value" id="statDepositHeld">₹0</span></div>
           <div class="stat-card stat-card-deposit"><span class="stat-label">Security Deposit Refunded</span><span class="stat-value" id="statDepositRefunded">₹0</span></div>
           <div class="stat-card stat-card-income"><span class="stat-label">Extra KM Revenue</span><span class="stat-value" id="statExtraKmRevenue">₹0</span></div>
@@ -365,6 +367,38 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           </div>
         </div>
 
+        <!-- Whose car this is. Everything about the money follows from it: on
+             our own car the whole rental is ours, on somebody else's most of it
+             is theirs and what we keep is the commission. -->
+        <p class="modal-section-label">Whose car is this?</p>
+        <div class="modal-row">
+          <div class="field-group">
+            <label for="carOwnership">Owner</label>
+            <select id="carOwnership" required>
+              <option value="own">Ours</option>
+              <option value="partner">Someone else's — we take a commission</option>
+            </select>
+          </div>
+          <div class="field-group" data-partner-only hidden>
+            <label for="carOwnerName">Car owner's name</label>
+            <input type="text" id="carOwnerName" placeholder="Who the car belongs to" />
+          </div>
+        </div>
+        <div class="modal-row" data-partner-only hidden>
+          <div class="field-group">
+            <label for="carOwnerPhone">Car owner's phone</label>
+            <input type="tel" id="carOwnerPhone" placeholder="Optional" />
+          </div>
+          <div class="field-group">
+            <label class="finance-toggle" for="carTemporary">
+              <input type="checkbox" id="carTemporary" />
+              Temporary — brought in for a hire or two
+            </label>
+            <p class="field-hint">Ticked, it shows as temporary in the fleet so it can
+              be found and retired once the hire is over.</p>
+          </div>
+        </div>
+
         <p class="modal-section-label">Rate Card (₹)</p>
         <div class="modal-row modal-row-4">
           <div class="field-group">
@@ -494,6 +528,30 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           <div class="field-group"><label for="bkRentalAmount">Rental Amount (₹)</label><input type="number" id="bkRentalAmount" required min="0" placeholder="9000" /></div>
           <div class="field-group"><label for="bkKmLimit">KM Limit / day</label><input type="number" id="bkKmLimit" required min="0" placeholder="200" /></div>
           <div class="field-group"><label for="bkExtraKmRate">Extra KM Rate (₹)</label><input type="number" id="bkExtraKmRate" required min="0" placeholder="10" /></div>
+        </div>
+
+        <!-- Shown only when the chosen car belongs to somebody else. On our
+             own cars there is no commission to take and a box asking for one
+             is a box someone will eventually type into. -->
+        <div class="modal-row" id="bkCommissionRow" hidden>
+          <div class="field-group">
+            <label for="bkCommission">Your commission (₹)</label>
+            <input type="number" id="bkCommission" min="0" placeholder="1500" />
+            <p class="field-hint" id="bkCommissionHint">The rest of the rental goes to the car's owner.</p>
+          </div>
+        </div>
+
+        <!-- Every booking, not only a brokered one: a monthly hire paid half
+             now and the rest in a few days is the commonest case for it, and
+             without a date the second half is remembered by whoever took the
+             booking and nobody else. -->
+        <div class="modal-row">
+          <div class="field-group">
+            <label for="bkBalanceDue">Balance due by</label>
+            <input type="date" id="bkBalanceDue" />
+            <p class="field-hint">Optional. For a half-now, rest-later arrangement —
+              the booking shows in "Payments due" from this date.</p>
+          </div>
         </div>
         <div class="field-group"><label for="bkNotes">Notes</label><input type="text" id="bkNotes" placeholder="Optional notes about this booking" /></div>
 

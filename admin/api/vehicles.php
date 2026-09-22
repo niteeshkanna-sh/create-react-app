@@ -103,6 +103,20 @@ switch ($action) {
             ->money('security_deposit', 'Security deposit')
             ->orFail();
 
+        // Whose car this is. Everything about the money downstream depends on
+        // it, so it is read here rather than inferred from whether an owner
+        // name happens to be filled in.
+        $ownership = ($input['ownership'] ?? 'own') === 'partner' ? 'partner' : 'own';
+        $ownerName  = $ownership === 'partner' ? trim((string) ($input['owner_name'] ?? '')) : '';
+        $ownerPhone = $ownership === 'partner' ? trim((string) ($input['owner_phone'] ?? '')) : '';
+        $temporary  = $ownership === 'partner' && !empty($input['is_temporary']) ? 1 : 0;
+
+        if ($ownership === 'partner' && $ownerName === '') {
+            json_error('Please correct the highlighted fields.', 422, ['fields' => [
+                'owner_name' => "Whose car it is -- there is no one to pay without it.",
+            ]]);
+        }
+
         // A band that reads "1,800 to 1,600" is a typo, and it would print on
         // the site exactly as entered.
         if ($data['rate_daily_max'] !== null && $data['rate_daily_max'] < $data['rate_daily']) {
@@ -129,16 +143,35 @@ switch ($action) {
             json_error('That vehicle no longer exists.', 404);
         }
 
-        $savedId = transaction(function () use ($id, $data, $reg, $before, $user) {
+        // Written only once 009_commission.sql has run, so a panel whose
+        // database is a version behind still saves a car rather than failing on
+        // a column that is not there yet.
+        $ownerReady = table_has_column('vehicles', 'ownership');
+        $ownerCols = $ownerReady ? ', ownership, owner_name, owner_phone, is_temporary' : '';
+        $ownerPlaceholders = $ownerReady ? ',?,?,?,?' : '';
+        $ownerSets = $ownerReady
+            ? ', ownership = ?, owner_name = ?, owner_phone = ?, is_temporary = ?' : '';
+        $ownerValues = $ownerReady
+            ? [$ownership, $ownerName === '' ? null : $ownerName,
+               $ownerPhone === '' ? null : $ownerPhone, $temporary]
+            : [];
+
+        $savedId = transaction(function () use (
+            $id, $data, $reg, $before, $user,
+            $ownerCols, $ownerPlaceholders, $ownerSets, $ownerValues
+        ) {
             if ($id === null) {
                 query(
                     'INSERT INTO vehicles
                        (name, brand, reg_number, body_type, fuel, transmission,
-                        seats, model_year, colour, status, current_km, created_by)
-                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                    [$data['name'], $data['brand'], $reg, $data['body_type'], $data['fuel'],
-                     $data['transmission'], $data['seats'], $data['model_year'], $data['colour'],
-                     $data['status'], $data['current_km'], $user['id']]
+                        seats, model_year, colour, status, current_km, created_by' . $ownerCols . ')
+                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?' . $ownerPlaceholders . ')',
+                    array_merge(
+                        [$data['name'], $data['brand'], $reg, $data['body_type'], $data['fuel'],
+                         $data['transmission'], $data['seats'], $data['model_year'], $data['colour'],
+                         $data['status'], $data['current_km'], $user['id']],
+                        $ownerValues
+                    )
                 );
                 $vehicleId = last_insert_id();
                 audit_log('vehicle_created', 'vehicles', 'vehicle', $vehicleId, null,
@@ -149,11 +182,15 @@ switch ($action) {
                 query(
                     'UPDATE vehicles SET name = ?, brand = ?, reg_number = ?, body_type = ?,
                             fuel = ?, transmission = ?, seats = ?, model_year = ?, colour = ?,
-                            status = ?, current_km = ?
+                            status = ?, current_km = ?' . $ownerSets . '
                       WHERE id = ?',
-                    [$data['name'], $data['brand'], $reg, $data['body_type'], $data['fuel'],
-                     $data['transmission'], $data['seats'], $data['model_year'], $data['colour'],
-                     $data['status'], $data['current_km'], $vehicleId]
+                    array_merge(
+                        [$data['name'], $data['brand'], $reg, $data['body_type'], $data['fuel'],
+                         $data['transmission'], $data['seats'], $data['model_year'], $data['colour'],
+                         $data['status'], $data['current_km']],
+                        $ownerValues,
+                        [$vehicleId]
+                    )
                 );
                 $after = fetch_one('SELECT * FROM vehicles WHERE id = ?', [$vehicleId]);
                 [$prev, $curr] = diff_changes($before ?? [], $after ?? []);
@@ -302,6 +339,13 @@ function present_vehicle(array $row): array
         'seats'            => (int) $row['seats'],
         'model_year'       => (int) $row['model_year'],
         'colour'           => $row['colour'],
+        // Absent on a database that has not run 009 yet, so defaulted rather
+        // than assumed: an older panel shows every car as ours, which is what
+        // it was before the column existed.
+        'ownership'        => $row['ownership'] ?? 'own',
+        'owner_name'       => $row['owner_name'] ?? null,
+        'owner_phone'      => $row['owner_phone'] ?? null,
+        'is_temporary'     => (bool) ($row['is_temporary'] ?? 0),
         'photo'            => vehicle_photo_url($row['photo_file'] ?? null),
         'status'           => $row['status'],
         'current_km'       => (int) $row['current_km'],

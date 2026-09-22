@@ -583,6 +583,17 @@ label.finance-toggle {
 .booking-conflict-error {
   color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
 }
+/* A car that is not ours. Stated on the card rather than only inside the edit
+   form, because "whose car is this" decides what a booking on it earns and
+   nobody should have to open a dialog to find out. */
+.owner-badge {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--ink); border-radius: 999px;
+  padding: 1px 9px; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 /* Thumbnails: the files chosen in a form before they are sent, and the ones
    already attached to a booking. Same strip in both places, so what you see
    after saving looks like what you saw before it. */

@@ -29,6 +29,12 @@ function toPanelShape(v) {
     year: v.model_year,
     color: v.colour,
     status: v.status,
+    // Whose car it is. 'own' on a database that has not run the migration yet,
+    // which is what every car was before the column existed.
+    ownership: v.ownership || 'own',
+    ownerName: v.owner_name || '',
+    ownerPhone: v.owner_phone || '',
+    isTemporary: Boolean(v.is_temporary),
     currentKm: v.current_km,
     price: v.rate_daily,
     // Blank rather than 0: empty means "one price", and 0 would advertise
@@ -59,6 +65,10 @@ function toApiShape(car) {
     model_year: car.year,
     colour: car.color,
     status: car.status,
+    ownership: car.ownership || 'own',
+    owner_name: car.ownerName || '',
+    owner_phone: car.ownerPhone || '',
+    is_temporary: car.isTemporary ? 1 : 0,
     current_km: car.currentKm,
     rate_daily: car.price,
     rate_daily_max: car.priceMax === '' || car.priceMax === null ? '' : car.priceMax,

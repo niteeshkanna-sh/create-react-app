@@ -170,9 +170,26 @@ function booking_money(int $bookingId): array
     $refunded = $settled['refunded'];
     $deducted = $settled['deducted'];
 
+    // What the business actually earns on this booking, and what it owes on.
+    //
+    // On our own car the whole rental is ours. On somebody else's it is not:
+    // the customer's money is mostly passed to the car's owner and what we
+    // keep is the commission agreed when the booking was made. Counting the
+    // full rental as revenue on a brokered hire overstates the business by the
+    // owner's share, every time.
+    $commission = $charges['commission'] ?? '0.00';
+    $brokered   = money_cmp($commission, '0.00') > 0;
+    $earned     = $brokered ? $commission : $total;
+    $ownerDue   = $brokered ? money_sub($total, $commission) : '0.00';
+
     return [
         'total'            => $total,
         'extra_km_charge'  => $km['extra_km_charge'],
+        'commission'       => money_add($commission),
+        // The rental less the commission: what is collected on the owner's
+        // behalf and has to reach them.
+        'owner_payout'     => $ownerDue,
+        'earned'           => $earned,
         'paid'             => money_add($paid),
         'balance'          => money_sub($total, $paid),
         // What is still owed back to the customer. A deduction is money the

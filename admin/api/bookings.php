@@ -36,7 +36,7 @@ switch ($action) {
 
         $rows = fetch_all(
             "SELECT b.*, c.name AS customer_name, c.phone AS customer_phone,
-                    v.name AS vehicle_name
+                    v.name AS vehicle_name" . booking_vehicle_columns() . "
                FROM bookings b
                JOIN customers c ON c.id = b.customer_id
                JOIN vehicles  v ON v.id = b.vehicle_id
@@ -59,7 +59,7 @@ switch ($action) {
         $row = fetch_one(
             "SELECT b.*, c.name AS customer_name, c.phone AS customer_phone,
                     c.address AS customer_address, c.licence_number,
-                    v.name AS vehicle_name
+                    v.name AS vehicle_name" . booking_vehicle_columns() . "
                FROM bookings b
                JOIN customers c ON c.id = b.customer_id
                JOIN vehicles  v ON v.id = b.vehicle_id
@@ -71,6 +71,83 @@ switch ($action) {
         }
 
         json_out(['booking' => present_booking($row, true)]);
+    }
+
+    // -------------------------------------------------------------- delete --
+    //
+    // Cancelled bookings only, and only once no money is attached to them. A
+    // cancelled booking that still holds a payment or a deposit is not
+    // finished -- it is a refund waiting to be made, and deleting it would
+    // take the only record of the money owed with it.
+    //
+    // Cancelling is still the ordinary ending. This is for the ones that
+    // should never have existed: a test, a duplicate, a booking taken against
+    // the wrong car and remade against the right one.
+    case 'delete': {
+        $user  = api_guard('booking.cancel', true);
+        $input = json_input();
+        $id    = (int) ($input['id'] ?? 0);
+
+        $booking = fetch_one('SELECT * FROM bookings WHERE id = ?', [$id]);
+        if ($booking === null) {
+            json_error('That booking no longer exists.', 404);
+        }
+        if ($booking['status'] !== 'Cancelled') {
+            json_error('Only a cancelled booking can be deleted. Cancel it first, '
+                . 'which keeps the record and the reason.', 409);
+        }
+
+        $money = booking_money($id);
+        if (!money_is_zero($money['paid']) || !money_is_zero($money['deposit_held'])) {
+            json_error(
+                'This booking still holds ' . money_add($money['paid'], $money['deposit_held'])
+                . ' in payments and deposits. Refund or void those first -- deleting it now '
+                . 'would remove the only record of money that is still owed back.',
+                409
+            );
+        }
+
+        // The audit entry is written before the rows go, and deliberately not
+        // deleted with them: what a booking said is gone, but that it existed
+        // and who removed it is the record that makes the ledger explainable.
+        audit_log('booking_deleted', 'bookings', 'booking', $id,
+            ['booking_number' => $booking['booking_number'], 'status' => $booking['status'],
+             'start_at' => $booking['start_at'], 'return_at' => $booking['return_at']],
+            null, $booking['cancelled_reason'] ?? null,
+            (int) $user['id'], $user['name'], null,
+            (int) $booking['customer_id'], (int) $booking['vehicle_id']);
+
+        // The attachments are files on disk as well as rows. Collected before
+        // the rows go, because afterwards there is nothing left saying which
+        // files belonged to this booking and they would sit in storage forever.
+        $attachments = [];
+        if (booking_files_ready()) {
+            foreach (booking_files($id) as $group) {
+                foreach ($group as $file) {
+                    $attachments[] = (int) $file['id'];
+                }
+            }
+        }
+        foreach ($attachments as $fileId) {
+            booking_file_delete($fileId);
+        }
+
+        transaction(function () use ($id) {
+            // Children first: these carry a foreign key to the booking, and
+            // the order is what makes the delete work rather than fail halfway.
+            foreach (['booking_files', 'km_records', 'payments', 'deposits',
+                      'refunds', 'booking_charges'] as $table) {
+                if (table_has_column($table, 'booking_id')) {
+                    query("DELETE FROM {$table} WHERE booking_id = ?", [$id]);
+                }
+            }
+            // The audit trail keeps its rows but stops pointing at a booking
+            // that is not there.
+            query('UPDATE audit_logs SET booking_id = NULL WHERE booking_id = ?', [$id]);
+            query('DELETE FROM bookings WHERE id = ?', [$id]);
+        });
+
+        json_out(['ok' => true, 'deleted' => $booking['booking_number']]);
     }
 
     // ---------------------------------------------------------------- save --
@@ -90,6 +167,7 @@ switch ($action) {
             ->integer('vehicle_id', 'Vehicle', 1)
             ->required('start_at', 'Start date and time')
             ->required('return_at', 'Return date and time')
+            ->optional('balance_due_on', 10)
             ->money('base_rental', 'Rental amount')
             ->integer('km_limit_per_day', 'KM limit', 0, 5000)
             ->money('extra_km_rate', 'Extra KM rate')
@@ -133,17 +211,27 @@ switch ($action) {
                 'licence_number' => $data['licence_number'],
             ], (int) $user['id']);
 
+            // Written only where the column exists, so a panel whose database
+            // is one migration behind still takes bookings.
+            $dueReady = table_has_column('bookings', 'balance_due_on');
+            $dueOn    = trim((string) ($data['balance_due_on'] ?? ''));
+            $dueOn    = $dueOn === '' ? null : $dueOn;
+
             if ($id === null) {
                 $number = next_number('NSC');
                 query(
                     'INSERT INTO bookings
                        (booking_number, customer_id, vehicle_id, vehicle_reg_number,
                         start_at, return_at, duration_days, pickup_location,
-                        return_location, status, notes, created_by)
-                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                    [$number, $customerId, $vehicleId, $vehicle['reg_number'],
-                     $startAt, $returnAt, $days, $data['pickup_location'],
-                     $data['return_location'], 'Confirmed', $data['notes'], $user['id']]
+                        return_location, status, notes, created_by'
+                      . ($dueReady ? ', balance_due_on' : '') . ')
+                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?' . ($dueReady ? ',?' : '') . ')',
+                    array_merge(
+                        [$number, $customerId, $vehicleId, $vehicle['reg_number'],
+                         $startAt, $returnAt, $days, $data['pickup_location'],
+                         $data['return_location'], 'Confirmed', $data['notes'], $user['id']],
+                        $dueReady ? [$dueOn] : []
+                    )
                 );
                 $bookingId = last_insert_id();
 
@@ -164,10 +252,15 @@ switch ($action) {
                 query(
                     'UPDATE bookings SET customer_id = ?, vehicle_id = ?, vehicle_reg_number = ?,
                             start_at = ?, return_at = ?, duration_days = ?, pickup_location = ?,
-                            return_location = ?, notes = ?
+                            return_location = ?, notes = ?'
+                      . ($dueReady ? ', balance_due_on = ?' : '') . '
                       WHERE id = ?',
-                    [$customerId, $vehicleId, $vehicle['reg_number'], $startAt, $returnAt,
-                     $days, $data['pickup_location'], $data['return_location'], $data['notes'], $bookingId]
+                    array_merge(
+                        [$customerId, $vehicleId, $vehicle['reg_number'], $startAt, $returnAt,
+                         $days, $data['pickup_location'], $data['return_location'], $data['notes']],
+                        $dueReady ? [$dueOn] : [],
+                        [$bookingId]
+                    )
                 );
                 $after = fetch_one('SELECT * FROM bookings WHERE id = ?', [$bookingId]);
                 [$prev, $curr] = diff_changes($before, $after ?? []);
@@ -186,6 +279,15 @@ switch ($action) {
             $baseRental = $data['base_rental'];
             $kmLimit    = (int) $data['km_limit_per_day'];
             $extraRate  = $data['extra_km_rate'];
+
+            // What the business keeps when the car belongs to somebody else.
+            // Zero on our own cars, and zero is also what an older database
+            // without the column reads back, so the arithmetic below is the
+            // same either way.
+            $commissionReady = table_has_column('booking_charges', 'commission');
+            $commission = $commissionReady
+                ? money_add((string) ($input['commission'] ?? ($existing['commission'] ?? '0.00')))
+                : '0.00';
             $deposit    = $existing['deposit_required'] ?? ($rate['security_deposit'] ?? '0.00');
             $rateDaily  = $existing['rate_daily'] ?? ($rate['rate_daily'] ?? '0.00');
 
@@ -196,18 +298,23 @@ switch ($action) {
             $changed = $existing === null
                 || money_cmp($existing['base_rental'], $baseRental) !== 0
                 || (int) $existing['km_limit_per_day'] !== $kmLimit
-                || money_cmp($existing['extra_km_rate'], $extraRate) !== 0;
+                || money_cmp($existing['extra_km_rate'], $extraRate) !== 0
+                || ($commissionReady && money_cmp($existing['commission'] ?? '0.00', $commission) !== 0);
 
             if ($changed) {
                 query(
                     'INSERT INTO booking_charges
                        (booking_id, supersedes_id, rate_daily, km_limit_per_day, extra_km_rate,
-                        deposit_required, base_rental, other_charges, discount, total, reason, created_by)
-                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                    [$bookingId, $existing['id'] ?? null, $rateDaily, $kmLimit, $extraRate,
-                     $deposit, $baseRental, $existing['other_charges'] ?? '0.00',
-                     $existing['discount'] ?? '0.00', $total,
-                     $existing === null ? 'Booking created' : 'Charges revised', $user['id']]
+                        deposit_required, base_rental, other_charges, discount, total, reason, created_by'
+                      . ($commissionReady ? ', commission' : '') . ')
+                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?' . ($commissionReady ? ',?' : '') . ')',
+                    array_merge(
+                        [$bookingId, $existing['id'] ?? null, $rateDaily, $kmLimit, $extraRate,
+                         $deposit, $baseRental, $existing['other_charges'] ?? '0.00',
+                         $existing['discount'] ?? '0.00', $total,
+                         $existing === null ? 'Booking created' : 'Charges revised', $user['id']],
+                        $commissionReady ? [$commission] : []
+                    )
                 );
                 if ($existing !== null) {
                     audit_log('booking_charges_revised', 'bookings', 'booking', $bookingId,
@@ -325,6 +432,21 @@ function normalise_datetime(string $value): ?string
     return $time === false ? null : date('Y-m-d H:i:s', $time);
 }
 
+/**
+ * The vehicle columns a booking query can select.
+ *
+ * Empty until 009_commission.sql has run. Naming a column that is not there
+ * fails the whole query, which would take the bookings list down rather than
+ * showing every car as ours -- and showing every car as ours is exactly what
+ * the panel did before the column existed.
+ */
+function booking_vehicle_columns(): string
+{
+    return table_has_column('vehicles', 'ownership')
+        ? ', v.ownership, v.owner_name, v.owner_phone, v.is_temporary'
+        : '';
+}
+
 function present_booking(array $row, bool $detailed): array
 {
     if ($row === []) {
@@ -347,6 +469,15 @@ function present_booking(array $row, bool $detailed): array
         'return_at'       => $row['return_at'],
         'duration_days'   => (int) $row['duration_days'],
         'total'           => (float) $money['total'],
+        'commission'      => (float) $money['commission'],
+        'owner_payout'    => (float) $money['owner_payout'],
+        // Revenue, once the owner's share of a brokered hire is taken out.
+        // Every total on the dashboard and in the reports works from this
+        // rather than from 'total', which is what the customer pays.
+        'earned'          => (float) $money['earned'],
+        'ownership'       => $row['ownership'] ?? 'own',
+        'owner_name'      => $row['owner_name'] ?? null,
+        'balance_due_on'  => $row['balance_due_on'] ?? null,
         'paid'            => (float) $money['paid'],
         'balance'         => (float) $money['balance'],
         'payment_status'  => payment_status($money),
@@ -383,6 +514,7 @@ function present_booking(array $row, bool $detailed): array
             'base_rental'      => (float) $charges['base_rental'],
             'other_charges'    => (float) $charges['other_charges'],
             'discount'         => (float) $charges['discount'],
+            'commission'       => (float) ($charges['commission'] ?? 0),
         ],
         'km' => [
             'total_km'        => (int) $km['total_km'],
