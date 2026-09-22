@@ -583,8 +583,37 @@ label.finance-toggle {
 .booking-conflict-error {
   color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
 }
+/* Thumbnails: the files chosen in a form before they are sent, and the ones
+   already attached to a booking. Same strip in both places, so what you see
+   after saving looks like what you saw before it. */
 .proof-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-.proof-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+.proof-preview img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); display: block; }
+
+/* A stored one carries a remove button, which sits on its corner rather than
+   beside it: a row of thumbnails each with a button underneath is twice as
+   tall and reads as a list of buttons. */
+.proof-item { position: relative; display: inline-block; line-height: 0; }
+.proof-item a { display: block; border-radius: 8px; }
+.proof-item a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.proof-remove {
+  position: absolute; top: -6px; right: -6px;
+  width: 20px; height: 20px; padding: 0;
+  display: grid; place-items: center;
+  border: 1px solid var(--border); border-radius: 50%;
+  background: var(--surface); color: var(--ink-dim);
+  font-size: 14px; line-height: 1; cursor: pointer;
+}
+.proof-remove:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+.proof-remove:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+/* A finger is wider than 20px. On a touch screen the target is padded out
+   without the button itself growing, which would crowd the thumbnail. */
+@media (pointer: coarse) {
+  .proof-remove::after {
+    content: ''; position: absolute; inset: -12px;
+  }
+}
 
 /* ---------------------------------------------------------------------------
    The booked-days calendar under a date box.

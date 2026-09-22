@@ -1342,6 +1342,7 @@ async function renderBookingDetail(id) {
         <div class="detail-field"><span class="k">Balance</span><span class="v">${formatINR(booking.balance)}</span></div>
         <div class="detail-field"><span class="k">Status</span><span class="v">${booking.payment_status}</span></div>
       </div>
+      ${attachmentsHTML(booking.files, 'payment', 'Payment screenshots')}
     </div>
 
     <div class="detail-section">
@@ -1368,6 +1369,8 @@ async function renderBookingDetail(id) {
             <span class="amount">${formatINR(r.refund_amount)}</span>
           </div>`).join('')}
       ` : ''}
+      ${attachmentsHTML(booking.files, 'deposit', 'Deposit proof')}
+      ${attachmentsHTML(booking.files, 'refund', 'Refund proof')}
     </div>
 
     <div class="detail-section">
@@ -1384,6 +1387,7 @@ async function renderBookingDetail(id) {
         </div>
         ${open ? `<button class="btn btn-ghost btn-sm correct-km" data-id="${booking.pickup.id}" data-current="${booking.pickup.odometer_km}">Correct reading</button>` : ''}
       ` : '<p class="detail-empty">Not recorded yet.</p>'}
+      ${attachmentsHTML(booking.files, 'pickup', 'Pickup photos')}
     </div>
 
     <div class="detail-section">
@@ -1407,6 +1411,7 @@ async function renderBookingDetail(id) {
         </div>
         ${open ? `<button class="btn btn-ghost btn-sm correct-km" data-id="${booking.return.id}" data-current="${booking.return.odometer_km}">Correct reading</button>` : ''}
       ` : `<p class="detail-empty">${booking.pickup ? 'Not recorded yet.' : 'Record pickup first.'}</p>`}
+      ${attachmentsHTML(booking.files, 'return', 'Return photos')}
     </div>
 
     <div class="detail-section">
@@ -1420,6 +1425,19 @@ async function renderBookingDetail(id) {
 
 function wireDetailActions(booking) {
   const on = (id, handler) => document.getElementById(id)?.addEventListener('click', handler);
+
+  // Removing an attachment. Delegated from the panel rather than bound per
+  // thumbnail, because the list is re-rendered after every change and
+  // per-element listeners would be re-bound each time or left behind.
+  document.querySelectorAll('.proof-remove').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Remove this file? It cannot be brought back.')) return;
+      try {
+        await api.bookingFiles.remove(Number(btn.dataset.fileId));
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
 
   on('detailEditBtn', () => { closeBookingDetail(); openBookingModal(booking); });
 
@@ -1490,10 +1508,119 @@ function nowTimeStr() {
   return new Date().toTimeString().slice(0, 5);
 }
 
+// ---- Booking attachments ----
+//
+// The five file boxes -- payment screenshot, deposit proof, refund proof,
+// pickup photos, return photos -- have been in these forms since the booking
+// screens were built and were wired to nothing at all. Choosing a file and
+// pressing Save recorded the payment and threw the file away, with no error,
+// which is indistinguishable from the upload having worked.
+//
+// Three things were missing and all three are here: a preview so you can see
+// what you picked, the upload itself, and somewhere on the booking for them to
+// appear afterwards.
+const ATTACHMENT_BOXES = [
+  { input: 'paymentProof', preview: 'paymentProofPreview', kind: 'payment' },
+  { input: 'depositProof', preview: 'depositProofPreview', kind: 'deposit' },
+  { input: 'refundProof', preview: 'refundProofPreview', kind: 'refund' },
+  { input: 'pickupPhotos', preview: 'pickupPhotosPreview', kind: 'pickup' },
+  { input: 'returnPhotos', preview: 'returnPhotosPreview', kind: 'return' },
+];
+
+// Object URLs held so they can be revoked. A page that creates one per chosen
+// file and never releases them keeps every image alive in memory for as long
+// as the tab is open, which on a phone is a panel that gets slower all day.
+const attachmentPreviewUrls = new Map();
+
+function clearAttachmentPreview(box) {
+  const held = attachmentPreviewUrls.get(box.preview) || [];
+  for (const url of held) URL.revokeObjectURL(url);
+  attachmentPreviewUrls.set(box.preview, []);
+  const node = document.getElementById(box.preview);
+  if (node) node.innerHTML = '';
+}
+
+function resetAttachmentBox(kindOrInput) {
+  const box = ATTACHMENT_BOXES.find((b) => b.kind === kindOrInput || b.input === kindOrInput);
+  if (!box) return;
+  clearAttachmentPreview(box);
+  const input = document.getElementById(box.input);
+  if (input) input.value = '';
+}
+
+for (const box of ATTACHMENT_BOXES) {
+  const input = document.getElementById(box.input);
+  const preview = document.getElementById(box.preview);
+  if (!input || !preview) continue;
+
+  input.addEventListener('change', () => {
+    clearAttachmentPreview(box);
+    const urls = [];
+    for (const file of input.files) {
+      const url = URL.createObjectURL(file);
+      urls.push(url);
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = file.name;
+      img.title = file.name;
+      preview.appendChild(img);
+    }
+    attachmentPreviewUrls.set(box.preview, urls);
+  });
+}
+
+/**
+ * Sends whatever is in one of those boxes, once the record it belongs to
+ * exists.
+ *
+ * Deliberately after the save rather than with it: a booking_files row points
+ * at a booking, and the payment or reading has to be there first. It also
+ * means a refused image never costs someone the payment they just entered --
+ * the record is already in, and this reports the file problem on its own.
+ */
+async function uploadAttachments(kind, bookingId, refId = null) {
+  const box = ATTACHMENT_BOXES.find((b) => b.kind === kind);
+  const input = box ? document.getElementById(box.input) : null;
+  if (!input || !input.files || input.files.length === 0) return;
+
+  try {
+    const result = await api.bookingFiles.add(bookingId, kind, input.files, refId);
+    if (result.warning) alert(result.warning);
+  } catch (err) {
+    // Said out loud, and said as being about the file only. The thing the
+    // person came to do has already been saved.
+    alert(`The ${box.kind} record was saved, but the file was not: ${err.message}`);
+  } finally {
+    resetAttachmentBox(kind);
+  }
+}
+
+/** The thumbnails for one kind, inside the booking detail screen. */
+function attachmentsHTML(files, kind, label) {
+  const list = (files && files[kind]) || [];
+  if (list.length === 0) return '';
+
+  return `
+    <p class="modal-section-label">${label}</p>
+    <div class="proof-preview">
+      ${list.map((f) => `
+        <span class="proof-item">
+          <a href="${f.url}" target="_blank" rel="noopener">
+            <img src="${f.url}" alt="${escapeHTML(f.caption || label)}" title="${escapeHTML(f.caption || label)}">
+          </a>
+          <button type="button" class="proof-remove" data-file-id="${f.id}"
+                  aria-label="Remove this file" title="Remove">&times;</button>
+        </span>
+      `).join('')}
+    </div>
+  `;
+}
+
 // ---- Payment modal ----
 const paymentModalOverlay = document.getElementById('paymentModalOverlay');
 
 function openPaymentModal(bookingId) {
+  resetAttachmentBox('payment');
   document.getElementById('paymentForm').reset();
   document.getElementById('paymentBookingId').value = bookingId;
   document.getElementById('paymentDate').value = todayStr();
@@ -1507,8 +1634,9 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    await api.payments.add({
-      booking_id: Number(document.getElementById('paymentBookingId').value),
+    const bookingId = Number(document.getElementById('paymentBookingId').value);
+    const saved = await api.payments.add({
+      booking_id: bookingId,
       kind: document.getElementById('paymentType').value,
       amount: document.getElementById('paymentAmount').value,
       paid_on: document.getElementById('paymentDate').value,
@@ -1516,6 +1644,10 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
       reference: document.getElementById('paymentReference').value.trim(),
       notes: document.getElementById('paymentNotes').value.trim(),
     });
+    // Tied to the payment it proves rather than to the booking in general, so
+    // a booking with four payments does not end up with four screenshots in a
+    // heap nobody can match up.
+    await uploadAttachments('payment', bookingId, saved.payment_id ?? null);
     paymentModalOverlay.hidden = true;
     await refreshAfterBookingChange();
   } catch (err) { showError(err); } finally { btn.disabled = false; }
@@ -1525,6 +1657,7 @@ document.getElementById('paymentForm').addEventListener('submit', async (e) => {
 const depositModalOverlay = document.getElementById('depositModalOverlay');
 
 function openDepositModal(bookingId, booking) {
+  resetAttachmentBox('deposit');
   document.getElementById('depositForm').reset();
   document.getElementById('depositBookingId').value = bookingId;
   document.getElementById('depositDate').value = todayStr();
@@ -1550,6 +1683,7 @@ document.getElementById('depositForm').addEventListener('submit', async (e) => {
       reference: document.getElementById('depositReference').value.trim(),
       notes: document.getElementById('depositNotes').value.trim(),
     });
+    await uploadAttachments('deposit', Number(document.getElementById('depositBookingId').value));
     depositModalOverlay.hidden = true;
     await refreshAfterBookingChange();
   } catch (err) { showError(err); } finally { btn.disabled = false; }
@@ -1566,6 +1700,7 @@ function updateRefundPreview() {
 }
 
 function openRefundModal(bookingId, booking) {
+  resetAttachmentBox('refund');
   document.getElementById('refundForm').reset();
   document.getElementById('refundBookingId').value = bookingId;
   document.getElementById('refundDate').value = todayStr();
@@ -1593,6 +1728,7 @@ document.getElementById('refundForm').addEventListener('submit', async (e) => {
       reference: document.getElementById('refundReference').value.trim(),
       notes: document.getElementById('refundNotes').value.trim(),
     });
+    await uploadAttachments('refund', Number(document.getElementById('refundBookingId').value));
     refundModalOverlay.hidden = true;
     alert(`Refunded ${formatINR(result.refund_amount)}.`);
     await refreshAfterBookingChange();
@@ -1603,6 +1739,7 @@ document.getElementById('refundForm').addEventListener('submit', async (e) => {
 const pickupModalOverlay = document.getElementById('pickupModalOverlay');
 
 function openPickupModal(bookingId, booking) {
+  resetAttachmentBox('pickup');
   document.getElementById('pickupForm').reset();
   document.getElementById('pickupBookingId').value = bookingId;
   document.getElementById('pickupDateField').value = todayStr();
@@ -1627,6 +1764,7 @@ document.getElementById('pickupForm').addEventListener('submit', async (e) => {
       condition_note: document.getElementById('pickupCondition').value.trim(),
       notes: document.getElementById('pickupNotes').value.trim(),
     });
+    await uploadAttachments('pickup', Number(document.getElementById('pickupBookingId').value));
     pickupModalOverlay.hidden = true;
     await refreshAfterBookingChange();
   } catch (err) { showError(err); } finally { btn.disabled = false; }
@@ -1650,6 +1788,7 @@ function updateReturnKmPreview() {
 }
 
 function openReturnModal(bookingId, booking) {
+  resetAttachmentBox('return');
   document.getElementById('returnForm').reset();
   document.getElementById('returnBookingId').value = bookingId;
   document.getElementById('returnDateField').value = todayStr();
@@ -1678,6 +1817,7 @@ document.getElementById('returnForm').addEventListener('submit', async (e) => {
       condition_note: document.getElementById('returnCondition').value.trim(),
       notes: document.getElementById('returnNotes').value.trim(),
     });
+    await uploadAttachments('return', Number(document.getElementById('returnBookingId').value));
     returnModalOverlay.hidden = true;
     await refreshAfterBookingChange();
   } catch (err) { showError(err); } finally { btn.disabled = false; }

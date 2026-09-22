@@ -151,6 +151,24 @@ function image_stream(string $path, string $mime): void
     readfile($path);
 }
 
+/**
+ * The same as image_stream, for a file that must not be cached or shared.
+ *
+ * Booking attachments are private records rather than pictures of cars, so
+ * they get no ETag, no long cache and no revalidation dance -- the caller has
+ * already sent Cache-Control, and adding a validator here would only invite a
+ * store somewhere in the middle to keep a copy.
+ */
+function image_stream_private(string $path, string $mime): void
+{
+    header('Content-Type: ' . $mime);
+    header('Content-Length: ' . (string) filesize($path));
+    header('X-Content-Type-Options: nosniff');
+    header('Content-Disposition: inline');
+
+    readfile($path);
+}
+
 /** The 404 every reader gives for a name it does not recognise. */
 function image_not_found(): never
 {
