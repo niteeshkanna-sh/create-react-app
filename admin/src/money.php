@@ -76,3 +76,26 @@ function money_is_zero(string|int|float|null $amount): bool
 {
     return to_paise($amount) === 0;
 }
+
+/**
+ * ₹1,32,224 -- Indian grouping, which number_format cannot do.
+ *
+ * The last three digits, then pairs. A total shown as ₹132,224 reads as a
+ * different number to everyone who will see this panel.
+ */
+function rupees(string|float $amount): string
+{
+    $n    = (string) (int) round((float) $amount);
+    $sign = str_starts_with($n, '-') ? '-' : '';
+    $n    = ltrim($n, '-');
+
+    if (strlen($n) <= 3) {
+        return $sign . '₹' . $n;
+    }
+
+    $last  = substr($n, -3);
+    $rest  = substr($n, 0, -3);
+    $rest  = preg_replace('/\\B(?=(\\d{2})+$)/', ',', $rest) ?? $rest;
+
+    return $sign . '₹' . $rest . ',' . $last;
+}

@@ -174,6 +174,8 @@ switch ($action) {
             ->optional('licence_expiry', 10)
             ->optional('id_number', 40)
             ->integer('estimated_km', 'Estimated KM', 0, 999999, false)
+            ->money('discount', 'Discount', false)
+            ->money('other_charges', 'Other charges', false)
             ->money('base_rental', 'Rental amount')
             ->integer('km_limit_per_day', 'KM limit', 0, 5000)
             ->money('extra_km_rate', 'Extra KM rate')
@@ -231,6 +233,10 @@ switch ($action) {
             $estReady = table_has_column('bookings', 'estimated_km');
             $estimate = ($data['estimated_km'] ?? null) === null ? null : (int) $data['estimated_km'];
 
+            $refReady = table_has_column('bookings', 'referral_source');
+            $referral = isset(REFERRAL_SOURCES[(string) ($input['referral_source'] ?? '')])
+                ? (string) $input['referral_source'] : null;
+
             if ($id === null) {
                 $number = next_number('NSC');
                 query(
@@ -239,15 +245,18 @@ switch ($action) {
                         start_at, return_at, duration_days, pickup_location,
                         return_location, status, notes, created_by'
                       . ($dueReady ? ', balance_due_on' : '')
-                      . ($estReady ? ', estimated_km' : '') . ')
+                      . ($estReady ? ', estimated_km' : '')
+                      . ($refReady ? ', referral_source' : '') . ')
                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?'
-                      . ($dueReady ? ',?' : '') . ($estReady ? ',?' : '') . ')',
+                      . ($dueReady ? ',?' : '') . ($estReady ? ',?' : '')
+                      . ($refReady ? ',?' : '') . ')',
                     array_merge(
                         [$number, $customerId, $vehicleId, $vehicle['reg_number'],
                          $startAt, $returnAt, $days, $data['pickup_location'],
                          $data['return_location'], 'Confirmed', $data['notes'], $user['id']],
                         $dueReady ? [$dueOn] : [],
-                        $estReady ? [$estimate] : []
+                        $estReady ? [$estimate] : [],
+                        $refReady ? [$referral] : []
                     )
                 );
                 $bookingId = last_insert_id();
@@ -271,13 +280,15 @@ switch ($action) {
                             start_at = ?, return_at = ?, duration_days = ?, pickup_location = ?,
                             return_location = ?, notes = ?'
                       . ($dueReady ? ', balance_due_on = ?' : '')
-                      . ($estReady ? ', estimated_km = ?' : '') . '
+                      . ($estReady ? ', estimated_km = ?' : '')
+                      . ($refReady ? ', referral_source = ?' : '') . '
                       WHERE id = ?',
                     array_merge(
                         [$customerId, $vehicleId, $vehicle['reg_number'], $startAt, $returnAt,
                          $days, $data['pickup_location'], $data['return_location'], $data['notes']],
                         $dueReady ? [$dueOn] : [],
                         $estReady ? [$estimate] : [],
+                        $refReady ? [$referral] : [],
                         [$bookingId]
                     )
                 );
@@ -303,6 +314,12 @@ switch ($action) {
             // Zero on our own cars, and zero is also what an older database
             // without the column reads back, so the arithmetic below is the
             // same either way.
+            // A discount is a decision, and one nobody could record until now:
+            // the columns existed and no form wrote to them, so an amount that
+            // was not the rate card amount had no explanation anywhere.
+            $discount = money_add((string) ($data['discount'] ?? ($existing['discount'] ?? '0.00')));
+            $otherChg = money_add((string) ($data['other_charges'] ?? ($existing['other_charges'] ?? '0.00')));
+
             $commissionReady = table_has_column('booking_charges', 'commission');
             $commission = $commissionReady
                 ? money_add((string) ($input['commission'] ?? ($existing['commission'] ?? '0.00')))
@@ -310,15 +327,28 @@ switch ($action) {
             $deposit    = $existing['deposit_required'] ?? ($rate['security_deposit'] ?? '0.00');
             $rateDaily  = $existing['rate_daily'] ?? ($rate['rate_daily'] ?? '0.00');
 
-            $total = money_add($baseRental,
-                $existing['other_charges'] ?? '0.00');
-            $total = money_sub($total, $existing['discount'] ?? '0.00');
+            // A discount bigger than the bill is a typo every time, and left
+            // alone it makes the booking's total negative -- which reads as
+            // the business owing the customer before they have paid anything,
+            // and carries straight into the revenue figures. The form shows
+            // zero in that case; the server should not quietly store less.
+            $billed = money_add($baseRental, $otherChg);
+            if (money_cmp($discount, $billed) > 0) {
+                json_error('Please correct the highlighted fields.', 422,
+                    ['fields' => ['discount' =>
+                        'The discount cannot be more than the ' . rupees($billed)
+                        . ' being charged.']]);
+            }
+
+            $total = money_sub($billed, $discount);
 
             $changed = $existing === null
                 || money_cmp($existing['base_rental'], $baseRental) !== 0
                 || (int) $existing['km_limit_per_day'] !== $kmLimit
                 || money_cmp($existing['extra_km_rate'], $extraRate) !== 0
-                || ($commissionReady && money_cmp($existing['commission'] ?? '0.00', $commission) !== 0);
+                || ($commissionReady && money_cmp($existing['commission'] ?? '0.00', $commission) !== 0)
+                || money_cmp($existing['discount'] ?? '0.00', $discount) !== 0
+                || money_cmp($existing['other_charges'] ?? '0.00', $otherChg) !== 0;
 
             if ($changed) {
                 query(
@@ -329,8 +359,7 @@ switch ($action) {
                      VALUES (?,?,?,?,?,?,?,?,?,?,?,?' . ($commissionReady ? ',?' : '') . ')',
                     array_merge(
                         [$bookingId, $existing['id'] ?? null, $rateDaily, $kmLimit, $extraRate,
-                         $deposit, $baseRental, $existing['other_charges'] ?? '0.00',
-                         $existing['discount'] ?? '0.00', $total,
+                         $deposit, $baseRental, $otherChg, $discount, $total,
                          $existing === null ? 'Booking created' : 'Charges revised', $user['id']],
                         $commissionReady ? [$commission] : []
                     )
@@ -380,23 +409,61 @@ switch ($action) {
                 ['fields' => ['reason' => 'A reason is required when cancelling.']]);
         }
 
-        // Money already taken does not disappear because a booking was
-        // cancelled — it has to be refunded deliberately, and the record of it
-        // stays either way.
-        $money = booking_money($id);
+        // Who decided, and when. A cancellation with only a reason cannot
+        // answer the question that comes up a month later -- whether a fee was
+        // right to keep -- because nobody remembers whose choice it was.
+        $by = ($input['cancelled_by'] ?? '') === 'customer' ? 'customer' : 'admin';
+        $detail = table_has_column('bookings', 'cancelled_at');
 
-        query("UPDATE bookings SET status = 'Cancelled', cancelled_reason = ? WHERE id = ?", [$reason, $id]);
+        query(
+            "UPDATE bookings SET status = 'Cancelled', cancelled_reason = ?"
+            . ($detail ? ", cancelled_at = NOW(), cancelled_by = ?" : '')
+            . ' WHERE id = ?',
+            $detail ? [$reason, $by, $id] : [$reason, $id]
+        );
+
+        // A cancellation fee is a charge like any other, so it goes where
+        // every other charge goes rather than into a column of its own. That
+        // keeps it in the total, in the balance and on the booking's bill
+        // without a second set of arithmetic that can drift from the first.
+        $fee     = money_add((string) ($input['cancellation_fee'] ?? '0.00'));
+        $charged = money_cmp($fee, '0.00') > 0;
+        $feeKept = false;
+        if ($charged && booking_extras_ready()) {
+            query('INSERT INTO booking_extras (booking_id, kind, amount, note, created_by)
+                   VALUES (?,?,?,?,?)',
+                [$id, 'other', $fee, 'Cancellation fee', $user['id']]);
+            $feeKept = true;
+        }
         audit_log('booking_cancelled', 'bookings', 'booking', $id,
             ['status' => $booking['status']], ['status' => 'Cancelled'], $reason,
             (int) $user['id'], $user['name'], $id,
             (int) $booking['customer_id'], (int) $booking['vehicle_id']);
 
+        // Recomputed after the fee, so the number quoted is what is actually
+        // owed back rather than what was owed a moment ago.
+        $after = booking_money($id);
+
+        // A fee asked for and not recorded is money quietly lost, so say so
+        // rather than reporting a clean cancellation. It only happens on a
+        // panel that has not run the migration yet.
+        $notes = [];
+        if ($charged && !$feeKept) {
+            $notes[] = 'The ' . $fee . ' cancellation fee could not be recorded on this'
+                . ' booking — this panel is a database update behind. Reload the panel'
+                . ' and add it as a charge.';
+        }
+        if (!money_is_zero($after['paid']) || !money_is_zero($after['deposit_held'])) {
+            $notes[] = 'This booking still holds '
+                . money_add($after['paid'], $after['deposit_held'])
+                . ' in payments and deposits'
+                . ($feeKept ? ', against a ' . $fee . ' cancellation fee' : '')
+                . '. Refund the difference separately.';
+        }
+
         json_out([
-            'ok' => true,
-            'warning' => money_is_zero($money['paid']) && money_is_zero($money['deposit_held'])
-                ? null
-                : 'This booking still holds ' . money_add($money['paid'], $money['deposit_held'])
-                  . ' in payments and deposits. Refund it separately.',
+            'ok'      => true,
+            'warning' => $notes === [] ? null : implode(' ', $notes),
         ]);
     }
 
@@ -526,6 +593,9 @@ function present_booking(array $row, bool $detailed): array
         'ownership'       => $row['ownership'] ?? 'own',
         'owner_name'      => $row['owner_name'] ?? null,
         'balance_due_on'  => $row['balance_due_on'] ?? null,
+        'referral_source' => $row['referral_source'] ?? null,
+        'cancelled_at'    => $row['cancelled_at'] ?? null,
+        'cancelled_by'    => $row['cancelled_by'] ?? null,
         'estimated_km'    => $row['estimated_km'] === null ? null : (int) $row['estimated_km'],
         'customer_type'   => $row['customer_type'] ?? 'New',
         'paid'            => (float) $money['paid'],

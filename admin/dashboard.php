@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/vocab.php';
+require_once __DIR__ . '/src/booking.php';
 require_once __DIR__ . '/src/migrate.php';
 require_once __DIR__ . '/src/shell.php';
 
@@ -33,6 +34,44 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
             <p>A snapshot of your fleet, inquiries, and finances.</p>
           </div>
         </div>
+
+        <!-- One box that finds anything: a booking number, a registration, a
+             phone number, a name. Which tab a thing lives under is not
+             something anyone should have to work out before they can look for
+             it. -->
+        <div class="search-wrap">
+          <input type="search" id="globalSearch" class="search-box"
+                 aria-label="Search bookings, vehicles and customers"
+                 placeholder="Search a booking number, registration, phone or name…"
+                 autocomplete="off" />
+          <div class="search-results" id="searchResults" hidden></div>
+        </div>
+
+        <!-- The six things started most often. Every one of them was three
+             clicks through the sidebar. -->
+        <div class="quick-actions">
+          <button class="btn btn-primary btn-sm" data-quick="booking">+ New booking</button>
+          <button class="btn btn-outline btn-sm" data-quick="vehicle">+ Add vehicle</button>
+          <button class="btn btn-outline btn-sm" data-quick="expense">+ Add expense</button>
+          <button class="btn btn-outline btn-sm" data-quick="enquiries">Inquiries</button>
+          <button class="btn btn-outline btn-sm" data-quick="bookings">All bookings</button>
+          <button class="btn btn-outline btn-sm" data-quick="finance">Finance</button>
+        </div>
+
+        <!-- The shape of the day, before any of the totals. Three pickups is
+             not a problem, it is a morning -- which is why these sit apart
+             from "Needs attention". -->
+        <section class="today-ops" id="todayOps" hidden>
+          <h3 class="dashboard-subheading">Today</h3>
+          <div class="ops-grid">
+            <div class="ops-card"><span class="ops-value" id="opsPickups">0</span><span class="ops-label">Pickups</span></div>
+            <div class="ops-card"><span class="ops-value" id="opsReturns">0</span><span class="ops-label">Returns</span></div>
+            <div class="ops-card"><span class="ops-value" id="opsPayments">₹0</span><span class="ops-label">Payments due</span></div>
+            <div class="ops-card"><span class="ops-value" id="opsDeposits">₹0</span><span class="ops-label">Deposits to refund</span></div>
+            <div class="ops-card"><span class="ops-value" id="opsServicing">0</span><span class="ops-label">In service</span></div>
+            <div class="ops-card"><span class="ops-value" id="opsEnquiries">0</span><span class="ops-label">New inquiries</span></div>
+          </div>
+        </section>
 
         <!-- What needs doing, above the figures.
              A number tells you where the business stands; these tell you what
@@ -246,13 +285,19 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
                 <label for="expCategory">Category</label>
                 <select id="expCategory" required>
                   <option>Fuel</option>
+                  <option>Service</option>
                   <option>Maintenance</option>
                   <option>Repairs</option>
-                  <option>Cleaning</option>
+                  <option>Tyre</option>
                   <option>Insurance</option>
-                  <option>Service</option>
-                  <option>Advertising</option>
+                  <option>Cleaning</option>
+                  <option>Parking</option>
+                  <option>Toll</option>
+                  <option>GPS</option>
+                  <option>Driver</option>
                   <option>Office</option>
+                  <option>Marketing</option>
+                  <option>Advertising</option>
                   <option>Other</option>
                 </select>
               </div>
@@ -569,6 +614,15 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
             <label for="bkEstimatedKm">Estimated KM</label>
             <input type="number" id="bkEstimatedKm" min="0" placeholder="What they expect to drive" />
           </div>
+          <div class="field-group">
+            <label for="bkReferral">How did they find us?</label>
+            <select id="bkReferral">
+              <option value="">Not asked</option>
+              <?php foreach (REFERRAL_SOURCES as $key => $label): ?>
+                <option value="<?= e($key) ?>"><?= e($label) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
         </div>
 
         <p class="modal-section-label">Vehicle</p>
@@ -590,6 +644,25 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           <div class="field-group"><label for="bkRentalAmount">Rental Amount (₹)</label><input type="number" id="bkRentalAmount" required min="0" placeholder="9000" /></div>
           <div class="field-group"><label for="bkKmLimit">KM Limit / day</label><input type="number" id="bkKmLimit" required min="0" placeholder="200" /></div>
           <div class="field-group"><label for="bkExtraKmRate">Extra KM Rate (₹)</label><input type="number" id="bkExtraKmRate" required min="0" placeholder="10" /></div>
+        </div>
+
+        <!-- The rate card amount, what came off it, and what is actually
+             charged. Without these an amount that is not the rate card amount
+             has no explanation anywhere, and a month later nobody can say
+             whether a discount was agreed or a digit was dropped. -->
+        <div class="modal-row modal-row-3">
+          <div class="field-group">
+            <label for="bkDiscount">Discount (₹)</label>
+            <input type="number" id="bkDiscount" min="0" placeholder="0" />
+          </div>
+          <div class="field-group">
+            <label for="bkOtherCharges">Other charges (₹)</label>
+            <input type="number" id="bkOtherCharges" min="0" placeholder="0" />
+          </div>
+          <div class="field-group">
+            <span class="c-label">Customer pays</span>
+            <p class="final-price" id="bkFinalPrice">₹0</p>
+          </div>
         </div>
 
         <!-- Shown only when the chosen car belongs to somebody else. On our

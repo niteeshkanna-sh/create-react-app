@@ -103,5 +103,23 @@ is_eq('refund after deduction', $refund, '4250.00');
 // The deposit must never be folded into what the rental earned.
 is_eq('revenue excludes the deposit', $total, '7960.00');
 
+echo "\n-- written the way it is read here --\n";
+// Indian grouping: the last three digits, then pairs. number_format cannot do
+// this, and a lakh shown the Western way reads as a different number to
+// everyone who will see the panel.
+is_eq('a lakh and a bit', rupees('132224.00'), '₹1,32,224');
+is_eq('a crore',          rupees('12345678'),  '₹1,23,45,678');
+is_eq('under a thousand', rupees('999'),       '₹999');
+is_eq('exactly a thousand', rupees('1000'),    '₹1,000');
+is_eq('ten thousand',     rupees('10000'),     '₹10,000');
+is_eq('a lakh',           rupees('100000'),    '₹1,00,000');
+is_eq('nothing',          rupees('0.00'),      '₹0');
+// The minus belongs before the symbol, not between it and the digits.
+is_eq('a refund due',     rupees('-45000'),    '-₹45,000');
+is_eq('a small refund',   rupees('-500'),      '-₹500');
+// Paise are rounded, not truncated: a balance of 1999.60 is two thousand.
+is_eq('rounded up',       rupees('1999.60'),   '₹2,000');
+is_eq('rounded down',     rupees('1999.40'),   '₹1,999');
+
 echo "\n{$pass} passed, {$fail} failed\n";
 exit($fail === 0 ? 0 : 1);
