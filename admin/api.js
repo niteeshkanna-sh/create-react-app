@@ -129,8 +129,11 @@ const api = {
     get: (id) => apiRequest(`api/bookings.php?action=get&id=${id}`),
     save: (booking) =>
       apiRequest('api/bookings.php?action=save', { method: 'POST', body: booking }),
-    cancel: (id, reason) =>
-      apiRequest('api/bookings.php?action=cancel', { method: 'POST', body: { id, reason } }),
+    cancel: (id, reason, cancelledBy = 'admin', cancellationFee = '') =>
+      apiRequest('api/bookings.php?action=cancel', {
+        method: 'POST',
+        body: { id, reason, cancelled_by: cancelledBy, cancellation_fee: cancellationFee || '0' },
+      }),
     complete: (id) =>
       apiRequest('api/bookings.php?action=complete', { method: 'POST', body: { id } }),
     // Cancelled bookings only, and only once no money is attached. The
@@ -190,6 +193,9 @@ const api = {
   alerts: {
     today: () => apiRequest('api/alerts.php'),
   },
+
+  // One box, everything. The server decides what matches; this only asks.
+  search: (q) => apiRequest(`api/search.php?q=${encodeURIComponent(q)}`),
 
   services: {
     list: (vehicleId) => apiRequest(`api/vehicle-services.php?action=list&vehicle_id=${vehicleId}`),

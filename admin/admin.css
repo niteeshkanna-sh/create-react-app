@@ -583,6 +583,57 @@ label.finance-toggle {
 .booking-conflict-error {
   color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
 }
+/* One box that finds anything, and the list it drops. */
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-box {
+  width: 100%; padding: 11px 14px; font-size: 0.95rem;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); color: var(--ink);
+}
+.search-box:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+.search-results {
+  position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px);
+  max-height: 60vh; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); box-shadow: 0 16px 40px rgba(16, 24, 40, 0.14);
+}
+.search-hit {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  border: 0; border-bottom: 1px solid var(--border);
+  background: none; padding: 10px 14px; font: inherit; color: inherit;
+}
+.search-hit:last-child { border-bottom: 0; }
+.search-hit:hover, .search-hit:focus-visible { background: var(--bg); }
+.search-kind {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+.search-title { font-weight: 700; }
+.search-sub { color: var(--ink-dim); font-size: 0.85rem; }
+.search-empty { padding: 12px 14px; color: var(--ink-dim); font-size: 0.9rem; }
+
+/* The six things started most often, each of which was three clicks away. */
+.quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+
+/* The shape of the day. Apart from "Needs attention" on purpose: three
+   pickups is not a problem, it is a morning. */
+.today-ops { margin-bottom: 22px; }
+.ops-grid {
+  display: grid; gap: 10px; margin-top: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+}
+.ops-card {
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ops-value { font-size: 1.35rem; font-weight: 800; color: var(--ink); }
+.ops-label { font-size: 0.78rem; color: var(--ink-dim); }
+
+/* The amount a customer actually pays, beside the discount that made it. */
+.final-price { font-size: 1.25rem; font-weight: 800; color: var(--ink); margin: 6px 0 0; }
+
 /* What needs doing, above the figures. Colour carries the urgency and a word
    carries it too, because colour alone is not a message to everyone. */
 .alerts { margin-bottom: 22px; }

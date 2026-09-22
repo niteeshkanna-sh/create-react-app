@@ -19,29 +19,6 @@ require_once __DIR__ . '/../src/fleet-upkeep.php';
 
 api_guard('booking.view');
 
-/**
- * ₹1,32,224 -- Indian grouping, which number_format cannot do.
- *
- * The last three digits, then pairs. A total shown as ₹132,224 reads as a
- * different number to everyone who will see this panel.
- */
-function rupees(string|float $amount): string
-{
-    $n    = (string) (int) round((float) $amount);
-    $sign = str_starts_with($n, '-') ? '-' : '';
-    $n    = ltrim($n, '-');
-
-    if (strlen($n) <= 3) {
-        return '₹' . $sign . $n;
-    }
-
-    $last  = substr($n, -3);
-    $rest  = substr($n, 0, -3);
-    $rest  = preg_replace('/\\B(?=(\\d{2})+$)/', ',', $rest) ?? $rest;
-
-    return '₹' . $sign . $rest . ',' . $last;
-}
-
 $today  = date('Y-m-d');
 $alerts = fleet_alerts();
 
@@ -108,6 +85,7 @@ try {
             'level'      => $late ? 'overdue' : 'soon',
             'booking_id' => (int) $row['id'],
             'subject'    => $row['booking_number'] . ' · ' . $row['customer_name'],
+            'amount'     => $money['balance'],
             'message'    => rupees($money['balance']) . ' still to collect'
                 . ($dueOn !== null ? ', due ' . date('d M', strtotime((string) $dueOn)) : ''),
             'days'       => $late ? -1 : 1,
@@ -138,6 +116,7 @@ try {
             'level'      => 'soon',
             'booking_id' => (int) $row['id'],
             'subject'    => $row['booking_number'] . ' · ' . $row['customer_name'],
+            'amount'     => $money['deposit_held'],
             'message'    => rupees($money['deposit_held']) . ' deposit still to refund',
             'days'       => 1,
         ];
@@ -173,8 +152,60 @@ usort($alerts, static function (array $a, array $b): int {
     return [$rank[$a['level']] ?? 3, $a['days']] <=> [$rank[$b['level']] ?? 3, $b['days']];
 });
 
+// ------------------------------------------------------ today's numbers --
+//
+// The counts somebody wants before they have read anything: how many cars go
+// out, how many come back, what is owed. Separate from the alerts because
+// these are the shape of the day rather than things that have gone wrong --
+// three pickups is not a problem, it is a morning.
+$today_ops = [
+    'pickups'   => 0,
+    'returns'   => 0,
+    'payments'  => '0.00',
+    'deposits'  => '0.00',
+    'servicing' => 0,
+    'enquiries' => 0,
+];
+
+try {
+    $today_ops['pickups'] = (int) (fetch_one(
+        "SELECT COUNT(*) AS n FROM bookings
+          WHERE status IN ('Confirmed','Ready') AND DATE(start_at) = ?", [$today]
+    )['n'] ?? 0);
+
+    $today_ops['returns'] = (int) (fetch_one(
+        "SELECT COUNT(*) AS n FROM bookings
+          WHERE status = 'Active' AND DATE(return_at) = ?", [$today]
+    )['n'] ?? 0);
+
+    $today_ops['servicing'] = (int) (fetch_one(
+        "SELECT COUNT(*) AS n FROM vehicles WHERE status = 'Maintenance'"
+    )['n'] ?? 0);
+
+    $today_ops['enquiries'] = (int) (fetch_one(
+        "SELECT COUNT(*) AS n FROM enquiries WHERE status = 'New'"
+    )['n'] ?? 0);
+} catch (Throwable $e) {
+    error_log('alerts: today failed: ' . $e->getMessage());
+}
+
+// Summed from the same alerts rather than queried again, so the figure at the
+// top and the list under it can never disagree about what is owed.
+foreach ($alerts as $alert) {
+    if ($alert['kind'] === 'payment_due') {
+        $today_ops['payments'] = money_add($today_ops['payments'], $alert['amount'] ?? '0.00');
+    }
+    if ($alert['kind'] === 'deposit_due') {
+        $today_ops['deposits'] = money_add($today_ops['deposits'], $alert['amount'] ?? '0.00');
+    }
+}
+
 json_out([
     'ok'      => true,
+    'today'   => $today_ops + [
+        'payments_label' => rupees($today_ops['payments']),
+        'deposits_label' => rupees($today_ops['deposits']),
+    ],
     'alerts'  => $alerts,
     'overdue' => count(array_filter($alerts, static fn(array $a): bool => $a['level'] === 'overdue')),
 ]);

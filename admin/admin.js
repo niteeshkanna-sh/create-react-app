@@ -1225,6 +1225,11 @@ function openBookingModal(booking) {
     document.getElementById('bkVehicleReg').value = booking.vehicle_reg || '';
     document.getElementById('bkCommission').value =
       booking.charges && booking.charges.commission ? booking.charges.commission : '';
+    document.getElementById('bkDiscount').value =
+      booking.charges && booking.charges.discount ? booking.charges.discount : '';
+    document.getElementById('bkOtherCharges').value =
+      booking.charges && booking.charges.other_charges ? booking.charges.other_charges : '';
+    document.getElementById('bkReferral').value = booking.referral_source || '';
     document.getElementById('bkBalanceDue').value = booking.balance_due_on || '';
   } else {
     document.getElementById('bkStartTime').value = '10:00';
@@ -1234,6 +1239,7 @@ function openBookingModal(booking) {
 
   updateBookingDurationPreview();
   syncCommissionField();
+  updateFinalPrice();
   bookingModalOverlay.hidden = false;
 }
 
@@ -1244,6 +1250,24 @@ function openBookingModal(booking) {
  * an empty box inviting a number would put one there -- and a commission on
  * our own car would quietly shrink the revenue this booking reports.
  */
+/**
+ * The rate card amount, less the discount, plus anything else.
+ *
+ * Shown while the form is open rather than only after saving, because a
+ * discount typed into a box with no visible effect is a discount somebody
+ * enters twice.
+ */
+function updateFinalPrice() {
+  const n = (id) => Number(document.getElementById(id).value) || 0;
+  const final = n('bkRentalAmount') + n('bkOtherCharges') - n('bkDiscount');
+  const el = document.getElementById('bkFinalPrice');
+  if (el) el.textContent = formatINR(Math.max(0, final));
+}
+
+for (const id of ['bkRentalAmount', 'bkDiscount', 'bkOtherCharges']) {
+  document.getElementById(id)?.addEventListener('input', updateFinalPrice);
+}
+
 function syncCommissionField() {
   const car = loadCars().find((c) => c.id === Number(bookingVehicleSelect.value));
   const partner = Boolean(car && car.ownership === 'partner');
@@ -1296,6 +1320,9 @@ bookingForm.addEventListener('submit', async (e) => {
     // Empty on our own cars, which the endpoint reads as no commission.
     commission: document.getElementById('bkCommissionRow').hidden
       ? '' : document.getElementById('bkCommission').value,
+    discount: document.getElementById('bkDiscount').value || '0',
+    other_charges: document.getElementById('bkOtherCharges').value || '0',
+    referral_source: document.getElementById('bkReferral').value,
     balance_due_on: document.getElementById('bkBalanceDue').value,
     notes: document.getElementById('bkNotes').value.trim(),
   };
@@ -1444,7 +1471,11 @@ async function renderBookingDetail(id) {
         <div class="detail-field"><span class="k">Extra KM Rate</span><span class="v">₹${charges.extra_km_rate || 0}/km</span></div>
       </div>
       ${booking.notes ? `<p class="field-hint" style="margin-top:10px">Notes: ${booking.notes}</p>` : ''}
-      ${booking.cancelled_reason ? `<p class="field-hint" style="margin-top:10px">Cancelled: ${booking.cancelled_reason}</p>` : ''}
+      ${booking.cancelled_reason ? `<p class="field-hint" style="margin-top:10px">
+        Cancelled${booking.cancelled_at ? ' ' + formatDateTime(booking.cancelled_at) : ''}${
+          booking.cancelled_by ? ` · ${booking.cancelled_by === 'customer' ? "the customer's decision" : 'our decision'}` : ''
+        } — ${escapeHTML(booking.cancelled_reason)}</p>` : ''}
+      ${booking.referral_source ? `<p class="field-hint" style="margin-top:6px">Found us through: ${escapeHTML(booking.referral_source.replace(/_/g, ' '))}</p>` : ''}
     </div>
 
     <div class="detail-section">
@@ -1611,8 +1642,18 @@ function wireDetailActions(booking) {
     const reason = prompt('Why is this booking being cancelled?');
     if (reason === null) return;
     if (!reason.trim()) { alert('A reason is required to cancel a booking.'); return; }
+
+    // Whose decision it was decides whether a fee is fair, and it is the one
+    // thing nobody remembers a month later.
+    const by = confirm(
+      'Was this the customer\u2019s decision?\n\nOK — the customer cancelled.\nCancel — we cancelled it.',
+    ) ? 'customer' : 'admin';
+
+    const fee = prompt('Cancellation fee to keep, if any (₹). Leave blank for none.', '') || '';
+    if (fee !== '' && !(Number(fee) >= 0)) { alert('That is not an amount.'); return; }
+
     try {
-      const result = await api.bookings.cancel(booking.id, reason.trim());
+      const result = await api.bookings.cancel(booking.id, reason.trim(), by, fee);
       if (result.warning) alert(result.warning);
       await refreshAfterBookingChange();
     } catch (err) { showError(err); }
@@ -1821,6 +1862,91 @@ function checklistHTML(checklist) {
     </div>`;
 }
 
+// ---- One box that finds anything ----
+//
+// Debounced, because a search per keystroke over four tables is four queries
+// a letter. 250ms is long enough that a whole word is usually one request and
+// short enough that nobody notices waiting.
+const SEARCH_KINDS = { booking: 'Booking', vehicle: 'Vehicle', customer: 'Customer' };
+let searchTimer = null;
+
+function closeSearch() {
+  const box = document.getElementById('searchResults');
+  if (box) { box.hidden = true; box.innerHTML = ''; }
+}
+
+async function runSearch(query) {
+  const box = document.getElementById('searchResults');
+  if (!box) return;
+
+  if (query.trim().length < 3) { closeSearch(); return; }
+
+  let hits = [];
+  try {
+    hits = (await api.search(query)).results || [];
+  } catch { closeSearch(); return; }
+
+  box.hidden = false;
+  if (hits.length === 0) {
+    box.innerHTML = `<p class="search-empty">Nothing matches &ldquo;${escapeHTML(query)}&rdquo;.</p>`;
+    return;
+  }
+
+  box.innerHTML = hits.map((h) => `
+    <button type="button" class="search-hit" data-kind="${h.kind}" data-id="${h.id}">
+      <span class="search-kind">${SEARCH_KINDS[h.kind] || h.kind}</span>
+      <span class="search-title">${escapeHTML(h.title)}</span>
+      <span class="search-sub">${escapeHTML(h.subtitle)}${h.note ? ' · ' + escapeHTML(h.note) : ''}</span>
+    </button>`).join('');
+
+  box.querySelectorAll('.search-hit').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.dataset.id);
+      closeSearch();
+      document.getElementById('globalSearch').value = '';
+      if (btn.dataset.kind === 'booking') {
+        openBookingDetail(id);
+      } else if (btn.dataset.kind === 'vehicle') {
+        const car = loadCars().find((c) => c.id === id);
+        if (car) openCarModal(car);
+      } else {
+        // A customer has no page of its own, so the useful thing is a new
+        // booking with their details already looked up -- which is what
+        // somebody searching a phone number is almost always about to do.
+        openBookingModal(null);
+        document.getElementById('bkPhone').value = btn.querySelector('.search-sub').textContent.split(' · ')[0];
+        void lookupCustomer();
+      }
+    });
+  });
+}
+
+document.getElementById('globalSearch')?.addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  const q = e.target.value;
+  searchTimer = setTimeout(() => void runSearch(q), 250);
+});
+document.getElementById('globalSearch')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { e.target.value = ''; closeSearch(); }
+});
+// Clicking anywhere else puts the list away. Without this it sits over the
+// dashboard until something else happens to close it.
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) closeSearch();
+});
+
+// ---- The six things started most often ----
+document.querySelectorAll('[data-quick]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    switch (btn.dataset.quick) {
+      case 'booking':   openBookingModal(null); break;
+      case 'vehicle':   openCarModal(null); break;
+      case 'expense':   document.getElementById('addExpenseBtn')?.click(); break;
+      default:          location.hash = '#' + btn.dataset.quick;
+    }
+  });
+});
+
 // ---- What needs doing today ----
 //
 // Worked out on the server, because knowing it means looking at every
@@ -1831,6 +1957,24 @@ function checklistHTML(checklist) {
 // heading every morning is how people stop reading the one that is not empty.
 const ALERT_FLAGS = { overdue: 'Overdue', soon: 'Soon', new: 'New' };
 
+/** The shape of the day: how many go out, how many come back, what is owed. */
+function renderTodayOps(today) {
+  const panel = document.getElementById('todayOps');
+  if (!panel || !today) return;
+  panel.hidden = false;
+
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  set('opsPickups', today.pickups);
+  set('opsReturns', today.returns);
+  set('opsPayments', today.payments_label ?? '₹0');
+  set('opsDeposits', today.deposits_label ?? '₹0');
+  set('opsServicing', today.servicing);
+  set('opsEnquiries', today.enquiries);
+}
+
 async function renderAlerts() {
   const panel = document.getElementById('alertsPanel');
   const list = document.getElementById('alertList');
@@ -1838,7 +1982,9 @@ async function renderAlerts() {
 
   let alerts = [];
   try {
-    alerts = (await api.alerts.today()).alerts || [];
+    const answer = await api.alerts.today();
+    alerts = answer.alerts || [];
+    renderTodayOps(answer.today);
   } catch {
     // Silent on purpose. This is a helper beside the figures, and a red error
     // where the to-do list goes would read as something being broken.

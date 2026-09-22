@@ -16,6 +16,26 @@ require_once __DIR__ . '/booking-extras.php';
 const BOOKING_STATUSES  = ['Enquiry', 'Confirmed', 'Ready', 'Active', 'Returned', 'Completed', 'Cancelled'];
 const BLOCKING_STATUSES = ['Confirmed', 'Ready', 'Active'];
 const PAYMENT_KINDS     = ['advance', 'balance', 'additional', 'extra_km'];
+
+/**
+ * How the customer found us.
+ *
+ * A fixed list rather than free text, because the point is to count them and
+ * "instagram", "Insta" and "IG" do not add up. Blank is allowed and common --
+ * nobody should be blocked from taking a booking because they forgot to ask.
+ */
+const REFERRAL_SOURCES = [
+    'google'       => 'Google search',
+    'google_maps'  => 'Google Maps',
+    'instagram'    => 'Instagram',
+    'facebook'     => 'Facebook',
+    'whatsapp'     => 'WhatsApp',
+    'referral'     => 'Friend or family',
+    'website'      => 'Our website',
+    'repeat'       => 'Came back to us',
+    'walk_in'      => 'Walked in',
+    'other'        => 'Somewhere else',
+];
 const PAYMENT_METHODS   = ['Cash', 'UPI', 'Card', 'Bank Transfer', 'Other'];
 const FUEL_LEVELS       = ['Full', '3/4', '1/2', '1/4', 'Empty'];
 
