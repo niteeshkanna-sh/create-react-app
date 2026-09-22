@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../src/http.php';
 require_once __DIR__ . '/../src/vocab.php';
 require_once __DIR__ . '/../src/vehicle-photos.php';
+require_once __DIR__ . '/../src/fleet-upkeep.php';
 
 /**
  * Vehicles.
@@ -143,18 +144,54 @@ switch ($action) {
             json_error('That vehicle no longer exists.', 404);
         }
 
-        // Written only once 009_commission.sql has run, so a panel whose
-        // database is a version behind still saves a car rather than failing on
-        // a column that is not there yet.
-        $ownerReady = table_has_column('vehicles', 'ownership');
-        $ownerCols = $ownerReady ? ', ownership, owner_name, owner_phone, is_temporary' : '';
-        $ownerPlaceholders = $ownerReady ? ',?,?,?,?' : '';
-        $ownerSets = $ownerReady
-            ? ', ownership = ?, owner_name = ?, owner_phone = ?, is_temporary = ?' : '';
-        $ownerValues = $ownerReady
-            ? [$ownership, $ownerName === '' ? null : $ownerName,
-               $ownerPhone === '' ? null : $ownerPhone, $temporary]
-            : [];
+        // Columns added by later migrations, written only where they exist --
+        // so a panel whose database is a version behind still saves a car
+        // rather than failing on a column that is not there yet.
+        //
+        // Built as one list rather than a pair per feature: there are two
+        // migrations' worth now and a third would have meant a third set of
+        // four variables to thread through the same two queries.
+        $optional = [];
+
+        if (table_has_column('vehicles', 'ownership')) {
+            $optional += [
+                'ownership'    => $ownership,
+                'owner_name'   => $ownerName === '' ? null : $ownerName,
+                'owner_phone'  => $ownerPhone === '' ? null : $ownerPhone,
+                'is_temporary' => $temporary,
+            ];
+        }
+
+        if (fleet_upkeep_ready()) {
+            // A blank date is null, not the empty string: '' in a DATE column
+            // becomes 0000-00-00 on a permissive server, and an alert would
+            // then say the insurance expired in the year zero.
+            $date = static fn(string $k): ?string =>
+                trim((string) ($input[$k] ?? '')) === '' ? null : trim((string) $input[$k]);
+            $text = static fn(string $k): ?string =>
+                trim((string) ($input[$k] ?? '')) === '' ? null : substr(trim((string) $input[$k]), 0, 60);
+
+            $optional += [
+                'purchase_date'    => $date('purchase_date'),
+                'insurance_expiry' => $date('insurance_expiry'),
+                'pollution_expiry' => $date('pollution_expiry'),
+                'fitness_expiry'   => $date('fitness_expiry'),
+                'service_due_km'   => ((int) ($input['service_due_km'] ?? 0)) ?: null,
+                'service_due_on'   => $date('service_due_on'),
+                'gps_provider'     => $text('gps_provider'),
+                'gps_device_id'    => $text('gps_device_id'),
+                // A link, not a credential: what is wanted is the provider's
+                // own page for this car, and only an http(s) one can be that.
+                'gps_url'          => preg_match('~^https?://~i', (string) ($input['gps_url'] ?? ''))
+                    ? substr(trim((string) $input['gps_url']), 0, 255) : null,
+            ];
+        }
+
+        $ownerCols = $optional === [] ? '' : ', ' . implode(', ', array_keys($optional));
+        $ownerPlaceholders = str_repeat(',?', count($optional));
+        $ownerSets = $optional === [] ? ''
+            : ', ' . implode(', ', array_map(static fn(string $c): string => "{$c} = ?", array_keys($optional)));
+        $ownerValues = array_values($optional);
 
         $savedId = transaction(function () use (
             $id, $data, $reg, $before, $user,
@@ -346,6 +383,15 @@ function present_vehicle(array $row): array
         'owner_name'       => $row['owner_name'] ?? null,
         'owner_phone'      => $row['owner_phone'] ?? null,
         'is_temporary'     => (bool) ($row['is_temporary'] ?? 0),
+        'purchase_date'    => $row['purchase_date'] ?? null,
+        'insurance_expiry' => $row['insurance_expiry'] ?? null,
+        'pollution_expiry' => $row['pollution_expiry'] ?? null,
+        'fitness_expiry'   => $row['fitness_expiry'] ?? null,
+        'service_due_km'   => $row['service_due_km'] === null ? null : (int) $row['service_due_km'],
+        'service_due_on'   => $row['service_due_on'] ?? null,
+        'gps_provider'     => $row['gps_provider'] ?? null,
+        'gps_device_id'    => $row['gps_device_id'] ?? null,
+        'gps_url'          => $row['gps_url'] ?? null,
         'photo'            => vehicle_photo_url($row['photo_file'] ?? null),
         'status'           => $row['status'],
         'current_km'       => (int) $row['current_km'],
