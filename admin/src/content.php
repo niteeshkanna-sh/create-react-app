@@ -153,11 +153,18 @@ function content_schema(): array
                 ],
                 'footer' => [
                     'label'  => 'Footer',
-                    'note'   => 'The band at the bottom of every page. The map is built from what you type in "Where the map should point" -- a place name or an address is enough, the same thing you would type into Google Maps.',
+                    'note'   => 'The band at the bottom of every page. The map is built from what you type in "Where the map should point" -- a place name or an address is enough, the same thing you would type into Google Maps. The address and the opening hours are also what Google reads to build the panel it shows beside a local search result, so the more exact they are the better that panel is.',
                     'fields' => [
                         'blurb'           => ['label' => 'Line under the business name', 'type' => 'textarea'],
                         'locationHeading' => ['label' => 'Heading above the map', 'type' => 'text'],
                         'address'         => ['label' => 'Address', 'type' => 'list'],
+                        'hours'           => [
+                            'label' => 'Opening hours',
+                            'type'  => 'text',
+                            'hint'  => 'Written the way Google expects: Mo-Su 07:00-21:00. '
+                                . 'Two ranges go in one line separated by a comma, '
+                                . 'like Mo-Sa 08:00-20:00, Su 09:00-18:00. Leave it empty if the hours vary.',
+                        ],
                         'mapQuery'        => ['label' => 'Where the map should point', 'type' => 'text'],
                         'directionsLabel' => ['label' => 'Directions link text', 'type' => 'text'],
                     ],
