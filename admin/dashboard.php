@@ -34,6 +34,14 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           </div>
         </div>
 
+        <!-- What needs doing, above the figures.
+             A number tells you where the business stands; these tell you what
+             is about to go wrong, and only one of the two has a deadline. -->
+        <section class="alerts" id="alertsPanel" hidden>
+          <h3 class="dashboard-subheading">Needs attention</h3>
+          <ul class="alert-list" id="alertList"></ul>
+        </section>
+
         <div class="stat-grid">
           <div class="stat-card">
             <span class="stat-label">Cars Listed</span>
@@ -399,6 +407,29 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           </div>
         </div>
 
+        <p class="modal-section-label">Papers and service</p>
+        <p class="field-hint">Leave a date empty and it is simply not watched.
+          Anything filled in appears under &ldquo;Needs attention&rdquo; a month before it runs out.</p>
+        <div class="modal-row modal-row-3">
+          <div class="field-group"><label for="carPurchaseDate">Purchase date</label><input type="date" id="carPurchaseDate" /></div>
+          <div class="field-group"><label for="carInsuranceExpiry">Insurance expires</label><input type="date" id="carInsuranceExpiry" /></div>
+          <div class="field-group"><label for="carPollutionExpiry">Pollution certificate expires</label><input type="date" id="carPollutionExpiry" /></div>
+        </div>
+        <div class="modal-row modal-row-3">
+          <div class="field-group"><label for="carFitnessExpiry">Fitness certificate expires</label><input type="date" id="carFitnessExpiry" /></div>
+          <div class="field-group"><label for="carServiceDueKm">Next service at (KM)</label><input type="number" id="carServiceDueKm" min="0" placeholder="e.g. 48000" /></div>
+          <div class="field-group"><label for="carServiceDueOn">Next service by</label><input type="date" id="carServiceDueOn" /></div>
+        </div>
+
+        <p class="modal-section-label">GPS tracker</p>
+        <p class="field-hint">Different cars are on different trackers, so the provider
+          is recorded per car. The link opens that provider's own page for this vehicle.</p>
+        <div class="modal-row modal-row-3">
+          <div class="field-group"><label for="carGpsProvider">Provider</label><input type="text" id="carGpsProvider" placeholder="Optional" /></div>
+          <div class="field-group"><label for="carGpsDeviceId">Device ID</label><input type="text" id="carGpsDeviceId" placeholder="Optional" /></div>
+          <div class="field-group"><label for="carGpsUrl">Tracking link</label><input type="url" id="carGpsUrl" placeholder="https://..." /></div>
+        </div>
+
         <p class="modal-section-label">Rate Card (₹)</p>
         <div class="modal-row modal-row-4">
           <div class="field-group">
@@ -735,6 +766,46 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="refundModalCancel">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Refund</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Vehicle service modal ===== -->
+  <div class="modal-overlay" id="serviceModalOverlay" hidden>
+    <div class="modal">
+      <h3 id="serviceModalTitle">Record a service</h3>
+      <form id="serviceForm">
+        <input type="hidden" id="serviceVehicleId" />
+        <div class="modal-row">
+          <div class="field-group"><label for="serviceDate">Service date</label><input type="date" id="serviceDate" required /></div>
+          <div class="field-group"><label for="serviceOdometer">Odometer (KM)</label><input type="number" id="serviceOdometer" min="0" placeholder="42350" /></div>
+        </div>
+        <div class="modal-row">
+          <div class="field-group"><label for="serviceType">What was done</label><input type="text" id="serviceType" required placeholder="e.g. Oil and filter change" /></div>
+          <div class="field-group"><label for="serviceAmount">Amount (₹)</label><input type="number" id="serviceAmount" min="0" placeholder="3500" /></div>
+        </div>
+        <div class="modal-row">
+          <div class="field-group"><label for="serviceGarage">Garage</label><input type="text" id="serviceGarage" placeholder="Optional" /></div>
+          <div class="field-group"><label for="serviceNote">Notes</label><input type="text" id="serviceNote" placeholder="Optional" /></div>
+        </div>
+        <p class="modal-section-label">When is the next one</p>
+        <div class="modal-row">
+          <div class="field-group">
+            <label for="serviceNextKm">Next service at (KM)</label>
+            <input type="number" id="serviceNextKm" min="0" placeholder="48000" />
+          </div>
+          <div class="field-group">
+            <label for="serviceNextOn">Next service by</label>
+            <input type="date" id="serviceNextOn" />
+          </div>
+        </div>
+        <p class="field-hint">Either is enough. Whichever comes first puts the car
+          under &ldquo;Needs attention&rdquo;.</p>
+        <div id="serviceHistory"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="serviceModalCancel">Close</button>
+          <button type="submit" class="btn btn-primary">Save service</button>
         </div>
       </form>
     </div>

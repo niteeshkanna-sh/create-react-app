@@ -185,6 +185,25 @@ const api = {
       apiRequest('api/customer-files.php?action=delete', { method: 'POST', body: { id } }),
   },
 
+  // What needs doing today, worked out on the server because it has to look
+  // at every booking's money and every vehicle's papers to know.
+  alerts: {
+    today: () => apiRequest('api/alerts.php'),
+  },
+
+  services: {
+    list: (vehicleId) => apiRequest(`api/vehicle-services.php?action=list&vehicle_id=${vehicleId}`),
+    add: (service) =>
+      apiRequest('api/vehicle-services.php?action=add', { method: 'POST', body: service }),
+    void: (id) =>
+      apiRequest('api/vehicle-services.php?action=void', { method: 'POST', body: { id } }),
+  },
+
+  customers: {
+    lookup: (phone) =>
+      apiRequest(`api/customers.php?action=lookup&phone=${encodeURIComponent(phone)}`),
+  },
+
   payments: {
     add: (payment) =>
       apiRequest('api/payments.php?action=add', { method: 'POST', body: payment }),

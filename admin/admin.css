@@ -583,6 +583,38 @@ label.finance-toggle {
 .booking-conflict-error {
   color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
 }
+/* What needs doing, above the figures. Colour carries the urgency and a word
+   carries it too, because colour alone is not a message to everyone. */
+.alerts { margin-bottom: 22px; }
+.alert-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.alert-row {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  border: 1px solid var(--border); border-left-width: 4px; border-radius: 10px;
+  padding: 9px 12px; background: var(--surface); font-size: 0.9rem;
+}
+.alert-row.is-overdue { border-left-color: var(--danger); }
+.alert-row.is-soon    { border-left-color: var(--accent); }
+.alert-row.is-new     { border-left-color: var(--primary); }
+.alert-flag {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em;
+  text-transform: uppercase; flex: none;
+}
+.is-overdue .alert-flag { color: var(--danger); }
+.is-soon .alert-flag    { color: var(--accent-deep); }
+.is-new .alert-flag     { color: var(--primary); }
+.alert-subject { font-weight: 700; }
+.alert-message { color: var(--ink-dim); }
+.alert-row .alert-go { margin-left: auto; }
+
+/* The previous hires of whoever this phone number belongs to. */
+.history-note {
+  margin-top: 8px; border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; background: var(--bg); font-size: 0.88rem;
+}
+.history-note table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+.history-note th, .history-note td { text-align: left; padding: 3px 6px; font-weight: 400; }
+.history-note th { color: var(--ink-faint); font-size: 0.78rem; font-weight: 700; }
+
 /* The handover checklist. Two columns on anything wider than a phone, because
    thirteen checks in one column is a scroll nobody finishes. */
 .check-grid {

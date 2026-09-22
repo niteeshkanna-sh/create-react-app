@@ -31,6 +31,7 @@ async function boot() {
     return;
   }
   showDashboard();
+  void renderAlerts();
 }
 
 document.addEventListener('DOMContentLoaded', boot);
@@ -110,11 +111,18 @@ function renderCarAdminGrid() {
       <div class="price">₹${car.price.toLocaleString('en-IN')}/day</div>
       <div class="actions">
         <button class="btn btn-outline btn-sm edit-car-btn">Edit</button>
+        <button class="btn btn-ghost btn-sm service-car-btn">Service</button>
         <button class="btn btn-danger btn-sm btn-icon delete-car-btn" title="Retire this vehicle" aria-label="Retire this vehicle">${BIN_ICON}</button>
       </div>
     </div>
   `).join('');
 
+  wrap.querySelectorAll('.service-car-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const id = Number(e.target.closest('.car-admin-card').dataset.id);
+      openServiceModal(loadCars().find((c) => c.id === id));
+    });
+  });
   wrap.querySelectorAll('.edit-car-btn').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const id = Number(e.target.closest('.car-admin-card').dataset.id);
@@ -166,6 +174,9 @@ function openCarModal(car) {
   document.getElementById('carOwnerName').value = car ? (car.ownerName || '') : '';
   document.getElementById('carOwnerPhone').value = car ? (car.ownerPhone || '') : '';
   document.getElementById('carTemporary').checked = Boolean(car && car.isTemporary);
+  for (const [id, key] of UPKEEP_FIELDS) {
+    document.getElementById(id).value = car ? (car[key] ?? '') : '';
+  }
   syncOwnerFields();
   document.getElementById('carPrice').value = car ? car.price : '';
   document.getElementById('carPriceMax').value = car ? car.priceMax : '';
@@ -363,6 +374,21 @@ function closeCarModal() {
  * Left on screen for our own cars they are three boxes that do nothing, and a
  * box that does nothing is one somebody eventually fills in.
  */
+// The papers, the service markers and the tracker. One list, because these are
+// nine plain fields that all travel the same way and nine hand-written lines
+// each way is eighteen chances to forget one.
+const UPKEEP_FIELDS = [
+  ['carPurchaseDate', 'purchase_date'],
+  ['carInsuranceExpiry', 'insurance_expiry'],
+  ['carPollutionExpiry', 'pollution_expiry'],
+  ['carFitnessExpiry', 'fitness_expiry'],
+  ['carServiceDueKm', 'service_due_km'],
+  ['carServiceDueOn', 'service_due_on'],
+  ['carGpsProvider', 'gps_provider'],
+  ['carGpsDeviceId', 'gps_device_id'],
+  ['carGpsUrl', 'gps_url'],
+];
+
 function syncOwnerFields() {
   const partner = document.getElementById('carOwnership').value === 'partner';
   for (const el of document.querySelectorAll('[data-partner-only]')) el.hidden = !partner;
@@ -399,6 +425,7 @@ carForm.addEventListener('submit', async (e) => {
     ownerName: document.getElementById('carOwnerName').value.trim(),
     ownerPhone: document.getElementById('carOwnerPhone').value.trim(),
     isTemporary: document.getElementById('carTemporary').checked,
+    ...Object.fromEntries(UPKEEP_FIELDS.map(([id, key]) => [key, document.getElementById(id).value])),
     price: Number(document.getElementById('carPrice').value),
     priceMax: document.getElementById('carPriceMax').value.trim() === ''
       ? ''
@@ -1165,6 +1192,8 @@ bookingVehicleSelect.addEventListener('change', () => {
 
 function openBookingModal(booking) {
   bookingForm.reset();
+  historyFor = '';
+  document.getElementById('customerHistory')?.remove();
   populateVehicleSelect(bookingVehicleSelect, booking ? booking.vehicle_id : null);
   document.getElementById('bookingId').value = booking ? booking.id : '';
   document.getElementById('bookingModalTitle').textContent = booking ? 'Edit Booking' : 'New Booking';
@@ -1792,6 +1821,119 @@ function checklistHTML(checklist) {
     </div>`;
 }
 
+// ---- What needs doing today ----
+//
+// Worked out on the server, because knowing it means looking at every
+// booking's money and every vehicle's papers, and doing that in the browser
+// would be one request per booking.
+//
+// The panel hides itself when there is nothing. An empty "Needs attention"
+// heading every morning is how people stop reading the one that is not empty.
+const ALERT_FLAGS = { overdue: 'Overdue', soon: 'Soon', new: 'New' };
+
+async function renderAlerts() {
+  const panel = document.getElementById('alertsPanel');
+  const list = document.getElementById('alertList');
+  if (!panel || !list) return;
+
+  let alerts = [];
+  try {
+    alerts = (await api.alerts.today()).alerts || [];
+  } catch {
+    // Silent on purpose. This is a helper beside the figures, and a red error
+    // where the to-do list goes would read as something being broken.
+    panel.hidden = true;
+    return;
+  }
+
+  panel.hidden = alerts.length === 0;
+  list.innerHTML = alerts.map((a) => `
+    <li class="alert-row is-${a.level}">
+      <span class="alert-flag">${ALERT_FLAGS[a.level] || ''}</span>
+      <span class="alert-subject">${escapeHTML(a.subject)}</span>
+      <span class="alert-message">${escapeHTML(a.message)}</span>
+      ${a.booking_id ? `<button class="btn btn-ghost btn-sm alert-go" data-booking="${a.booking_id}">Open</button>` : ''}
+      ${a.vehicle_id ? `<button class="btn btn-ghost btn-sm alert-go" data-vehicle="${a.vehicle_id}">Open</button>` : ''}
+    </li>`).join('');
+
+  list.querySelectorAll('.alert-go').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.booking) {
+        openBookingDetail(Number(btn.dataset.booking));
+      } else if (btn.dataset.vehicle) {
+        const car = loadCars().find((c) => c.id === Number(btn.dataset.vehicle));
+        if (car) openCarModal(car);
+      }
+    });
+  });
+}
+
+// ---- Who this phone number belongs to ----
+//
+// Asked when the number is finished rather than when the booking is saved.
+// Matching on save was already happening, silently and too late: whoever was
+// typing had re-keyed the address and the licence, and a different spelling
+// quietly kept whichever came first.
+let historyFor = '';
+
+async function lookupCustomer() {
+  const phoneField = document.getElementById('bkPhone');
+  const phone = phoneField.value.replace(/\s+/g, '');
+  const note = document.getElementById('customerHistory');
+
+  if (phone === historyFor) return;
+  historyFor = phone;
+
+  if (note) note.remove();
+  if (phone.length < 6) return;
+
+  let found;
+  try {
+    found = await api.customers.lookup(phone);
+  } catch { return; }
+  if (!found.customer) return;
+
+  // Only fills what is empty. Overwriting a name somebody has just corrected
+  // would make the lookup something to fight rather than something that helps.
+  const fill = (id, value) => {
+    const el = document.getElementById(id);
+    if (el && !el.value && value) el.value = value;
+  };
+  const c = found.customer;
+  fill('bkCustomerName', c.name);
+  fill('bkAddress', c.address);
+  fill('bkLicence', c.licence_number);
+  fill('bkWhatsapp', c.whatsapp);
+  fill('bkLicenceExpiry', c.licence_expiry);
+  fill('bkIdNumber', c.id_number);
+  if (document.getElementById('bkCustomerType').value === 'New') {
+    document.getElementById('bkCustomerType').value =
+      c.customer_type === 'Corporate' ? 'Corporate' : 'Returning';
+  }
+
+  const panel = document.createElement('div');
+  panel.className = 'history-note';
+  panel.id = 'customerHistory';
+  panel.innerHTML = `
+    <strong>${escapeHTML(c.name)}</strong> has hired before
+    ${c.documents.length ? ` · ${c.documents.length} document${c.documents.length === 1 ? '' : 's'} on file` : ' · no documents on file'}
+    ${found.bookings.length ? `
+      <table>
+        <tr><th>Booking</th><th>Vehicle</th><th>Days</th><th>Amount</th><th>Status</th></tr>
+        ${found.bookings.map((b) => `
+          <tr>
+            <td>${escapeHTML(b.booking_number)}</td>
+            <td>${escapeHTML(b.vehicle_name)}</td>
+            <td>${b.duration_days}</td>
+            <td>${formatINR(b.total)}</td>
+            <td>${escapeHTML(b.status)}${b.balance > 0 ? ` · ${formatINR(b.balance)} due` : ''}</td>
+          </tr>`).join('')}
+      </table>` : ''}`;
+  phoneField.closest('.field-group').appendChild(panel);
+}
+
+document.getElementById('bkPhone')?.addEventListener('blur', lookupCustomer);
+
 // ---- Booking attachments ----
 //
 // The five file boxes -- payment screenshot, deposit proof, refund proof,
@@ -2016,6 +2158,77 @@ document.getElementById('refundForm').addEventListener('submit', async (e) => {
     refundModalOverlay.hidden = true;
     alert(`Refunded ${formatINR(result.refund_amount)}.`);
     await refreshAfterBookingChange();
+  } catch (err) { showError(err); } finally { btn.disabled = false; }
+});
+
+// ---- Vehicle service ----
+const serviceModalOverlay = document.getElementById('serviceModalOverlay');
+
+async function openServiceModal(car) {
+  document.getElementById('serviceForm').reset();
+  document.getElementById('serviceVehicleId').value = car.id;
+  document.getElementById('serviceModalTitle').textContent = `Service — ${car.name}`;
+  document.getElementById('serviceDate').value = todayStr();
+  // Prefilled from what the car has actually done, because that is the number
+  // being recorded and retyping it is where a digit goes missing.
+  document.getElementById('serviceOdometer').value = car.currentKm || '';
+  document.getElementById('serviceHistory').innerHTML = '';
+  serviceModalOverlay.hidden = false;
+
+  try {
+    const { services } = await api.services.list(car.id);
+    document.getElementById('serviceHistory').innerHTML = services.length === 0
+      ? '<p class="detail-empty">No services recorded for this car yet.</p>'
+      : `<p class="modal-section-label">Previous services</p>
+         <div class="doc-list">
+           ${services.map((v) => `
+             <div class="doc-row">
+               <span class="doc-kind">${escapeHTML(v.service_type)}</span>
+               <span class="doc-meta">${formatDate(v.serviced_on)}
+                 · ${Number(v.odometer_km).toLocaleString('en-IN')} km
+                 ${v.garage ? '· ' + escapeHTML(v.garage) : ''}</span>
+               <span class="doc-actions">
+                 <span class="doc-meta">${formatINR(v.amount)}</span>
+                 <button class="btn btn-ghost btn-sm void-service" data-id="${v.id}">Remove</button>
+               </span>
+             </div>`).join('')}
+         </div>`;
+
+    document.querySelectorAll('.void-service').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Remove this service record?')) return;
+        try {
+          await api.services.void(Number(btn.dataset.id));
+          await openServiceModal(car);
+        } catch (err) { showError(err); }
+      });
+    });
+  } catch (err) { showError(err); }
+}
+
+document.getElementById('serviceModalCancel').addEventListener('click', () => { serviceModalOverlay.hidden = true; });
+serviceModalOverlay.addEventListener('click', (e) => { if (e.target === serviceModalOverlay) serviceModalOverlay.hidden = true; });
+
+document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  try {
+    await api.services.add({
+      vehicle_id: Number(document.getElementById('serviceVehicleId').value),
+      serviced_on: document.getElementById('serviceDate').value,
+      odometer_km: document.getElementById('serviceOdometer').value || '0',
+      service_type: document.getElementById('serviceType').value.trim(),
+      amount: document.getElementById('serviceAmount').value || '0',
+      garage: document.getElementById('serviceGarage').value.trim(),
+      next_service_km: document.getElementById('serviceNextKm').value || '',
+      next_service_on: document.getElementById('serviceNextOn').value,
+      note: document.getElementById('serviceNote').value.trim(),
+    });
+    serviceModalOverlay.hidden = true;
+    await refreshVehicles();
+    renderCarAdminGrid();
+    await renderAlerts();
   } catch (err) { showError(err); } finally { btn.disabled = false; }
 });
 
