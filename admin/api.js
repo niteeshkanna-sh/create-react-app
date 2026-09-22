@@ -135,6 +135,23 @@ const api = {
       apiRequest('api/bookings.php?action=complete', { method: 'POST', body: { id } }),
   },
 
+  // Screenshots and photographs hanging off a booking. Multipart, so it goes
+  // through apiUpload rather than apiRequest -- and several files in one
+  // request, because the pickup and return boxes take several and five round
+  // trips over a phone connection is how some of them go missing.
+  bookingFiles: {
+    add: (bookingId, kind, files, refId = null) => {
+      const form = new FormData();
+      form.append('booking_id', String(bookingId));
+      form.append('kind', kind);
+      if (refId !== null) form.append('ref_id', String(refId));
+      for (const file of files) form.append('files[]', file);
+      return apiUpload('api/booking-files.php?action=add', form);
+    },
+    remove: (id) =>
+      apiRequest('api/booking-files.php?action=delete', { method: 'POST', body: { id } }),
+  },
+
   payments: {
     add: (payment) =>
       apiRequest('api/payments.php?action=add', { method: 'POST', body: payment }),

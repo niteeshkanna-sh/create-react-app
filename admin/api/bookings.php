@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/booking.php';
+require_once __DIR__ . '/../src/booking-files.php';
 
 /**
  * Bookings.
@@ -425,6 +426,9 @@ function present_booking(array $row, bool $detailed): array
         ], fetch_all('SELECT * FROM refunds WHERE booking_id = ? ORDER BY id', [$id])),
         'pickup' => km_reading($id, 'pickup'),
         'return' => km_reading($id, 'return'),
+        // Grouped by kind, so each section of the detail screen shows its own
+        // attachments and nothing else.
+        'files' => booking_files($id),
         'timeline' => fetch_all(
             'SELECT action, reason, created_at, user_label FROM audit_logs
               WHERE booking_id = ? ORDER BY id', [$id]
