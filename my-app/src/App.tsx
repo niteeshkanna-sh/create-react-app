@@ -36,6 +36,8 @@ const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Con
 const Places = lazy(() => import('./pages/Places').then(m => ({ default: m.Places })));
 const Services = lazy(() => import('./pages/Services').then(m => ({ default: m.Services })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
+const CarRentalAreas = lazy(() => import('./pages/CarRentalAreas').then(m => ({ default: m.CarRentalAreas })));
+const Town = lazy(() => import('./pages/Town').then(m => ({ default: m.Town })));
 
 /**
  * A browser restores scroll position on navigation, which on a client-side
@@ -94,6 +96,12 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/places" element={<Places />} />
           <Route path="/services" element={<Services />} />
+          {/* One page per town we deliver to, and the hub above them. The
+              slug is matched inside Town, which renders the 404 page for one
+              nobody has written -- a route that matches anything would
+              otherwise turn every typo into a thin page with a name in it. */}
+          <Route path="/car-rental" element={<CarRentalAreas />} />
+          <Route path="/car-rental/:slug" element={<Town />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
