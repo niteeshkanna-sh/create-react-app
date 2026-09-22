@@ -1,6 +1,15 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
+import townData from '../data/towns.json';
+// @ts-expect-error -- plain ESM, shared verbatim with the build so the routes
+// the app knows about and the routes the sitemap lists cannot disagree.
+import { allTownRoutes } from '../data/town-routes.mjs';
+
+// The fixed pages, plus one per town. Composed rather than written into
+// seo.json, because towns.json is where a town is added and a second list to
+// edit is a second list to forget.
+const routes = [...seo.routes, ...allTownRoutes(townData.towns, seo.site)];
 
 /**
  * Keeps the document title, description and canonical in step with the route.
@@ -23,7 +32,7 @@ export function useSeo() {
     const path = pathname.replace(/\/+$/, '') || '/';
 
     const route =
-      seo.routes.find((r) => r.path === path) ??
+      routes.find((r) => r.path === path) ??
       ({
         title: `Page not found — ${seo.site.name}`,
         description: '',

@@ -19,6 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { allTownRoutes, TOWN_BASE } from '../src/data/town-routes.mjs';
 
 const root = join(import.meta.dirname, '..');
 
@@ -49,6 +50,12 @@ try {
 }
 const dist = join(root, 'dist');
 const seo = JSON.parse(readFileSync(join(root, 'src/data/seo.json'), 'utf8'));
+
+// One route per town, derived from towns.json by the same module the app uses,
+// so a town added there gets its page, its tags and its line in the sitemap
+// without a second list being edited.
+const towns = JSON.parse(readFileSync(join(root, 'src/data/towns.json'), 'utf8'));
+const routes = [...seo.routes, ...allTownRoutes(towns.towns, seo.site)];
 const template = readFileSync(join(dist, 'index.html'), 'utf8');
 // Which photographs actually exist, for the sitemap and the structured data.
 const photos = JSON.parse(readFileSync(join(root, 'src/data/photos.json'), 'utf8'));
@@ -161,7 +168,7 @@ function enrichJsonLd(html) {
 
   // Only pictures that exist. A schema image pointing at a 404 is a defect
   // Search Console reports, and there is nothing to gain by claiming one.
-  const banners = seo.routes
+  const banners = routes
     .map((r) => pictureFor(r.imageSlot))
     .filter((url) => typeof url === 'string');
 
@@ -246,6 +253,13 @@ function enrichJsonLd(html) {
   );
 }
 
+/** The town a route is about, or null for the pages that are not about one. */
+function townFor(route) {
+  if (!route.path.startsWith(TOWN_BASE + '/')) return null;
+  const slug = route.path.slice(TOWN_BASE.length + 1);
+  return towns.towns.find((t) => t.slug === slug) ?? null;
+}
+
 /**
  * The trail from the home page to this one, as Google shows it.
  *
@@ -264,19 +278,75 @@ function breadcrumbFor(route) {
   // "Wedding Car Rental in Nagercoil & Kanyakumari — NiteSha Cars & Bikes" is
   // not a trail anyone reads; "Wedding Car Rental" is. The town is already in
   // the title above it and in the description below.
-  const leaf = route.title.split(/\s—\s|\sin\s/)[0].trim();
+  //
+  // Except on a town page, where the town IS the leaf. Cutting at " in " there
+  // threw away the only word that distinguishes one of these pages from the
+  // other eleven, and left twelve trails all ending "Self Drive Car Rental".
+  const town = townFor(route);
+  const leaf = town
+    ? town.name
+    : route.path === TOWN_BASE
+      ? 'Where we deliver'
+      : route.title.split(/\s—\s|\sin\s/)[0].trim();
+
+  const trail = [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: seo.site.origin + '/' },
+  ];
+
+  // A town page sits under the hub, and saying so is the point of a trail
+  // rather than a pair: "niteshacars.in > Where we deliver > Marthandam" tells
+  // someone reading a result that this is one town of several, which is true
+  // and is what stops the page looking like a site of its own.
+  if (route.path.startsWith(TOWN_BASE + '/')) {
+    trail.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Where we deliver',
+      item: seo.site.origin + TOWN_BASE,
+    });
+  }
+
+  trail.push({
+    '@type': 'ListItem',
+    position: trail.length + 1,
+    name: leaf,
+    item: seo.site.origin + route.path,
+  });
+
+  return { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: trail };
+}
+
+/**
+ * What is offered, and where -- for a town page only.
+ *
+ * The business block on every page says the whole district. This says one
+ * town, on the page about that town, which is the specific claim a search for
+ * "self drive car Marthandam" is trying to match. provider points at the
+ * business's @id rather than repeating it, so there is still one business.
+ */
+function townServiceFor(route) {
+  const town = townFor(route);
+  if (!town) return null;
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: seo.site.origin + '/' },
-      { '@type': 'ListItem', position: 2, name: leaf, item: seo.site.origin + route.path },
-    ],
+    '@type': 'Service',
+    name: `Self drive car and bike rental in ${town.name}`,
+    serviceType: 'Self drive vehicle rental',
+    provider: { '@id': seo.site.origin + '#business' },
+    areaServed: {
+      '@type': 'City',
+      name: town.name,
+      containedInPlace: {
+        '@type': 'AdministrativeArea',
+        name: `${seo.site.district} district`,
+      },
+    },
+    url: seo.site.origin + route.path,
   };
 }
 
-let written = 0;for (const route of seo.routes) {
+let written = 0;for (const route of routes) {
   const url = seo.site.origin + route.path;
   let html = rewrite(template, {
     title: escape(route.title),
@@ -292,13 +362,13 @@ let written = 0;for (const route of seo.routes) {
   // <img> ends up using -- and a second preload written by hand with the
   // absolute form of the same URL is a second download of the same file, which
   // is what the first version of this did.
-  const crumbs = breadcrumbFor(route);
+  const extra = [breadcrumbFor(route), townServiceFor(route)]
+    .filter(Boolean)
+    .map((node) => `\n    <script type="application/ld+json">${JSON.stringify(node)}</script>`)
+    .join('');
 
-  if (crumbs) {
-    html = html.replace(
-      '</head>',
-      () => `\n    <script type="application/ld+json">${JSON.stringify(crumbs)}</script>\n  </head>`,
-    );
+  if (extra !== '') {
+    html = html.replace('</head>', () => `${extra}\n  </head>`);
   }
 
   if (renderRoute) {
@@ -348,7 +418,7 @@ const sitemap =
   '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n' +
   '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
-  seo.routes
+  routes
     .map(
       (r) =>
         `  <url>\n    <loc>${seo.site.origin}${r.path}</loc>\n` +

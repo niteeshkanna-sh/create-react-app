@@ -1,24 +1,11 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useHome, useSiteImage } from '../content';
+import { readablePhone } from '../lib/phone';
 import { SocialLinks } from './SocialLinks';
 
 /** The footer names five and sends the rest to /services. */
 const SHOWN = 5;
-
-/**
- * +916374942976 -> +91 63749 42976.
- *
- * seo.json holds the dialling form, which is what tel: needs and what nobody
- * wants to read. Derived rather than written out a second time, so the two can
- * never end up being different numbers.
- */
-function readablePhone(raw: string): string {
-  const digits = raw.replace(/[^0-9]/g, '');
-  return digits.length === 12 && digits.startsWith('91')
-    ? `+91 ${digits.slice(2, 7)} ${digits.slice(7)}`
-    : raw;
-}
 
 export function Footer() {
   const home = useHome();
@@ -81,6 +68,14 @@ export function Footer() {
               <a href={`mailto:${seo.site.email}`} className="transition hover:text-gold">
                 {seo.site.email}
               </a>
+            </li>
+            <li>
+              {/* On every page, which is the point: the town pages are only
+                  linked from the home page otherwise, and a set of pages
+                  reachable from one page is a set a crawler may not finish. */}
+              <Link to="/car-rental" className="transition hover:text-gold">
+                Where we deliver
+              </Link>
             </li>
             <li>
               <Link to="/places" className="transition hover:text-gold">
