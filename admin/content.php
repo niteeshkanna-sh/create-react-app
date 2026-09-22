@@ -98,9 +98,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $ready = content_storage_ready();
 
 /** Renders one field, or a group of them for a repeater row. */
-function field_input(string $name, array $spec, mixed $value): void
+function field_input(string $name, array $spec, mixed $value, string $scope = ''): void
 {
-    $id = 'f_' . preg_replace('/[^a-z0-9]+/i', '_', $name);
+    // The id has to carry the section, because the field names do not. Every
+    // section posts its own form, so "heading" in one and "heading" in another
+    // are different fields with the same name -- which is correct for the
+    // form and wrong for the document, where an id must be unique. Twenty-two
+    // ids were repeated on this page, and the consequence is not theoretical:
+    // <label for="f_f_heading_"> finds whichever element the browser reaches
+    // first, so clicking the label above one section's Heading box put the
+    // cursor in a different section's.
+    $id = 'f_' . preg_replace('/[^a-z0-9]+/i', '_', ($scope === '' ? '' : $scope . '_') . $name);
 
     echo '<label class="c-label" for="' . e($id) . '">' . e($spec['label']) . '</label>';
 
@@ -209,7 +217,14 @@ admin_shell_open($me, 'content.php', 'Website content');
 
           <div class="brand-slot-preview" style="aspect-ratio: <?= $rw ?> / <?= $rh ?>">
             <?php if (isset($brand[$slot])): ?>
-              <img src="<?= e((string) site_image_url($brand[$slot])) ?>" alt="">
+              <!-- The readable address first, and the old ?f= one if the
+                   server is not routing it. The panel is where someone looks
+                   to see whether an upload worked, so a thumbnail that depends
+                   on a rewrite rule is the worst place for one to be missing.
+                   The fallback runs once: onerror clears itself before
+                   swapping, or a genuinely missing file loops. -->
+              <img src="<?= e((string) site_image_url($brand[$slot])) ?>" alt=""
+                   onerror="this.onerror=null;this.src='brand.php?f=<?= e(rawurlencode($brand[$slot])) ?>'">
             <?php else: ?>
               <span class="brand-slot-empty">Nothing yet</span>
             <?php endif; ?>
@@ -227,7 +242,8 @@ admin_shell_open($me, 'content.php', 'Website content');
             </button>
             <?php if (isset($brand[$slot])): ?>
               <button class="btn btn-ghost btn-sm brand-edit" type="button"
-                      data-src="<?= e((string) site_image_url($brand[$slot])) ?>">Edit</button>
+                      data-src="<?= e((string) site_image_url($brand[$slot])) ?>"
+                      data-src-fallback="brand.php?f=<?= e(rawurlencode($brand[$slot])) ?>">Edit</button>
               <!-- Same form, different action: a form cannot contain another,
                    and a second form beside it would be a second cell in the
                    grid. The script sets the action before it submits. -->
@@ -301,12 +317,12 @@ admin_shell_open($me, 'content.php', 'Website content');
                 <?php endif; ?>
               </div>
               <?php foreach ($fspec['fields'] as $rkey => $rspec): ?>
-                <?php field_input("f[{$fkey}][{$i}][{$rkey}]", $rspec, $row[$rkey] ?? ''); ?>
+                <?php field_input("f[{$fkey}][{$i}][{$rkey}]", $rspec, $row[$rkey] ?? '', $key); ?>
               <?php endforeach; ?>
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <?php field_input("f[{$fkey}]", $fspec, $data[$fkey] ?? ''); ?>
+          <?php field_input("f[{$fkey}]", $fspec, $data[$fkey] ?? '', $key); ?>
         <?php endif; ?>
       <?php endforeach; ?>
 

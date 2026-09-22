@@ -84,7 +84,7 @@
     st.y = Math.min(0, Math.max(h - st.natH * st.base * st.scale, st.y));
   }
 
-  function open(src, slotForm, label) {
+  function open(src, slotForm, label, fallback) {
     form = slotForm;
     var ratio = (slotForm.dataset.ratio || '16:10').split(':').map(Number);
     var out   = (slotForm.dataset.out || '1200x750').split('x').map(Number);
@@ -122,6 +122,16 @@
       apply();
     };
     probe.onerror = function () {
+      // One retry at the older address, for a server that is not applying the
+      // rewrite that turns /admin/images/<name> into brand.php?f=<name>. The
+      // thumbnail beside this button does the same, so the two agree about
+      // which address works.
+      if (fallback) {
+        var retry = fallback;
+        fallback = null;
+        probe.src = retry;
+        return;
+      }
       alert('That image could not be opened.');
     };
     probe.src = src;
@@ -213,7 +223,8 @@
       return;
     }
     if (ev.target.closest('.brand-edit')) {
-      open(ev.target.closest('.brand-edit').dataset.src, slot, label);
+      var edit = ev.target.closest('.brand-edit');
+      open(edit.dataset.src, slot, label, edit.dataset.srcFallback || null);
       return;
     }
     if (ev.target.closest('.brand-remove')) {
