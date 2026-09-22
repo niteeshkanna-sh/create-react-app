@@ -32,6 +32,32 @@ async function boot() {
   }
   showDashboard();
   void renderAlerts();
+  openFromLink();
+}
+
+/**
+ * A reminder clicked from another admin page arrives as a link.
+ *
+ * The bell is in the bar everywhere, but only this page can open a booking.
+ * From Website content or Places it navigates here carrying what it was about,
+ * so the click lands on the thing itself and not merely on the tab it lives
+ * under -- which would leave somebody scrolling for the booking they had just
+ * pointed at.
+ */
+function openFromLink() {
+  const params = new URLSearchParams(window.location.search);
+  const booking = Number(params.get('booking'));
+  const enquiry = Number(params.get('enquiry'));
+  const vehicle = Number(params.get('vehicle'));
+
+  if (booking) openBookingDetail(booking);
+  else if (enquiry) openEnquiry(enquiry);
+  else if (vehicle) openCarById(vehicle);
+  else return;
+
+  // Taken back out of the address bar, so a reload or a bookmark does not keep
+  // reopening the same modal long after it was dealt with.
+  window.history.replaceState({}, '', window.location.pathname + window.location.hash);
 }
 
 document.addEventListener('DOMContentLoaded', boot);
@@ -61,6 +87,17 @@ document.querySelectorAll('.admin-tab').forEach((tab) => {
     TAB_PANELS.forEach((name) => {
       document.getElementById(`panel-${name}`).hidden = target !== name;
     });
+
+    // The bar used to say "Dashboard" whatever was on screen, so the heading
+    // and the highlighted sidebar item disagreed about where you were. Taken
+    // from the sidebar rather than a second list of names, which would be a
+    // second place to keep them in step.
+    const title = document.getElementById('nsTitle');
+    const label = tab.querySelector('.ns-item-label');
+    if (title && label) {
+      title.textContent = label.textContent.trim();
+      document.title = `${label.textContent.trim()} · NiteSha Admin`;
+    }
     if (target === 'dashboard') renderOverview();
     if (target === 'finance') renderFinance();
     if (target === 'bookings') renderBookingList();
@@ -155,6 +192,13 @@ function renderCarAdminGrid() {
 const carModalOverlay = document.getElementById('carModalOverlay');
 const carForm = document.getElementById('carForm');
 const carModalTitle = document.getElementById('carModalTitle');
+
+/** Opens a vehicle by id. What the reminders bell has; openCarModal wants the
+ *  whole record, which only this file can look up. */
+function openCarById(id) {
+  const car = loadCars().find((c) => c.id === Number(id));
+  if (car) openCarModal(car);
+}
 
 function openCarModal(car) {
   carForm.reset();
@@ -2008,10 +2052,16 @@ async function renderAlerts() {
     const answer = await api.alerts.today();
     alerts = answer.alerts || [];
     renderTodayOps(answer.today);
+    // The bell in the bar shows this same list. Handing it over rather than
+    // letting it fetch its own means one call to an endpoint that prices every
+    // open booking, and no way for the two to disagree.
+    window.nsDrawBell?.(alerts);
   } catch {
     // Silent on purpose. This is a helper beside the figures, and a red error
-    // where the to-do list goes would read as something being broken.
+    // where the to-do list goes would read as something being broken. The bell
+    // is told too, or it sits on "Loading…" for the rest of the session.
     panel.hidden = true;
+    window.nsDrawBell?.([]);
     return;
   }
 
