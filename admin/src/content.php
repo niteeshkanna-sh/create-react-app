@@ -40,6 +40,10 @@ function content_schema(): array
                         'headingLead'    => ['label' => 'Heading', 'type' => 'text'],
                         'headingAccent'  => ['label' => 'Heading, gold line', 'type' => 'text'],
                         'tagline'        => ['label' => 'Tagline', 'type' => 'text'],
+                        // What the background photograph shows. Read by screen
+                        // readers and by image search, which has little else to
+                        // go on besides this and the file name.
+                        'imageAlt'       => ['label' => 'Background photo, description', 'type' => 'text'],
                         'intro'          => ['label' => 'Intro paragraph', 'type' => 'textarea'],
                         'primaryLabel'   => ['label' => 'Main button', 'type' => 'text'],
                         'primaryHref'    => ['label' => 'Main button link', 'type' => 'text'],

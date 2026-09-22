@@ -88,6 +88,19 @@ try {
   // Not written yet, which is the normal state of a fresh checkout.
 }
 
+/**
+ * The share card a route asks for, or nothing.
+ *
+ * Either a slot name, resolved like any other picture, or a path from the site
+ * root for a file that is only ever a share card.
+ */
+function shareImageFor(route) {
+  const want = route.shareImage;
+  if (!want) return undefined;
+  if (want.startsWith('/')) return seo.site.origin + want;
+  return pictureFor(want);
+}
+
 /** Where a slot's picture actually is, or nothing. */
 function pictureFor(slot) {
   if (!slot) return undefined;
@@ -97,7 +110,7 @@ function pictureFor(slot) {
 }
 
 /** Replace the content of a meta/title/canonical tag, leaving the rest alone. */
-function rewrite(html, { title, description, url }) {
+function rewrite(html, { title, description, url, picture, alt }) {
   const out = html
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${title}</title>`)
     .replace(
@@ -131,7 +144,45 @@ function rewrite(html, { title, description, url }) {
     )
     ;
 
-  return enrichJsonLd(out);
+  return enrichJsonLd(ogImage(out, picture, alt));
+}
+
+/**
+ * The picture a shared link shows, where a route asks for its own.
+ *
+ * Driven by an explicit `shareImage` in seo.json, not by the route's banner
+ * slot. They are different jobs and the first attempt at this conflated them:
+ * banners are chosen to sit behind a headline and several are tall, and the
+ * home page's is 383x801, so deriving the card from the banner turned the
+ * home page's WhatsApp preview into a portrait crop. A share card wants
+ * landscape, at least 1200x630.
+ *
+ * So it is a decision, written down, rather than something inferred from a
+ * picture that was chosen for something else. No route declares one today;
+ * they all use the site default in the template, which is the only asset here
+ * big enough to be one.
+ *
+ * The width and height in the template describe that default, so they come out
+ * when a route does substitute its own. A wrong size is worse than none -- it
+ * is what the preview is laid out against before the file arrives.
+ */
+function ogImage(html, picture, alt) {
+  if (!picture) return html;
+
+  let out = html
+    .replace(/(<meta\s+property="og:image"\s+content=")[^"]*(")/, `$1${escape(picture)}$2`)
+    .replace(/(<meta\s+name="twitter:image"\s+content=")[^"]*(")/, `$1${escape(picture)}$2`);
+
+  if (alt) {
+    out = out
+      .replace(/(<meta\s+property="og:image:alt"\s+content=")[^"]*(")/, `$1${escape(alt)}$2`)
+      .replace(/(<meta\s+name="twitter:image:alt"\s+content=")[^"]*(")/, `$1${escape(alt)}$2`);
+  }
+
+  return out.replace(
+    /\s*<meta\s+property="og:image:(?:width|height|type)"\s+content="[^"]*"\s*\/>/g,
+    '',
+  );
 }
 
 const escape = (s) =>
@@ -352,6 +403,9 @@ let written = 0;for (const route of routes) {
     title: escape(route.title),
     description: escape(route.description),
     url,
+    // Only when the route names one. A banner is not a share card.
+    picture: shareImageFor(route),
+    alt: route.imageAlt ?? route.title,
   });
 
   // Immediately before </head>, which is the last point the parser reaches

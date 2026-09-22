@@ -24,7 +24,7 @@ export function OpenRoad() {
   // Uploadable. Still a background rather than an <img>: if the file is
   // missing the band falls back to the navy beneath it and still looks
   // deliberate, where an <img> would leave a broken-image icon on a live page.
-  const road = useSiteImage('open-road') ?? '/open-road.webp';
+  const road = useSiteImage('open-road') ?? '/mountain-road-at-sunrise-self-drive-car-rental.webp';
 
   return (
     <section className="relative isolate overflow-hidden bg-navy text-white">

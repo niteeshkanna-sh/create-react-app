@@ -8,7 +8,7 @@ export function Hero() {
   // Uploadable, like every other picture on the site. It was a hardcoded path,
   // so the one image a visitor sees first was the only one the owner could not
   // change without a deploy.
-  const background = useSiteImage('home-hero') ?? '/hero-car.webp';
+  const background = useSiteImage('home-hero') ?? '/self-drive-car-rental-nitesha-cars-and-bikes.webp';
 
   return (
     <section id="top" className="relative overflow-hidden bg-navy text-white">
@@ -23,10 +23,18 @@ export function Hero() {
           the page's loading speed by. Told to fetch first and not lazily: left
           to its own devices the browser treats a background image as ordinary
           work and the page paints twice. */}
+      {/* Described rather than hidden. It sits behind the headline, so the
+          instinct is to call it decoration and mark it aria-hidden -- which
+          is what it was. But the sitemap lists this picture as the one that
+          represents the home page, and alt text is most of what image search
+          has to go on besides the file name. A page cannot tell a crawler
+          "this is the photograph of the business" and tell a screen reader
+          "there is nothing here"; one of the two is wrong, and it is not the
+          sitemap. The words come from the same editable content as the
+          heading, so they stay true when the picture is replaced. */}
       <img
         src={background}
-        alt=""
-        aria-hidden="true"
+        alt={h.imageAlt ?? `${h.headingLead} ${h.headingAccent}`}
         loading="eager"
         fetchPriority="high"
         decoding="async"

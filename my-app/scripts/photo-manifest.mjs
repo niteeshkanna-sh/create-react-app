@@ -41,7 +41,15 @@ for (const entry of entries) {
   }
   // The key is the filename without its extension, so `cars-hero.jpg` and
   // `cars-hero.webp` are the same slot -- swapping format is not a rename job.
-  const key = entry.name.slice(0, -ext.length);
+  //
+  // Anything after a double hyphen is words for the address, not part of the
+  // slot: `home-hero--self-drive-car-rental-kanyakumari.webp` fills the
+  // `home-hero` slot. The two pull in opposite directions otherwise -- a slot
+  // wants a short stable key and a URL wants to say what the picture is, and
+  // Google reads the file name as one of the few things it knows about an
+  // image besides its alt text. This way the file name does both, and a
+  // rewording is not a slot change.
+  const key = entry.name.slice(0, -ext.length).split('--')[0];
   // A later format wins only if nothing claimed the slot, so replacing a .jpg
   // with a .webp without deleting the .jpg does not produce a coin flip.
   const rank = ['.avif', '.webp', '.jpg', '.jpeg', '.png'].indexOf(ext);

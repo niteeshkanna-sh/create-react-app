@@ -158,12 +158,20 @@ function vehicle_photo_url(?string $name): ?string
     if ($name === null || $name === '') {
         return null;
     }
-    // A path rather than photo.php?f=, so the words in the file name are in the
-    // address too. admin/.htaccess sends /admin/photos/... here, and the ?f=
-    // form still answers, so an address stored anywhere before this keeps
-    // working.
+    // /car-photos/, from the site root, not photos/ relative to the panel.
+    //
+    // The words in the file name were already right; the folder was not. Every
+    // picture on a car hire site sat at /admin/photos/..., and "admin" is a
+    // dead word in the one part of an image's address Google reads besides the
+    // file name. Worse, it left every photograph one robots.txt edit from being
+    // uncrawlable: disallowing /admin/ is the obvious thing to do, and three
+    // Allow lines were all that stood in the way.
+    //
+    // Root-absolute so it survives the trip through the website's panelUrl(),
+    // which prefixes anything relative with /admin. The old address still
+    // answers, because it is what pages already indexed point at.
     //
     // The filename carries random bytes, so it changes whenever the photograph
     // does -- which is what lets the response be cached hard.
-    return 'photos/' . rawurlencode($name);
+    return '/car-photos/' . rawurlencode($name);
 }
