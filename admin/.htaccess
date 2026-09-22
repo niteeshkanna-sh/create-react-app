@@ -66,6 +66,25 @@ Options -Indexes
         Require all denied
     </FilesMatch>
 
+    # The two first-run tools, which have done their job.
+    #
+    # install.php refuses to do anything once an account exists, so it is not a
+    # way in -- but it prints the server's paths, its PHP build and what the
+    # database connection is doing, and none of that is a stranger's business.
+    # session-check.php is the same bargain: it reports cookie settings and
+    # paths to explain a "Session expired" that will not go away.
+    #
+    # Denied rather than deleted, because deleting them is not the fix it
+    # sounds like: this host publishes by cloning the repository into the web
+    # root, so a file removed from the server by hand is back on the next
+    # deploy. Denied here, they stay gone.
+    #
+    # To install on a new host or chase a session problem again, comment out
+    # the FilesMatch below, do it, and put it back.
+    <FilesMatch "^(install|session-check)\.php$">
+        Require all denied
+    </FilesMatch>
+
     # Documentation, deployed because it lives in the repository. README.md
     # describes the install steps and the enquiry endpoint's fields;
     # SECURITY.md is a description of the defences.
@@ -88,6 +107,10 @@ Options -Indexes
 
 <IfModule !mod_authz_core.c>
     <FilesMatch "^config(\.sample)?\.php$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+    <FilesMatch "^(install|session-check)\.php$">
         Order allow,deny
         Deny from all
     </FilesMatch>

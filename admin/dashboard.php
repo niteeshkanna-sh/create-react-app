@@ -134,7 +134,10 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         </div>
 
         <div class="enquiry-toolbar">
-          <input type="search" id="enquirySearch" placeholder="Search name, phone or ENQ number" />
+          <!-- A placeholder is not a label: it vanishes the moment anyone
+               types, and a screen reader is not obliged to announce it. -->
+          <input type="search" id="enquirySearch" aria-label="Search enquiries"
+                 placeholder="Search name, phone or ENQ number" />
           <div class="enquiry-filters">
             <button class="filter-chip active" data-enquiry-status="">All</button>
             <button class="filter-chip" data-enquiry-status="New">New</button>

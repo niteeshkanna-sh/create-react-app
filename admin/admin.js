@@ -664,6 +664,21 @@ function formatINR(amount) {
   return `₹${value.toLocaleString('en-IN')}`;
 }
 
+/**
+ * A balance, which can be owed to us or back to the customer.
+ *
+ * "₹-3,458" is arithmetic, not an answer. The minus sign is easy to miss on a
+ * phone, and someone reading it quickly sees a number the customer still owes
+ * when in fact they are owed it back. Said in words instead, in the direction
+ * the money actually has to travel.
+ */
+function formatBalance(amount) {
+  const value = Number(amount) || 0;
+  if (value < 0) return `${formatINR(-value)} to return`;
+  if (value === 0) return `${formatINR(0)} — settled`;
+  return `${formatINR(value)} due`;
+}
+
 /** The range the Finance tab is showing, defaulting to the current month. */
 function financeRange() {
   const from = document.getElementById('finFrom');
@@ -1069,7 +1084,7 @@ async function renderBookingList() {
         </span>
         <div class="booking-card-balance">
           <span class="label">Balance</span>
-          <span class="amount">${formatINR(b.balance)}</span>
+          <span class="amount">${formatBalance(b.balance)}</span>
         </div>
       </div>
     </div>`).join('');
@@ -1322,7 +1337,7 @@ async function renderBookingDetail(id) {
         <div class="detail-field"><span class="k">Start</span><span class="v">${formatDateTime(booking.start_at)}</span></div>
         <div class="detail-field"><span class="k">Return</span><span class="v">${formatDateTime(booking.return_at)}</span></div>
         <div class="detail-field"><span class="k">Duration</span><span class="v">${booking.duration_days} day(s)</span></div>
-        <div class="detail-field"><span class="k">Rental Amount</span><span class="v">${formatINR(charges.base_rental || 0)}</span></div>
+        <div class="detail-field"><span class="k">Agreed Rental</span><span class="v">${formatINR(charges.base_rental || 0)}</span></div>
         <div class="detail-field"><span class="k">KM Limit</span><span class="v">${charges.km_limit_per_day || 0}/day</span></div>
         <div class="detail-field"><span class="k">Extra KM Rate</span><span class="v">₹${charges.extra_km_rate || 0}/km</span></div>
       </div>
@@ -1337,9 +1352,16 @@ async function renderBookingDetail(id) {
       </div>
       ${paymentRows}
       <div class="detail-grid" style="margin-top:12px">
+        <div class="detail-field"><span class="k">Rental Amount</span><span class="v">${formatINR(charges.base_rental || 0)}</span></div>
+        ${Number(booking.extra_km_charge) ? `
+          <div class="detail-field"><span class="k">Extra KM (${Number(booking.extra_km || 0).toLocaleString('en-IN')} km)</span><span class="v">+ ${formatINR(booking.extra_km_charge)}</span></div>` : ''}
+        ${Number(charges.other_charges) ? `
+          <div class="detail-field"><span class="k">Other Charges</span><span class="v">+ ${formatINR(charges.other_charges)}</span></div>` : ''}
+        ${Number(charges.discount) ? `
+          <div class="detail-field"><span class="k">Discount</span><span class="v">- ${formatINR(charges.discount)}</span></div>` : ''}
         <div class="detail-field"><span class="k">Rental Amount Due</span><span class="v">${formatINR(booking.total)}</span></div>
         <div class="detail-field"><span class="k">Total Paid</span><span class="v">${formatINR(booking.paid)}</span></div>
-        <div class="detail-field"><span class="k">Balance</span><span class="v">${formatINR(booking.balance)}</span></div>
+        <div class="detail-field"><span class="k">Balance</span><span class="v">${formatBalance(booking.balance)}</span></div>
         <div class="detail-field"><span class="k">Status</span><span class="v">${booking.payment_status}</span></div>
       </div>
       ${attachmentsHTML(booking.files, 'payment', 'Payment screenshots')}
