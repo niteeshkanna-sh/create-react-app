@@ -496,23 +496,41 @@ document.getElementById('enquirySearch')?.addEventListener('input', (e) => {
   }, 300);
 });
 
+/**
+ * The number beside Inquiries in the sidebar: how many nobody has opened.
+ *
+ * Unread, not unresolved. An enquiry stays Contacted for days while somebody
+ * waits on a callback, and a badge that sits on 1 the whole time is a badge
+ * nobody reads -- the morning it says 3 looks like every other morning. The
+ * server counts it, because the list on screen is filtered and the badge is
+ * about the whole table.
+ */
+function setInquiryBadge(unread) {
+  const badge = document.getElementById('inquiryCount');
+  if (!badge) return;
+  // Emptied rather than zeroed: the stylesheet hides an empty badge, and a
+  // grey "0" beside Inquiries is a thing to read every morning that never
+  // means anything.
+  badge.textContent = Number(unread) || '';
+}
+
 async function renderInquiries() {
   const wrap = document.getElementById('inquiriesWrap');
-  const countBadge = document.getElementById('inquiryCount');
   if (!wrap) return;
 
-  let enquiries;
+  let answer;
   try {
-    enquiries = (await api.enquiries.list(enquiryStatusFilter, enquirySearch)).enquiries;
+    answer = await api.enquiries.list(enquiryStatusFilter, enquirySearch);
   } catch (err) {
     wrap.innerHTML = '<div class="empty-state">Could not load enquiries.</div>';
     showError(err);
     return;
   }
-
-  // The badge counts what still needs attention, not everything ever received.
-  const outstanding = enquiries.filter((e) => ['New', 'Contacted', 'Pending'].includes(e.status)).length;
-  if (countBadge) countBadge.textContent = outstanding || '';
+  const enquiries = answer.enquiries;
+  setInquiryBadge(answer.unread);
+  // Only mark cards when the database knows what has been read. Otherwise
+  // every viewed_at is null and the whole list would claim to be unread.
+  const tracksRead = answer.tracks_read !== false;
 
   if (!enquiries.length) {
     wrap.innerHTML = enquirySearch || enquiryStatusFilter
@@ -522,7 +540,7 @@ async function renderInquiries() {
   }
 
   wrap.innerHTML = enquiries.map((e) => `
-    <div class="enquiry-card" data-id="${e.id}">
+    <div class="enquiry-card${tracksRead && !e.viewed_at ? ' is-unread' : ''}" data-id="${e.id}">
       <div class="row">
         <span class="num">${e.enquiry_number}</span>
         <span class="enquiry-name">${escapeHTML(e.name)}</span>
@@ -576,7 +594,12 @@ async function renderEnquiry(id) {
   const body = document.getElementById('enquiryModalBody');
   let e;
   try {
-    e = (await api.enquiries.get(id)).enquiry;
+    const answer = await api.enquiries.get(id);
+    e = answer.enquiry;
+    // Opening it is what marks it read, so the badge is right the moment the
+    // modal appears rather than after the next refresh of the list behind it.
+    setInquiryBadge(answer.unread);
+    document.querySelector(`.enquiry-card[data-id="${id}"]`)?.classList.remove('is-unread');
   } catch (err) {
     body.innerHTML = '<p class="detail-empty">Could not load this enquiry.</p>';
     showError(err);

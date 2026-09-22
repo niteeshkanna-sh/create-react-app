@@ -965,6 +965,16 @@ label.finance-toggle {
   transition: box-shadow 0.15s ease;
 }
 .enquiry-card:hover { box-shadow: var(--shadow); }
+/* Not yet opened by anyone. A gold edge and a heavier name, so the ones that
+   still need a first look are findable in the list and not only countable in
+   the sidebar. Deliberately quiet: this marks "new to you", not "urgent". */
+.enquiry-card.is-unread { border-left: 3px solid var(--accent); }
+.enquiry-card.is-unread .enquiry-name { font-weight: 800; }
+.enquiry-card.is-unread .num::after {
+  content: 'Unread'; margin-left: 8px; padding: 1px 7px; border-radius: 999px;
+  background: #FFF3DC; color: var(--accent-deep); font-size: 0.68rem;
+  font-weight: 700; letter-spacing: 0.02em; vertical-align: 1px;
+}
 .enquiry-card .row { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .enquiry-card .num { font-weight: 800; color: var(--accent-deep); font-size: 0.9rem; }
 .enquiry-card .enquiry-name { font-weight: 700; color: var(--ink); font-size: 1rem; }

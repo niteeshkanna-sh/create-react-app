@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/booking.php';
+require_once __DIR__ . '/../src/enquiry.php';
 
 /**
  * Enquiry management.
@@ -50,13 +51,28 @@ switch ($action) {
             $params
         );
 
-        json_out(['enquiries' => array_map('present_enquiry', $rows)]);
+        json_out([
+            'enquiries' => array_map('present_enquiry', $rows),
+            // Sent with the list so the badge never needs a request of its own,
+            // and counted over the whole table rather than the rows returned --
+            // the list is filtered and paged, the badge is not.
+            'unread'      => enquiry_unread(),
+            // Whether this database tracks reading at all. Without it every
+            // row's viewed_at is null, which is indistinguishable from never
+            // opened -- and a panel one migration behind would mark the whole
+            // list unread. Nothing is marked until the column exists.
+            'tracks_read' => enquiry_read_ready(),
+        ]);
     }
 
     // ----------------------------------------------------------------- get --
     case 'get': {
-        api_guard('enquiry.view');
-        $row = fetch_one(
+        // Not a write guard: this is a GET, and passing true would demand a
+        // POST. Marking the enquiry read below is a side effect of reading it,
+        // the way opening a message marks it read, and the worst a forged
+        // request could do is clear a badge for somebody already signed in.
+        $user = api_guard('enquiry.view');
+        $row  = fetch_one(
             'SELECT e.*, v.name AS vehicle_name, b.booking_number
                FROM enquiries e
                LEFT JOIN vehicles v ON v.id = e.vehicle_id
@@ -67,7 +83,14 @@ switch ($action) {
         if ($row === null) {
             json_error('That enquiry no longer exists.', 404);
         }
-        json_out(['enquiry' => present_enquiry($row, true)]);
+        // Opening it is what counts as reading it -- the badge clears itself
+        // rather than waiting for somebody to change the status.
+        enquiry_mark_seen((int) $row['id'], (int) $user['id']);
+
+        json_out([
+            'enquiry' => present_enquiry($row, true),
+            'unread'  => enquiry_unread(),
+        ]);
     }
 
     // --------------------------------------------------------------- status --
@@ -315,6 +338,7 @@ function present_enquiry(array $row, bool $detailed = false): array
         'source'          => $row['source'],
         'booking_number'  => $row['booking_number'],
         'created_at'      => $row['created_at'],
+        'viewed_at'       => $row['viewed_at'] ?? null,
     ];
 
     if ($detailed) {
