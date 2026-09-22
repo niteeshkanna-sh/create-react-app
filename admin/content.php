@@ -104,22 +104,29 @@ function field_input(string $name, array $spec, mixed $value): void
 
     echo '<label class="c-label" for="' . e($id) . '">' . e($spec['label']) . '</label>';
 
+    // A note under the box, for a field where the shape of the answer matters
+    // and the label cannot carry it -- opening hours being the case that
+    // prompted it, where "Mo-Su 07:00-21:00" is the only form Google reads.
+    $hint = (string) ($spec['hint'] ?? '');
+
     if ($spec['type'] === 'textarea') {
         echo '<textarea class="c-input" id="' . e($id) . '" name="' . e($name) . '" rows="3">'
            . e((string) $value) . '</textarea>';
-        return;
-    }
-
-    if ($spec['type'] === 'list') {
+    } elseif ($spec['type'] === 'list') {
         $lines = is_array($value) ? implode("\n", $value) : (string) $value;
         echo '<textarea class="c-input" id="' . e($id) . '" name="' . e($name) . '" rows="4"'
            . ' placeholder="One per line">' . e($lines) . '</textarea>';
-        echo '<p class="c-hint">One per line.</p>';
-        return;
+        if ($hint === '') {
+            $hint = 'One per line.';
+        }
+    } else {
+        echo '<input class="c-input" type="text" id="' . e($id) . '" name="' . e($name) . '"'
+           . ' value="' . e((string) $value) . '">';
     }
 
-    echo '<input class="c-input" type="text" id="' . e($id) . '" name="' . e($name) . '"'
-       . ' value="' . e((string) $value) . '">';
+    if ($hint !== '') {
+        echo '<p class="c-hint">' . e($hint) . '</p>';
+    }
 }
 
 admin_shell_open($me, 'content.php', 'Website content');

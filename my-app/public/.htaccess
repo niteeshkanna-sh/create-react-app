@@ -39,6 +39,37 @@
 
 ErrorDocument 404 /404.html
 
+# ------------------------------------------------------------- compression --
+#
+# Every page is real HTML now rather than an empty <div id="root">, which is
+# what made the site readable before its JavaScript arrives -- and it made the
+# home page 74 KB instead of 3 KB. Compressed it is about 12 KB, so this is
+# most of that cost handed back, on the one file that has to arrive before
+# anything at all can be drawn.
+#
+# Brotli first where the host has it: it beats gzip by roughly 15% on markup
+# and every browser this site sees supports it. gzip is the fallback, and one
+# of the two is on every Apache install worth deploying to.
+#
+# Images and fonts are left alone deliberately. WebP, AVIF, JPEG and WOFF2 are
+# already compressed; running them through again spends CPU on every request to
+# make the file very slightly larger.
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript application/json
+  AddOutputFilterByType BROTLI_COMPRESS image/svg+xml application/xml
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml application/xml
+  # Proxies must not hand a compressed copy to a client that cannot read it.
+  <IfModule mod_headers.c>
+    Header append Vary Accept-Encoding
+  </IfModule>
+</IfModule>
+
 # ----------------------------------------------------------------- caching --
 <IfModule mod_expires.c>
   ExpiresActive On

@@ -19,12 +19,36 @@
     "services": {
       "heading": "What we hire",
       "items": [
-        { "to": "/cars", "title": "Self drive cars", "body": "Hatchbacks, sedans and SUVs by the day, week or month. You drive." },
-        { "to": "/bikes", "title": "Bike rental", "body": "Scooters and motorcycles by the hour, day or week. Helmets included." },
-        { "to": "/wedding-cars", "title": "Wedding cars", "body": "Decorated cars reserved for your date, and vehicles for the family." },
-        { "to": "/tourist-vehicles", "title": "Tourist vehicles", "body": "Cars and vans with a driver who knows the district and its roads." },
-        { "to": "/monthly", "title": "Monthly rental", "body": "Weeks rather than days, at a rate that drops the longer you keep it." },
-        { "to": "/nri", "title": "Coming from abroad?", "body": "Book before you land. Airport pickup and long-stay rates for visiting families." }
+        {
+          "to": "/cars",
+          "title": "Self drive cars",
+          "body": "Hatchbacks, sedans and SUVs by the day, week or month. You drive."
+        },
+        {
+          "to": "/bikes",
+          "title": "Bike rental",
+          "body": "Scooters and motorcycles by the hour, day or week. Helmets included."
+        },
+        {
+          "to": "/wedding-cars",
+          "title": "Wedding cars",
+          "body": "Decorated cars reserved for your date, and vehicles for the family."
+        },
+        {
+          "to": "/tourist-vehicles",
+          "title": "Tourist vehicles",
+          "body": "Cars and vans with a driver who knows the district and its roads."
+        },
+        {
+          "to": "/monthly",
+          "title": "Monthly rental",
+          "body": "Weeks rather than days, at a rate that drops the longer you keep it."
+        },
+        {
+          "to": "/nri",
+          "title": "Coming from abroad?",
+          "body": "Book before you land. Airport pickup and long-stay rates for visiting families."
+        }
       ]
     },
     "highlights": {
@@ -98,9 +122,21 @@
     "howItWorks": {
       "heading": "How it works",
       "steps": [
-        { "n": "01", "title": "Pick your car", "body": "Browse the fleet and choose what suits the trip — a hatchback for the city, an SUV for the highway." },
-        { "n": "02", "title": "Send an enquiry", "body": "Tell us your dates. We'll call back to confirm the car is free and agree the rate." },
-        { "n": "03", "title": "Collect and drive", "body": "Bring a valid licence and ID. Pay the deposit, take the keys, and the car is yours." }
+        {
+          "n": "01",
+          "title": "Pick your car",
+          "body": "Browse the fleet and choose what suits the trip — a hatchback for the city, an SUV for the highway."
+        },
+        {
+          "n": "02",
+          "title": "Send an enquiry",
+          "body": "Tell us your dates. We'll call back to confirm the car is free and agree the rate."
+        },
+        {
+          "n": "03",
+          "title": "Collect and drive",
+          "body": "Bring a valid licence and ID. Pay the deposit, take the keys, and the car is yours."
+        }
       ],
       "noteLead": "Deposits are refundable.",
       "noteBody": "It is returned after the car comes back, less any extra-KM charges or damage. KM limits and extra-KM rates are listed on every car above, so there is nothing to discover later."
@@ -138,6 +174,7 @@
         "Kanyakumari district",
         "Tamil Nadu 629001"
       ],
+      "hours": "",
       "mapQuery": "Nagercoil, Kanyakumari district, Tamil Nadu",
       "directionsLabel": "Get directions"
     },

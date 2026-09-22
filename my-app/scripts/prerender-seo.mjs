@@ -53,6 +53,23 @@ const template = readFileSync(join(dist, 'index.html'), 'utf8');
 // Which photographs actually exist, for the sitemap and the structured data.
 const photos = JSON.parse(readFileSync(join(root, 'src/data/photos.json'), 'utf8'));
 
+/**
+ * The business's own details, as the owner has them in the panel.
+ *
+ * The address, the opening hours and the social links are all editable under
+ * Website content, and they are also three of the things Google reads out of a
+ * page's structured data to build the panel that appears beside a local search
+ * result. Typing them twice -- once for visitors and once for a crawler -- is
+ * how they end up disagreeing, and a business whose hours differ between its
+ * own page and its structured data is one Google trusts less, not more.
+ *
+ * So there is one copy. live.json is written by fetch-content.mjs just before
+ * this runs, from the panel.
+ */
+const live = JSON.parse(readFileSync(join(root, 'src/content/live.json'), 'utf8'));
+const footer = live?.home?.footer ?? {};
+const social = live?.home?.social ?? {};
+
 // Images uploaded in the panel, written by fetch-content.mjs just before this
 // runs. Merged over the committed ones because that is the order the site
 // itself resolves them in -- an upload wins over a file in the repository, so
@@ -151,6 +168,71 @@ function enrichJsonLd(html) {
   // Same reasoning as og:site_name above: one name, from one place.
   data.name = seo.site.name;
 
+  // A stable identifier for the business, so every page's block describes one
+  // thing rather than thirteen businesses that happen to share a name.
+  data['@id'] = seo.site.origin + '#business';
+
+  // The postal address, from the panel. Google will not put a business in the
+  // local results on a locality alone, and this is the only place the real
+  // address is written down.
+  const address = { ...(data.address ?? {}), '@type': 'PostalAddress' };
+  const lines = Array.isArray(footer.address) ? footer.address.map((l) => String(l).trim()) : [];
+  const postcode = lines.join(' ').match(/\b[1-9]\d{5}\b/);
+  if (postcode) address.postalCode = postcode[0];
+
+  // Whatever is left once the lines that only repeat the town, the district,
+  // the state or the postcode are removed. With nothing specific in the panel
+  // that is empty, and an empty streetAddress is better than one that says
+  // "Nagercoil" a second time.
+  const generic = new Set(
+    [seo.site.city, seo.site.district, `${seo.site.district} district`, seo.site.region]
+      .map((v) => String(v).toLowerCase()),
+  );
+  const street = lines
+    .map((line) => line.replace(/\b[1-9]\d{5}\b/, '').trim().replace(/,$/, '').trim())
+    .filter((line) => line !== '' && !generic.has(line.toLowerCase()));
+  if (street.length > 0) address.streetAddress = street.join(', ');
+
+  data.address = address;
+
+  // Opening hours, if the owner has given any. Written the way schema.org
+  // wants them; the panel says what that looks like.
+  const hours = String(footer.hours ?? '').trim();
+  if (hours !== '') data.openingHours = hours;
+
+  // The map link the footer already builds, which is how Google is told which
+  // pin on the map this is.
+  const mapQuery = String(footer.mapQuery ?? '').trim();
+  if (mapQuery !== '') {
+    data.hasMap = 'https://www.google.com/maps?q=' + encodeURIComponent(mapQuery);
+  }
+
+  // The profiles that belong to this business. sameAs is how a page claims a
+  // social account rather than merely linking to one, and it is what ties the
+  // reviews and posts on those accounts to this business.
+  const profiles = [social.facebook, social.instagram, social.youtube, social.linkedin]
+    .map((v) => String(v ?? '').trim())
+    .filter((v) => /^https?:\/\//.test(v));
+  if (profiles.length > 0) data.sameAs = profiles;
+
+  // Every town served, not just the district. Someone searching "self drive
+  // car Marthandam" is searching for a town, and a district named on its own
+  // does not say the town is covered.
+  if (Array.isArray(seo.site.areas) && seo.site.areas.length > 0) {
+    // serviceArea said "Kanyakumari district" and nothing else. Superseded
+    // rather than kept alongside: two properties describing the same thing
+    // with different precision is a thing to keep in step for no gain.
+    delete data.serviceArea;
+    data.areaServed = seo.site.areas.map((name) => ({
+      '@type': 'City',
+      name,
+      containedInPlace: { '@type': 'AdministrativeArea', name: `${seo.site.district} district` },
+    }));
+  }
+
+  // The phone number in the form a phone can dial and a crawler can parse.
+  data.telephone = seo.site.phone;
+
   const existing = data.image === undefined ? [] : [data.image].flat();
   const images = [...new Set([...existing, ...banners])];
 
@@ -164,6 +246,36 @@ function enrichJsonLd(html) {
   );
 }
 
+/**
+ * The trail from the home page to this one, as Google shows it.
+ *
+ * A search result used to print the bare URL under the title. With this it
+ * prints "niteshacars.in > Wedding car rental", which says what the page is
+ * before anyone has clicked, and it is one of the few pieces of structured
+ * data that still changes what a result looks like.
+ *
+ * The home page gets none: a breadcrumb trail of one item is noise.
+ */
+function breadcrumbFor(route) {
+  if (route.path === '/') return null;
+
+  // The route's own title, cut at the business name or the place, whichever
+  // comes first. A breadcrumb is read at a glance under a search result, and
+  // "Wedding Car Rental in Nagercoil & Kanyakumari — NiteSha Cars & Bikes" is
+  // not a trail anyone reads; "Wedding Car Rental" is. The town is already in
+  // the title above it and in the description below.
+  const leaf = route.title.split(/\s—\s|\sin\s/)[0].trim();
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: seo.site.origin + '/' },
+      { '@type': 'ListItem', position: 2, name: leaf, item: seo.site.origin + route.path },
+    ],
+  };
+}
+
 let written = 0;for (const route of seo.routes) {
   const url = seo.site.origin + route.path;
   let html = rewrite(template, {
@@ -171,6 +283,23 @@ let written = 0;for (const route of seo.routes) {
     description: escape(route.description),
     url,
   });
+
+  // Immediately before </head>, which is the last point the parser reaches
+  // before the body.
+  //
+  // The banner photograph does not need one here. React emits a preload for an
+  // image marked fetchPriority="high" as it renders, with the exact URL the
+  // <img> ends up using -- and a second preload written by hand with the
+  // absolute form of the same URL is a second download of the same file, which
+  // is what the first version of this did.
+  const crumbs = breadcrumbFor(route);
+
+  if (crumbs) {
+    html = html.replace(
+      '</head>',
+      () => `\n    <script type="application/ld+json">${JSON.stringify(crumbs)}</script>\n  </head>`,
+    );
+  }
 
   if (renderRoute) {
     const body = await renderRoute(route.path);

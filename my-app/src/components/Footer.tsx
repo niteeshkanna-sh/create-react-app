@@ -133,6 +133,17 @@ export function Footer() {
             ))}
           </address>
 
+          {/* Shown only when the panel has them. Opening hours are one of the
+              first things someone checks before setting off to collect a car,
+              and they are also what Google reads out of this page's structured
+              data -- written once here rather than once for people and once
+              for a crawler, which is how the two end up disagreeing. */}
+          {f.hours.trim() !== '' ? (
+            <p className="mt-3 text-sm leading-relaxed text-white/75">
+              <span className="font-semibold text-white">Open</span> {f.hours}
+            </p>
+          ) : null}
+
           {mapSrc ? (
             <>
               <div className="mt-3 overflow-hidden rounded-xl border border-white/15">
