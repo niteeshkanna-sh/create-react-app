@@ -90,9 +90,7 @@ export function Nri() {
             <ul className="mt-4 space-y-2.5">
               {licence.map((l) => (
                 <li key={l} className="flex gap-2.5 text-ink-dim">
-                  <span aria-hidden="true" className="mt-1 text-gold">
-                    ✓
-                  </span>
+                  <span aria-hidden="true" className="bullet-dot" />
                   {l}
                 </li>
               ))}

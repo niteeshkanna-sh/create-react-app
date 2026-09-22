@@ -125,9 +125,7 @@ export function Monthly() {
             <ul className="mt-4 space-y-2.5">
               {rateFactors.map((f) => (
                 <li key={f} className="flex gap-2.5 text-ink-dim">
-                  <span aria-hidden="true" className="mt-1 text-gold">
-                    ✓
-                  </span>
+                  <span aria-hidden="true" className="bullet-dot" />
                   {f}
                 </li>
               ))}
