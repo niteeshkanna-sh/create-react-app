@@ -85,10 +85,7 @@ export function Town() {
               <ul className="mt-5 space-y-2.5">
                 {town.landmarks.map((landmark) => (
                   <li key={landmark} className="flex items-start gap-2.5 text-ink-dim">
-                    <span
-                      aria-hidden="true"
-                      className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gold"
-                    />
+                    <span aria-hidden="true" className="bullet-dot" />
                     {landmark}
                   </li>
                 ))}

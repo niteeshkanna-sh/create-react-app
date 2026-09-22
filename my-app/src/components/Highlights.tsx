@@ -54,12 +54,7 @@ export function Highlights() {
               <ul className="mt-3 space-y-2.5">
                 {h.points.map((p) => (
                   <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
-                    <span
-                      aria-hidden="true"
-                      className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-gold text-[11px] font-bold text-navy"
-                    >
-                      ✓
-                    </span>
+                    <span aria-hidden="true" className="bullet-dot" />
                     {p}
                   </li>
                 ))}

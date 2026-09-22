@@ -52,9 +52,7 @@ export function ServicePage({ title, intro, sections, points, cta, photo, scene,
           <ul className="mt-8 space-y-2.5">
             {points.map((p) => (
               <li key={p} className="flex gap-2.5 text-ink-dim">
-                <span aria-hidden="true" className="mt-1 text-gold">
-                  ✓
-                </span>
+                <span aria-hidden="true" className="bullet-dot" />
                 {p}
               </li>
             ))}

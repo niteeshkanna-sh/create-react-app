@@ -297,6 +297,33 @@ body {
   }
 }
 
+/* A list bullet.
+ *
+ * These were ticks -- a gold disc with a check mark in it on the dark cards, a
+ * bare check mark on the light pages. A tick says "done", and none of these
+ * lists are things that have been done: they are what is included, what the
+ * rate depends on, what to bring. A dot says "item", which is what they are.
+ *
+ * Sized and positioned here rather than with utilities at each call site,
+ * because the one thing a bullet has to get right is sitting on the optical
+ * centre of the first line, and that depends on the line height it is next to.
+ * lh gets it exactly; the em fallback is close enough everywhere it is used.
+ */
+.bullet-dot {
+  flex: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--color-gold);
+  margin-top: 0.5em;
+}
+
+@supports (margin-top: 1lh) {
+  .bullet-dot {
+    margin-top: calc(0.5lh - 0.1875rem);
+  }
+}
+
 /* The gold rule that runs under the logo bar. A gradient rather than a flat
    fill, so it catches the light the way the metallic lettering does. */
 .gold-rule {

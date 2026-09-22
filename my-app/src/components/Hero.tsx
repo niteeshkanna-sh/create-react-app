@@ -74,9 +74,7 @@ export function Hero() {
         <ul data-hero-item="" style={{ ["--hero-delay" as string]: "420ms" }} className="mt-12 grid gap-3 sm:grid-cols-3">
           {h.points.map((p) => (
             <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
-              <span aria-hidden="true" className="mt-0.5 text-gold">
-                ✓
-              </span>
+              <span aria-hidden="true" className="bullet-dot" />
               {p}
             </li>
           ))}
