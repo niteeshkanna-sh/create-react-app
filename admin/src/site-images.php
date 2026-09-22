@@ -201,16 +201,15 @@ function site_image_url(?string $name): ?string
     if ($name === null || $name === '') {
         return null;
     }
-    // A path rather than brand.php?f=. The words in a file name are worth
-    // having in the address, and an address that reads as a file reads as a
-    // picture -- to a person scanning a search result and to the crawler that
-    // put it there. admin/.htaccess sends /admin/images/... to brand.php,
-    // which still answers ?f= as well so nothing that stored an old address
-    // breaks.
+    // /site-images/, from the site root, for the same reason as the car
+    // photographs: an address that reads as a file reads as a picture, to a
+    // person scanning a search result and to the crawler that put it there,
+    // and "admin" in the path says nothing and risks a great deal. Both the
+    // old address and ?f= still answer, so nothing that stored one breaks.
     //
     // The name carries random bytes chosen at upload, so a new image is a new
     // URL and the response can be cached hard.
-    return 'images/' . rawurlencode($name);
+    return '/site-images/' . rawurlencode($name);
 }
 
 /**

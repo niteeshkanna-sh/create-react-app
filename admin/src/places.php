@@ -31,10 +31,11 @@ function place_photo_dir(): string
 
 function place_photo_url(?string $name): ?string
 {
-    // A path rather than place-photo.php?f=, for the same reason as the other
-    // two: the words in the file name belong in the address. The ?f= form
-    // still answers.
-    return ($name === null || $name === '') ? null : 'place-photos/' . rawurlencode($name);
+    // /place-photos/, from the site root, for the same reason as the other
+    // two: the words in the file name belong in the address, and the folder
+    // they sit in should not be one a crawler is told to stay out of. The
+    // ?f= form and the old /admin/ path both still answer.
+    return ($name === null || $name === '') ? null : '/place-photos/' . rawurlencode($name);
 }
 
 /** Every place, in display order. Published only, unless asked otherwise. */

@@ -30,5 +30,13 @@ export function apiUrl(endpoint: string): string {
  */
 export function panelUrl(path: string): string {
   const root = base.replace(/\/+$/, '');
-  return path === '' ? root : `${root}/${path.replace(/^\/+/, '')}`;
+  if (path === '') return root;
+  // An address the panel gives as root-absolute is already where it wants to
+  // be. Photographs come back as /car-photos/..., /site-images/... and
+  // /place-photos/... -- served from the site root rather than from under
+  // /admin, so the folder in every picture's URL is a word about the site
+  // instead of one a crawler is routinely told to stay out of. Prefixing
+  // those with /admin would undo exactly that.
+  if (path.startsWith('/')) return path;
+  return `${root}/${path.replace(/^\/+/, '')}`;
 }

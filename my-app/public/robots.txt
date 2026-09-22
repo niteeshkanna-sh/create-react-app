@@ -13,13 +13,21 @@ Allow: /
 # login form in the index is a page that can only ever rank for the business's
 # own name and disappoint whoever clicks it.
 #
-# The image readers are the exception. They are under /admin but they are the
-# actual addresses of every photograph on the site, and a picture that cannot
-# be fetched cannot be in image search.
+# The pictures used to be the exception here: they were stored under /admin and
+# three Allow lines were all that kept them crawlable. That was a rule standing
+# on one leg -- anybody tidying this file, or any tool suggesting the obvious
+# "disallow the admin folder", would have taken every photograph on the site
+# out of image search without noticing.
+#
+# They are served from the site root now -- /car-photos/, /site-images/,
+# /place-photos/ -- so nothing here has to protect them. The Allow lines stay
+# for the old addresses, which are what pages already indexed point at.
 Disallow: /admin/
 Allow: /admin/images/
 Allow: /admin/photos/
 Allow: /admin/place-photos/
+Allow: /admin/car-photos/
+Allow: /admin/site-images/
 
 # The repository, which is deployed into the web root by this host's Git
 # publishing. Apache already refuses these; saying so here saves the crawl.

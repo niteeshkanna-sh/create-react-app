@@ -16,8 +16,8 @@ export function WhyUs() {
 
   // Both uploadable. These were two hardcoded paths, so the only way to show
   // the real fleet here was a deploy.
-  const photoOne = useSiteImage('why-us-1') ?? '/hero-car.webp';
-  const photoTwo = useSiteImage('why-us-2') ?? '/car-brezza.avif';
+  const photoOne = useSiteImage('why-us-1') ?? '/self-drive-car-rental-nitesha-cars-and-bikes.webp';
+  const photoTwo = useSiteImage('why-us-2') ?? '/maruti-brezza-self-drive-car-rental-nagercoil.avif';
   const { badge, heading, intro, items } = home.whyUs;
   const [open, setOpen] = useState(0);
 
@@ -29,13 +29,13 @@ export function WhyUs() {
           <div className="relative pb-16 sm:pb-20 lg:pb-24">
             <img
               src={photoOne}
-              alt="A car on the road in Kanyakumari district"
+              alt="Self-drive rental car on the road in Kanyakumari district"
               loading="lazy"
               className="aspect-4/3 w-[78%] rounded-[14px] object-cover shadow-[0_10px_30px_rgba(16,24,40,0.12)]"
             />
             <img
               src={photoTwo}
-              alt="One of our vehicles"
+              alt="Maruti Brezza available for self-drive rental in Nagercoil"
               loading="lazy"
               className="absolute right-0 bottom-0 aspect-4/3 w-[62%] rounded-[14px] border-4 border-cream object-cover shadow-[0_10px_30px_rgba(16,24,40,0.16)]"
             />

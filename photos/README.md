@@ -8,6 +8,26 @@ and `.png` all work, and a slot with several formats prefers them in that
 order — so adding `cars-hero.webp` beside `cars-hero.jpg` is an upgrade, not
 a conflict.
 
+## Words in the file name
+
+Anything after a **double hyphen** is words for the address, not part of the
+slot:
+
+```
+cars-hero--self-drive-cars-for-rent-nagercoil.webp
+└── slot ──┘└──────── words in the URL ─────────┘
+```
+
+That file still fills `cars-hero`. The words matter because the file name is
+one of the few things Google knows about a picture besides its alt text and
+the page around it, and `cars-hero.webp` tells it nothing.
+
+Describe what is actually in the photograph, and add the place only when the
+photograph is of that place. A file called
+`self-drive-car-rental-kanyakumari.jpg` showing a stock car on a European
+mountain road is a claim the picture does not support, and Google is better at
+noticing that than it used to be. Rewording is free — the slot does not move.
+
 Any slot with no file falls back to the drawn scene, so a half-finished set
 of photographs still gives a complete-looking site.
 

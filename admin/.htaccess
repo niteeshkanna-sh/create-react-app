@@ -51,6 +51,18 @@ Options -Indexes
   RewriteRule ^images/([A-Za-z0-9._-]+)$ brand.php?f=$1 [L]
   RewriteRule ^photos/([A-Za-z0-9._-]+)$ photo.php?f=$1 [L]
   RewriteRule ^place-photos/([A-Za-z0-9._-]+)$ place-photo.php?f=$1 [L]
+
+  # The pictures are served from the site root now -- /car-photos/...,
+  # /site-images/... -- because "admin" in the address of every photograph on a
+  # car hire site is a dead word where a keyword should be, and it leaves the
+  # whole gallery one robots.txt edit from being uncrawlable.
+  #
+  # These three are for the window after a deploy when a browser still holds
+  # the old site script. That script prefixes anything it is given with
+  # /admin, so it turns /car-photos/x.jpg into /admin/car-photos/x.jpg, and a
+  # 404 there is an empty fleet page that looks like a caching bug for a day.
+  RewriteRule ^car-photos/([A-Za-z0-9._-]+)$ photo.php?f=$1 [L]
+  RewriteRule ^site-images/([A-Za-z0-9._-]+)$ brand.php?f=$1 [L]
 </IfModule>
 
 <IfModule mod_authz_core.c>

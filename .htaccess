@@ -26,6 +26,45 @@
   RewriteCond %{REQUEST_URI} ^/admin(/|$) [NC]
   RewriteRule ^ - [L]
 
+  # ------------------------------------------------- where the pictures live --
+  #
+  # Every photograph on this site is stored above the document root, so Apache
+  # cannot serve it and a small PHP reader in the panel has to. That used to
+  # show in the address:
+  #
+  #   /admin/photos/maruti-swift-self-drive-nagercoil-9f3a1c4b7d2e5a60.jpg
+  #
+  # The words were right and the folder was wrong. Two things follow from
+  # "admin" being in the URL of every picture on a site that sells car hire:
+  #
+  # 1. It is a dead word in the one part of an image's address Google reads
+  #    besides the file name. /car-photos/ is not.
+  #
+  # 2. It is one robots.txt edit from disaster. Disallowing /admin/ is the
+  #    normal, obvious thing to do -- any SEO tool will suggest it -- and
+  #    doing it would make every photograph on the site uncrawlable at a
+  #    stroke. robots.txt carries three Allow lines to prevent exactly that,
+  #    and a rule that survives only because nobody tidies it is not a rule.
+  #
+  # Served from the site root instead, which is where a visitor would assume
+  # they live anyway. The /admin/ addresses still work -- they are what is
+  # stored in pages already indexed -- so this adds an address, it does not
+  # move one.
+  # The static pictures were renamed to say what they show rather than where
+  # they sit on the page. Google Images may hold the old addresses, and a
+  # renamed file is a 404 to anything that already knew the old one -- so the
+  # old names redirect rather than simply stopping. 301, because the move is
+  # permanent and that is what passes the old address's standing to the new.
+  RewriteRule ^hero-car\.webp$ /self-drive-car-rental-nitesha-cars-and-bikes.webp [R=301,L]
+  RewriteRule ^open-road\.webp$ /mountain-road-at-sunrise-self-drive-car-rental.webp [R=301,L]
+  RewriteRule ^car-brezza\.avif$ /maruti-brezza-self-drive-car-rental-nagercoil.avif [R=301,L]
+  RewriteRule ^photos/home-hero\.webp$ /photos/home-hero--self-drive-car-rental-kanyakumari.webp [R=301,L]
+  RewriteRule ^photos/car-brezza\.avif$ /photos/car-brezza--maruti-brezza-self-drive-rental-nagercoil.avif [R=301,L]
+
+  RewriteRule ^car-photos/([A-Za-z0-9._-]+)$ /admin/photo.php?f=$1 [L]
+  RewriteRule ^site-images/([A-Za-z0-9._-]+)$ /admin/brand.php?f=$1 [L]
+  RewriteRule ^place-photos/([A-Za-z0-9._-]+)$ /admin/place-photo.php?f=$1 [L]
+
   # The site's pages are real directories with real index.html files -- the
   # build writes one per route so each carries its own title and description.
   # Apache serves those itself, so there is nothing to rewrite for a URL that
