@@ -583,6 +583,36 @@ label.finance-toggle {
 .booking-conflict-error {
   color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: -6px 0 14px; min-height: 1.2em;
 }
+/* The handover checklist. Two columns on anything wider than a phone, because
+   thirteen checks in one column is a scroll nobody finishes. */
+.check-grid {
+  display: grid; gap: 4px 16px; margin-top: 8px;
+  /* 165px, not 210: the modal these sit in is about 420px of content wide, and
+     at 210 the grid silently fell back to one column -- thirteen checks in a
+     single column is the scroll this was meant to avoid. */
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+}
+.check-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.88rem; color: var(--ink-dim);
+  /* A 44px row, so a thumb hits the label as readily as the box. */
+  min-height: 34px; cursor: pointer;
+}
+.check-item input { width: 17px; height: 17px; flex: none; accent-color: var(--primary); }
+.check-item:has(input:checked) { color: var(--ink); font-weight: 600; }
+
+/* A document, which may be a PDF and so has no thumbnail to show. */
+.doc-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.doc-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px;
+  background: var(--surface);
+}
+.doc-kind { font-weight: 700; font-size: 0.84rem; }
+.doc-meta { color: var(--ink-faint); font-size: 0.8rem; }
+.doc-row .doc-actions { margin-left: auto; display: flex; gap: 6px; }
+.doc-expired { color: var(--danger); font-weight: 700; }
+
 /* A car that is not ours. Stated on the card rather than only inside the edit
    form, because "whose car is this" decides what a booking on it earns and
    nobody should have to open a dialog to find out. */

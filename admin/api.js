@@ -156,6 +156,35 @@ const api = {
       apiRequest('api/booking-files.php?action=delete', { method: 'POST', body: { id } }),
   },
 
+  // Charges raised after a booking was priced, and the damage behind them.
+  extras: {
+    add: (extra) =>
+      apiRequest('api/booking-extras.php?action=add-extra', { method: 'POST', body: extra }),
+    void: (id, reason) =>
+      apiRequest('api/booking-extras.php?action=void-extra', { method: 'POST', body: { id, reason } }),
+    addDamage: (damage) =>
+      apiRequest('api/booking-extras.php?action=add-damage', { method: 'POST', body: damage }),
+    voidDamage: (id) =>
+      apiRequest('api/booking-extras.php?action=void-damage', { method: 'POST', body: { id } }),
+  },
+
+  // A customer's identity documents. Multipart, and one file at a time --
+  // these are picked deliberately, one per kind, not dragged in as a batch.
+  customerFiles: {
+    list: (customerId) =>
+      apiRequest(`api/customer-files.php?action=list&customer_id=${customerId}`),
+    add: (customerId, kind, file, expiresOn = '') => {
+      const form = new FormData();
+      form.append('customer_id', String(customerId));
+      form.append('kind', kind);
+      if (expiresOn) form.append('expires_on', expiresOn);
+      form.append('file', file);
+      return apiUpload('api/customer-files.php?action=add', form);
+    },
+    remove: (id) =>
+      apiRequest('api/customer-files.php?action=delete', { method: 'POST', body: { id } }),
+  },
+
   payments: {
     add: (payment) =>
       apiRequest('api/payments.php?action=add', { method: 'POST', body: payment }),

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/http.php';
 require_once __DIR__ . '/money.php';
+require_once __DIR__ . '/booking-extras.php';
 
 /**
  * Booking rules that must hold regardless of which endpoint is calling.
@@ -144,9 +145,15 @@ function booking_money(int $bookingId): array
 
     $km = extra_km_position($bookingId);
 
+    // Charges raised at return -- cleaning, fuel, a damage recharge -- each on
+    // their own line rather than lumped into other_charges, where nobody could
+    // tell afterwards what the number was made of.
+    $extras = booking_extras_total($bookingId);
+
     // Recomputed rather than read back, so a return recorded after the
     // booking was created is reflected without needing an edit.
-    $total = money_add($charges['base_rental'], $km['extra_km_charge'], $charges['other_charges']);
+    $total = money_add($charges['base_rental'], $km['extra_km_charge'],
+        $charges['other_charges'], $extras);
     $total = money_sub($total, $charges['discount']);
 
     $paid = fetch_one(
@@ -185,6 +192,7 @@ function booking_money(int $bookingId): array
     return [
         'total'            => $total,
         'extra_km_charge'  => $km['extra_km_charge'],
+        'extras'           => $extras,
         'commission'       => money_add($commission),
         // The rental less the commission: what is collected on the owner's
         // behalf and has to reach them.
@@ -228,16 +236,32 @@ function find_or_create_customer(array $data, int $userId): int
 {
     $phone = preg_replace('/\s+/', '', $data['phone']);
 
+    // Only the columns the database actually has. A panel one migration behind
+    // still takes bookings; it simply does not keep the newer details yet.
+    $extra = [];
+    foreach (['whatsapp', 'licence_expiry', 'id_number', 'customer_type'] as $column) {
+        if (table_has_column('customers', $column)) {
+            $extra[] = $column;
+        }
+    }
+
     $existing = fetch_one('SELECT * FROM customers WHERE phone = ? LIMIT 1', [$phone]);
     if ($existing !== null) {
         // Fill in details we did not have before, without overwriting good
-        // data with blanks.
+        // data with blanks. customer_type is the exception: someone explicitly
+        // marking a customer Corporate is a correction, not a gap being filled.
         $updates = [];
         $params  = [];
-        foreach (['name' => 'name', 'address' => 'address', 'licence_number' => 'licence_number'] as $field => $column) {
-            if (!empty($data[$field]) && empty($existing[$column])) {
+        $fillable = array_merge(['name', 'address', 'licence_number'], $extra);
+
+        foreach ($fillable as $column) {
+            if (($data[$column] ?? '') === '' || $data[$column] === null) {
+                continue;
+            }
+            $overwrite = $column === 'customer_type';
+            if ($overwrite || empty($existing[$column])) {
                 $updates[] = "{$column} = ?";
-                $params[]  = $data[$field];
+                $params[]  = $data[$column];
             }
         }
         if ($updates !== []) {
@@ -247,9 +271,17 @@ function find_or_create_customer(array $data, int $userId): int
         return (int) $existing['id'];
     }
 
+    $columns = array_merge(['name', 'phone', 'address', 'licence_number'], $extra, ['created_by']);
+    $values  = [$data['name'], $phone, $data['address'] ?? null, $data['licence_number'] ?? null];
+    foreach ($extra as $column) {
+        $values[] = ($data[$column] ?? '') === '' ? null : $data[$column];
+    }
+    $values[] = $userId;
+
     query(
-        'INSERT INTO customers (name, phone, address, licence_number, created_by) VALUES (?,?,?,?,?)',
-        [$data['name'], $phone, $data['address'] ?? null, $data['licence_number'] ?? null, $userId]
+        'INSERT INTO customers (' . implode(', ', $columns) . ') VALUES ('
+        . implode(',', array_fill(0, count($columns), '?')) . ')',
+        $values
     );
     return last_insert_id();
 }
