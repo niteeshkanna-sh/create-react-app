@@ -58,7 +58,6 @@
   RewriteRule ^hero-car\.webp$ /self-drive-car-rental-nitesha-cars-and-bikes.webp [R=301,L]
   RewriteRule ^open-road\.webp$ /mountain-road-at-sunrise-self-drive-car-rental.webp [R=301,L]
   RewriteRule ^car-brezza\.avif$ /maruti-brezza-self-drive-car-rental-nagercoil.avif [R=301,L]
-  RewriteRule ^photos/home-hero\.webp$ /photos/home-hero--self-drive-car-rental-kanyakumari.webp [R=301,L]
   RewriteRule ^photos/car-brezza\.avif$ /photos/car-brezza--maruti-brezza-self-drive-rental-nagercoil.avif [R=301,L]
 
   RewriteRule ^car-photos/([A-Za-z0-9._-]+)$ /admin/photo.php?f=$1 [L]

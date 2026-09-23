@@ -396,25 +396,6 @@ body {
    reason -- the row height is decided by CSS, never by the asset.
 --------------------------------------------------------------------------- */
 
-/* ---------------------------------------------------------------------------
-   The snake beside the logo. It used to turn continuously; it does not now.
-   A mark that never stops moving competes with the navigation next to it for
-   attention it does not need, and the rotation was the reason it needed a
-   reduced-motion exception at all. Nothing moves, so nothing to exempt.
---------------------------------------------------------------------------- */
-
-/* No display here.
-   
-   Tailwind's utilities sit in a cascade layer and unlayered CSS outranks
-   them, so `display: block` in this rule beat the `hidden` on the element and
-   the snake showed at every width -- including 320px, where it pushed the
-   menu button off the right edge and broke the business name onto two lines.
-   The header already says the snake is held back until 640px; this is what
-   was stopping that from being true. The element's own classes decide. */
-.snake-mark {
-  object-fit: contain;
-}
-
 .art-frame {
   position: relative;
   overflow: hidden;
@@ -639,6 +620,56 @@ body {
    where that row is. Measured against a white photograph -- the worst case a
    scrim has to survive, because the owner uploads whatever they like and a
    bright sky is the commonest thing behind a car. */
+/* The home banner with no photograph behind it.
+   Three layers on deep navy. A warm gold glow up behind the enquiry card, so
+   the white panel has something to lift off instead of sitting on flat black.
+   A second, cooler and much weaker one low on the left, which stops the
+   bottom-left corner going dead under the heading. And a faint diagonal
+   sheen across the whole thing, at a strength you would not name if asked --
+   it is there so the surface reads as lit rather than filled.
+
+   All of it in the brand's own gold. A photograph would have to be a good one
+   to beat this, which is the bar a replacement should have to clear. */
+.hero-backdrop {
+  background:
+    radial-gradient(
+      64rem 44rem at 76% -14%,
+      color-mix(in srgb, var(--color-gold) 26%, transparent) 0%,
+      color-mix(in srgb, var(--color-gold) 10%, transparent) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      52rem 36rem at 4% 114%,
+      color-mix(in srgb, var(--color-bronze) 18%, transparent) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      146deg,
+      color-mix(in srgb, #ffffff 4%, transparent) 0%,
+      transparent 38%,
+      transparent 62%,
+      color-mix(in srgb, #ffffff 2%, transparent) 100%
+    ),
+    linear-gradient(to bottom, var(--color-navy) 0%, var(--color-navy-deep) 100%);
+}
+
+/* Where the banner meets the cream page under it. Without this the navy just
+   stops, and a hard edge between two flat colours is the one place a drawn
+   banner looks unfinished. */
+.hero-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    color-mix(in srgb, var(--color-gold) 38%, transparent) 22%,
+    color-mix(in srgb, var(--color-gold) 38%, transparent) 78%,
+    transparent 100%
+  );
+}
+
 /* The enquiry card in the banner.
    A white panel on a photograph needs a shadow that reads on both the dark
    and the bright parts of it, so this is two: a wide soft one for depth and a

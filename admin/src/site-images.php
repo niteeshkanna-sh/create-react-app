@@ -21,7 +21,6 @@ require_once __DIR__ . '/vehicle-photos.php';
 const SITE_IMAGE_SLOTS = [
     // The brand marks.
     'logo'          => 'Logo badge',
-    'snake'         => 'Mark beside the logo',
 
     // The wide photograph across the top of each page. The names match what
     // the site asks for, so adding one here and adding one there is the same
@@ -76,7 +75,6 @@ const SITE_IMAGE_SLOTS = [
 const SITE_IMAGE_SHAPES = [
     // The marks sit in a square plate.
     'logo'  => [1, 1, 512, 512],
-    'snake' => [1, 1, 512, 512],
 
     // The wide band across the top of a page.
     'cars-hero'     => [16, 5, 1600, 500],
@@ -117,7 +115,6 @@ const SITE_IMAGE_SHAPES = [
  */
 const SITE_IMAGE_KEYWORDS = [
     'logo'  => 'NiteSha Cars and Bikes logo Nagercoil',
-    'snake' => 'NiteSha Cars and Bikes emblem',
 
     'cars-hero'     => 'self drive car rental Nagercoil',
     'bikes-hero'    => 'bike rental Nagercoil Kanyakumari',
