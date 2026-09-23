@@ -291,12 +291,26 @@ function find_or_create_customer(array $data, int $userId): int
         return (int) $existing['id'];
     }
 
-    $columns = array_merge(['name', 'phone', 'address', 'licence_number'], $extra, ['created_by']);
+    $columns = ['name', 'phone', 'address', 'licence_number'];
     $values  = [$data['name'], $phone, $data['address'] ?? null, $data['licence_number'] ?? null];
+
+    // Only the extras the caller actually gave. Leaving a column out is not
+    // the same as writing NULL into it: customer_type is NOT NULL with a
+    // default of 'New', so a null refused the whole insert -- and turning an
+    // enquiry into a booking died there, because an enquiry has no customer
+    // type to send and should not have to invent one. Left out, the column
+    // takes its own default, which is what "no answer" means.
     foreach ($extra as $column) {
-        $values[] = ($data[$column] ?? '') === '' ? null : $data[$column];
+        $value = $data[$column] ?? '';
+        if ($value === '' || $value === null) {
+            continue;
+        }
+        $columns[] = $column;
+        $values[]  = $value;
     }
-    $values[] = $userId;
+
+    $columns[] = 'created_by';
+    $values[]  = $userId;
 
     query(
         'INSERT INTO customers (' . implode(', ', $columns) . ') VALUES ('

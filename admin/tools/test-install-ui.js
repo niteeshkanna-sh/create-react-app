@@ -107,7 +107,7 @@ const has = (l, text, needle) =>
   new URL(p.url()).pathname === '/dashboard.php'
     ? ok('signed in to a freshly installed panel')
     : bad('signed in', p.url());
-  has('as the Super Admin', await p.locator('.who').first().innerText(), 'Niteesh');
+  has('as the Super Admin', await p.locator('.ns-who').first().innerText(), 'Niteesh');
 
   console.log('\n-- the panel works on an empty database --');
   for (const tab of ['dashboard', 'bookings', 'cars', 'inquiries', 'finance', 'reports']) {

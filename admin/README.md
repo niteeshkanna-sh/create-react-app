@@ -95,6 +95,7 @@ and a per-address hourly limit.
 ```bash
 php tools/test-money.php                       # money arithmetic
 php tools/test-auth.php <dsn> <user> <pass>    # sign-in, roles, numbering
+php tools/test-api-failure.php                 # a crash still answers JSON
 bash tools/test-api.sh       <url> <email> <password>
 bash tools/test-bookings.sh  <url> <email> <password>
 bash tools/test-ledger.sh    <url> <email> <password>
@@ -104,13 +105,19 @@ node tools/test-ui.js         <url> <email> <password>
 node tools/test-booking-ui.js <url> <email> <password>
 node tools/test-enquiry-ui.js <url> <email> <password>
 node tools/test-finance-ui.js <url> <email> <password>
+node tools/test-nav-ui.js     <url> <email> <password>
 node tools/test-install-ui.js <url> <db-name> <db-user>   # on a spare database
 ```
 
-350 checks, covering the money arithmetic, the append-only ledger, price
-freezing, double-booking, the KM audit trail, the enquiry defences, expense
-corrections and voiding, and the booking, enquiry and finance flows driven
+Around 380 checks, covering the money arithmetic, the append-only ledger,
+price freezing, double-booking, the KM audit trail, the enquiry defences,
+expense corrections and voiding, getting from one panel to another, what a
+crashed endpoint replies, and the booking, enquiry and finance flows driven
 through a real browser.
+
+The suites that take a URL want the panel served at the root of it, as it is
+on the server: `http://127.0.0.1:8210`, not `.../admin`. They write to the
+database they are pointed at, so point them at a scratch one.
 
 ## Brand
 
