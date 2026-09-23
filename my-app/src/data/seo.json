@@ -31,6 +31,7 @@
       "description": "Self drive cars, bike rental, wedding cars and tourist vehicles across Kanyakumari district. Daily, weekly and monthly rates. Call +91 63749 42976.",
       "priority": "1.0",
       "imageSlot": "home-hero",
+      "imageFallback": "/mountain-road-at-sunrise-self-drive-car-rental.webp",
       "imageAlt": "Self-drive cars and bikes for rent in Nagercoil and Kanyakumari district"
     },
     {
@@ -115,7 +116,7 @@
     },
     {
       "path": "/services",
-      "title": "What We Hire \u2014 Cars, Bikes & Tourist Vehicles in Kanyakumari",
+      "title": "What We Hire — Cars, Bikes & Tourist Vehicles in Kanyakumari",
       "description": "Self drive cars, bike rental, wedding cars, tourist vehicles with a driver and monthly hire across Kanyakumari district. One page, every service and what it covers.",
       "priority": "0.9",
       "imageSlot": "services-hero",

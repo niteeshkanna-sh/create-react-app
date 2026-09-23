@@ -685,36 +685,55 @@ body {
 }
 
 .hero-scrim {
+  /* Weighted, not a flat wash. The complaint the last one earned was that the
+     picture could not be seen, and the reason was a single curtain drawn over
+     all of it at one strength -- enough for the headline meant far too much
+     everywhere else.
+
+     So it is shaped to the layout. Heavy down the left where the heading and
+     the paragraph sit, easing off through the middle, and lightest on the
+     right where the enquiry card brings its own white background and needs no
+     help. The picture is legible as a picture across most of its width. */
   background:
     linear-gradient(
       to right,
-      color-mix(in srgb, var(--color-navy-deep) 93%, transparent) 0%,
-      color-mix(in srgb, var(--color-navy-deep) 88%, transparent) 46%,
-      /* Lighter under the card, which brings its own contrast and does not
-         need the photograph dimmed behind it -- the point of keeping a
-         photograph at all is that some of it shows. */
-      color-mix(in srgb, var(--color-navy-deep) 66%, transparent) 72%,
-      color-mix(in srgb, var(--color-navy-deep) 58%, transparent) 100%
+      color-mix(in srgb, var(--color-navy-deep) 90%, transparent) 0%,
+      color-mix(in srgb, var(--color-navy-deep) 84%, transparent) 30%,
+      color-mix(in srgb, var(--color-navy-deep) 64%, transparent) 56%,
+      color-mix(in srgb, var(--color-navy-deep) 30%, transparent) 78%,
+      color-mix(in srgb, var(--color-navy-deep) 22%, transparent) 100%
     ),
+    /* A little more at the very top and bottom: the header sits on one edge
+       and the cream page begins at the other, and a photograph running into
+       either without a settle looks like a mistake. */
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--color-navy-deep) 24%, transparent) 0%,
-      color-mix(in srgb, var(--color-navy-deep) 38%, transparent) 58%,
-      color-mix(in srgb, var(--color-navy-deep) 62%, transparent) 100%
+      color-mix(in srgb, var(--color-navy-deep) 46%, transparent) 0%,
+      color-mix(in srgb, var(--color-navy-deep) 16%, transparent) 34%,
+      color-mix(in srgb, var(--color-navy-deep) 22%, transparent) 70%,
+      color-mix(in srgb, var(--color-navy-deep) 58%, transparent) 100%
     );
 }
 
-/* Below the two-column breakpoint every line runs the full width, so there is
-   nowhere the photograph can show without something being read over it. */
-@media (max-width: 1023px) {
+/* On a phone the text runs the full width, so a left-to-right gradient has
+   nowhere to ease off to. Flat and darker is the only thing that keeps a
+   paragraph readable over a photograph on a narrow screen. */
+@media (max-width: 767px) {
   .hero-scrim {
     background:
       linear-gradient(
         to bottom,
-        color-mix(in srgb, var(--color-navy-deep) 68%, transparent),
-        color-mix(in srgb, var(--color-navy-deep) 78%, transparent)
+        color-mix(in srgb, var(--color-navy-deep) 84%, transparent),
+        color-mix(in srgb, var(--color-navy-deep) 90%, transparent)
       );
   }
+}
+
+.hero-card {
+  box-shadow:
+    0 24px 60px -12px color-mix(in srgb, var(--color-navy-deep) 55%, transparent),
+    0 4px 14px color-mix(in srgb, var(--color-navy-deep) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
 /* The art frame is 2:1 as a card header, but a page banner is governed by the

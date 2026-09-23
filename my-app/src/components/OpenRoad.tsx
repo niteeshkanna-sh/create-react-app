@@ -21,16 +21,20 @@ export function OpenRoad() {
   const home = useHome();
   const c = home.openRoad;
 
-  // Uploadable. Still a background rather than an <img>: if the file is
-  // missing the band falls back to the navy beneath it and still looks
-  // deliberate, where an <img> would leave a broken-image icon on a live page.
-  const road = useSiteImage('open-road') ?? '/mountain-road-at-sunrise-self-drive-car-rental.webp';
+  // Uploadable, and nothing committed behind it. The one landscape photograph
+  // this site has is in the banner now, and having it here as well would put
+  // the same picture twice on the home page.
+  //
+  // Still a background rather than an <img>: with no file the band falls back
+  // to the navy beneath it and still looks deliberate, where an <img> would
+  // leave a broken-image icon on a live page.
+  const road = useSiteImage('open-road');
 
   return (
     <section className="relative isolate overflow-hidden bg-navy text-white">
       <div
         aria-hidden="true"
-        style={{ backgroundImage: `url(${road})` }}
+        style={road ? { backgroundImage: `url(${road})` } : undefined}
         className="absolute inset-0 bg-cover bg-center"
       />
       <div aria-hidden="true" className="road-scrim absolute inset-0" />

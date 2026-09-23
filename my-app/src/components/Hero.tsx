@@ -6,45 +6,40 @@ export function Hero() {
   const home = useHome();
   const h = home.hero;
 
-  // Only a real one. There is no committed fallback any more: the stock
-  // portrait that used to sit here was somebody else's car on somebody else's
-  // street, and a banner is better with nothing behind it than with a picture
-  // that says the business is not what it says it is. Upload one under
-  // Website content and it appears; until then the banner draws itself.
-  const background = useSiteImage('home-hero');
+  // The banner photograph. The one that used to be here was a 383px-wide
+  // portrait stretched across the whole width, which is why it looked wrong --
+  // not because a banner should not have a picture. This one is 1920x1080 and
+  // landscape, which is the shape the space actually is.
+  //
+  // It is the site's only photograph of that size, and it was being spent on
+  // a band halfway down the page. The banner is where it earns its weight.
+  const background = useSiteImage('home-hero')
+    ?? '/mountain-road-at-sunrise-self-drive-car-rental.webp';
 
   return (
     <section id="top" className="relative isolate overflow-hidden bg-navy text-white">
-      {/* Drawn, not photographed. Two gold glows on deep navy -- one behind
-          the card so it has something to lift off, one low on the left under
-          the heading -- and a hairline of gold along the bottom edge where the
-          banner meets the page. It costs nothing to download and it is the
-          brand's own colours rather than a stock photograph's.
-
-          With no image, the largest thing above the fold is the heading, which
-          the browser already has by the time it has the stylesheet. The banner
-          is no longer waiting on a file to finish painting. */}
+      {/* Under the photograph, not instead of it. The gold glows still do the
+          work while the picture is decoding, and they fill the band at the
+          bottom that a 16:9 image cannot reach on a tall phone. */}
       <div aria-hidden="true" className="hero-backdrop absolute inset-0 -z-10" />
 
-      {/* A photograph appears here only when one has been uploaded. Kept
-          eager and high priority because in that case it is the largest thing
-          above the fold again, and described because the sitemap lists it as
-          the picture representing this page -- a page cannot tell a crawler
+      {/* The largest thing above the fold, so it is what Google measures the
+          page's loading speed by: fetched first, never lazily.
+
+          Described rather than hidden. The sitemap lists this picture as the
+          one representing the home page, and alt text is most of what image
+          search has besides the file name -- a page cannot tell a crawler
           "this is the photograph of the business" and a screen reader "there
-          is nothing here". */}
-      {background ? (
-        <>
-          <img
-            src={background}
-            alt={h.imageAlt ?? `${h.headingLead} ${h.headingAccent}`}
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 -z-10 h-full w-full object-cover object-[70%_top]"
-          />
-          <div aria-hidden="true" className="hero-scrim absolute inset-0 -z-10" />
-        </>
-      ) : null}
+          is nothing here". The words are editable beside the heading. */}
+      <img
+        src={background}
+        alt={h.imageAlt ?? `${h.headingLead} ${h.headingAccent}`}
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+        className="hero-photo absolute inset-0 -z-10 h-full w-full object-cover object-center"
+      />
+      <div aria-hidden="true" className="hero-scrim absolute inset-0 -z-10" />
 
       <div className="relative mx-auto max-w-[86rem] px-5 pt-10 pb-12 sm:px-8 sm:pt-14 sm:pb-16 lg:px-12">
         {/* Words and the form side by side from lg up, stacked below it.
@@ -72,11 +67,11 @@ export function Hero() {
               <span className="block text-gold">{h.headingAccent}</span>
             </h1>
 
-            <p data-hero-item="" style={{ ['--hero-delay' as string]: '200ms' }} className="mt-4 text-base font-medium text-white/80 sm:text-lg">
+            <p data-hero-item="" style={{ ['--hero-delay' as string]: '200ms' }} className="mt-4 text-base font-medium text-white sm:text-lg">
               {h.tagline}
             </p>
 
-            <p data-hero-item="" style={{ ['--hero-delay' as string]: '260ms' }} className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/70">
+            <p data-hero-item="" style={{ ['--hero-delay' as string]: '260ms' }} className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/85 sm:text-white/75">
               {h.intro}
             </p>
 
