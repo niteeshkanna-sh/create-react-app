@@ -1,8 +1,19 @@
+/**
+ * The panel end to end in a browser: signing in, the fleet, a booking, and
+ * the tabs either side of them.
+ *
+ *   node tools/test-ui.js http://127.0.0.1:8210 admin@example.com password
+ */
+
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
-const OUT = '/tmp/claude-0/-home-user-create-react-app/2bef9a0e-33a4-54b1-b399-5284c26b2d0b/scratchpad';
-const BASE = 'http://127.0.0.1:8210';
-const EMAIL = 'admin@niteshacars.in';
-const PASSWORD = 'secret-passphrase-1';
+
+// Taken from the command line, like every other suite here. These were once
+// written into the file, along with one particular machine's scratch
+// directory, so the suite only ran for whoever had that exact account.
+const BASE = process.argv[2] || 'http://127.0.0.1:8210';
+const EMAIL = process.argv[3];
+const PASSWORD = process.argv[4];
+const OUT = process.env.SHOT_DIR || '/tmp';
 
 let pass = 0, fail = 0;
 const ok  = (l) => { pass++; console.log(`  ok    ${l}`); };
@@ -20,6 +31,10 @@ const is  = (l, a, b) => (String(a) === String(b) ? ok(l) : bad(l, `expected ${b
   // rejection that one of the assertions below deliberately provokes.
   const benign = t => t.includes('favicon')
     || t.includes('ERR_CONNECTION_RESET')
+    // The web font is fetched from Google. A sandbox that proxies HTTPS with
+    // its own certificate fails that request, and nothing in the panel can
+    // answer for a certificate it does not issue.
+    || t.includes('ERR_CERT_AUTHORITY_INVALID')
     || t.includes('status of 422');
   p.on('console', m => { if (m.type() === 'error' && !benign(m.text())) errs.push('console: ' + m.text()); });
 
@@ -32,9 +47,12 @@ const is  = (l, a, b) => (String(a) === String(b) ? ok(l) : bad(l, `expected ${b
   await p.fill('#password', PASSWORD);
   await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), p.click('button[type="submit"]')]);
   is('lands on the dashboard', new URL(p.url()).pathname, '/dashboard.php');
-  const who = await p.locator('.who').innerText().catch(() => '');
-  who.includes('Test Admin') ? ok('signed-in name shown') : bad('signed-in name shown', who);
-  who.toLowerCase().includes('super') ? ok('role shown') : bad('role shown', who);
+  // Whoever signed in, not one particular account: the panel has to name the
+  // person and their role, and the suite runs against whatever account it is
+  // given.
+  const who = await p.locator('.ns-who').innerText().catch(() => '');
+  who.trim().length > 0 ? ok('signed-in name shown') : bad('signed-in name shown', '(empty)');
+  /admin|super|accounts|auditor|staff/i.test(who) ? ok('role shown') : bad('role shown', who);
 
   console.log('\n-- fleet loads from the database --');
   await p.click('.admin-tab[data-tab="cars"]');

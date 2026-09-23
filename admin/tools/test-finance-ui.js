@@ -29,7 +29,10 @@ const rupees = (text) => Number(String(text).replace(/[^0-9.-]/g, '')) || 0;
   p.on('pageerror', e => errs.push(String(e)));
   p.on('console', m => {
     const t = m.text();
+    // ERR_CERT_AUTHORITY_INVALID is the web font: fetched from Google, and
+    // refused by any sandbox that proxies HTTPS with its own certificate.
     if (m.type() === 'error' && !t.includes('ERR_CONNECTION_RESET') && !t.includes('favicon')
+        && !t.includes('ERR_CERT_AUTHORITY_INVALID')
         && !/status of (409|422|429)/.test(t)) errs.push('console: ' + t);
   });
 

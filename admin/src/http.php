@@ -26,6 +26,103 @@ function json_error(string $message, int $status = 400, array $extra = []): neve
     json_out(['error' => $message] + $extra, $status);
 }
 
+/**
+ * Makes an endpoint answer JSON whatever happens to it, including a crash.
+ *
+ * A PHP error printed into the reply -- or a fatal that ends it with an empty
+ * body -- is not JSON, so the panel could not read it and said so: "The
+ * server returned an unreadable response." True, and no use to anybody. The
+ * failure was a database one, and the message that would have named it went
+ * to a log nobody was looking at.
+ *
+ * So: nothing is ever printed into the body, the detail is written where it
+ * can be read afterwards, and the browser gets a JSON error it can show.
+ */
+function api_failures_as_json(): void
+{
+    // Never into the response. A single warning ahead of the JSON makes the
+    // whole reply unparseable, and the caller is left with nothing to show.
+    ini_set('display_errors', '0');
+    error_reporting(E_ALL);
+
+    set_exception_handler(static function (Throwable $e): void {
+        $ref = api_log_failure(
+            get_class($e) . ': ' . $e->getMessage()
+            . ' in ' . $e->getFile() . ':' . $e->getLine()
+        );
+        json_error('Something went wrong at our end and the change was not saved. '
+            . 'Please try again. If it keeps happening, quote ' . $ref . '.', 500);
+    });
+
+    register_shutdown_function(static function (): void {
+        $last = error_get_last();
+        if ($last === null
+            || !in_array($last['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true)) {
+            return;
+        }
+        // Headers already out means the endpoint answered and the trouble came
+        // afterwards; there is no reply left to fix.
+        if (headers_sent()) {
+            return;
+        }
+        $ref = api_log_failure($last['message'] . ' in ' . $last['file'] . ':' . $last['line']);
+        json_error('Something went wrong at our end and the change was not saved. '
+            . 'Please try again. If it keeps happening, quote ' . $ref . '.', 500);
+    });
+}
+
+/**
+ * Writes a failure where it can be found, and returns a short reference so
+ * the person on the screen and the line in the log can be matched up.
+ *
+ * Into storage_path, which is above the document root: a deploy rewrites the
+ * site, and a log inside it would be wiped exactly when a history of failures
+ * is what is wanted. The host's own error log gets it too, or instead, if
+ * that directory cannot be written.
+ */
+function api_log_failure(string $detail): string
+{
+    $ref  = strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
+    $line = sprintf(
+        "[%s] %s %s %s -- %s\n",
+        date('Y-m-d H:i:s'),
+        $ref,
+        $_SERVER['REQUEST_METHOD'] ?? '-',
+        $_SERVER['REQUEST_URI'] ?? '-',
+        $detail
+    );
+
+    // config_path() first, and config() only if there is something to read.
+    // One of the failures this exists to record is the panel not finding its
+    // own configuration, and config() answers that by drawing a setup page
+    // and stopping -- which, from in here, would replace the reply being
+    // written with a page of HTML and lose the log line as well.
+    $base = dirname(__DIR__, 3) . '/nitesha-storage';
+    try {
+        if (config_path() !== null) {
+            $base = (string) (config('storage_path') ?? $base);
+        }
+    } catch (Throwable) {
+        // Keep the default; there is a more important failure to record.
+    }
+    $dir  = $base . '/logs';
+    $file = $dir . '/panel-errors.log';
+    if (is_dir($dir) || @mkdir($dir, 0770, true)) {
+        // One roll-over, so a fault that repeats all night cannot fill the
+        // disk and take the panel down with it. The previous file is kept:
+        // the first occurrence is usually the one worth reading.
+        if (@filesize($file) > 1048576) {
+            @rename($file, $dir . '/panel-errors.1.log');
+        }
+        if (@file_put_contents($file, $line, FILE_APPEND | LOCK_EX) !== false) {
+            return $ref;
+        }
+    }
+
+    error_log(rtrim($line));
+    return $ref;
+}
+
 /** Reads a JSON request body, falling back to form-encoded input. */
 function json_input(): array
 {
@@ -220,4 +317,14 @@ final class Validator
         }
         return $this->clean;
     }
+}
+
+// ------------------------------------------------------------- installed --
+//
+// For the endpoints only. A page that breaks should show the host's error
+// page; a JSON reply in the middle of some HTML would be the confusing half
+// of both. Everything under api/ is a request the browser reads as JSON.
+if (PHP_SAPI !== 'cli'
+    && basename(dirname((string) ($_SERVER['SCRIPT_FILENAME'] ?? ''))) === 'api') {
+    api_failures_as_json();
 }
