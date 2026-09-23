@@ -53,7 +53,13 @@ const has = (l, text, needle) =>
     await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), p.click('button[type="submit"]')]);
   };
 
-  const detailText = () => p.locator('#bookingDetailBody').innerText();
+  // The hero plus whichever tab is open -- a hidden tab's text is not on
+  // screen, and innerText is right not to report it.
+  const detailText = async () => (await p.locator('#bookingDetailView').innerText());
+  const openTab = async (pane) => {
+    await p.locator(`.rec-tab[data-pane="${pane}"]`).click();
+    await p.waitForTimeout(250);
+  };
 
   await signIn();
   ok('signed in');
@@ -125,12 +131,13 @@ const has = (l, text, needle) =>
   await p.waitForTimeout(300);
 
   console.log('\n-- open the booking --');
-  await p.locator('#bookingListWrap .booking-card').filter({ hasText: customer }).first().click();
+  await p.locator('#bookingListWrap tbody tr').filter({ hasText: customer }).first().click();
   await p.waitForTimeout(900);
   has('detail shows the customer', await detailText(), customer);
   has('detail shows Unpaid', await detailText(), 'Unpaid');
 
   console.log('\n-- deposit --');
+  await openTab('deposit');
   await p.click('#detailAddDepositBtn');
   await p.waitForTimeout(300);
   const prefilled = await p.locator('#depositAmount').inputValue();
@@ -142,6 +149,7 @@ const has = (l, text, needle) =>
   has('total owed unchanged by the deposit', text, '₹7,500');
 
   console.log('\n-- payments --');
+  await openTab('payments');
   await p.click('#detailAddPaymentBtn');
   await p.waitForTimeout(300);
   await p.selectOption('#paymentType', 'advance');
@@ -156,6 +164,7 @@ const has = (l, text, needle) =>
   has('status is Partially Paid', text, 'Partially Paid');
 
   console.log('\n-- void a payment, keeping the record --');
+  await openTab('payments');
   await p.click('#detailAddPaymentBtn');
   await p.waitForTimeout(300);
   await p.selectOption('#paymentType', 'additional');
@@ -170,6 +179,7 @@ const has = (l, text, needle) =>
   has('balance back to 4,500', text, '₹4,500');
 
   console.log('\n-- pickup --');
+  await openTab('handover');
   await p.click('#detailPickupBtn');
   await p.waitForTimeout(300);
   const startKm = await p.locator('#pickupStartKm').inputValue();
@@ -180,9 +190,10 @@ const has = (l, text, needle) =>
   await p.waitForTimeout(1100);
   text = await detailText();
   has('pickup recorded', text, '60,000');
-  has('booking is now Active', await p.locator('#bookingDetailTitle').innerText(), 'Active');
+  has('booking is now Active', await p.locator('.rec-hero').innerText(), 'Active');
 
   console.log('\n-- return, with extra km --');
+  await openTab('handover');
   await p.click('#detailReturnBtn');
   await p.waitForTimeout(300);
   await p.fill('#returnEndKm', '60850');
@@ -201,6 +212,7 @@ const has = (l, text, needle) =>
   has('total rises to 9,500', text, '₹9,500');
 
   console.log('\n-- correct a misread meter --');
+  await openTab('handover');
   dialogAnswers = ['60800', 'Misread the meter', true];
   await p.locator('.correct-km').last().click();
   await p.waitForTimeout(1300);
@@ -209,6 +221,7 @@ const has = (l, text, needle) =>
   has('extra charge falls to 1,600', text, '₹1,600');
 
   console.log('\n-- refund the deposit --');
+  await openTab('deposit');
   await p.click('#detailRefundBtn');
   await p.waitForTimeout(300);
   await p.fill('#refundDeduction', '750');
@@ -227,7 +240,16 @@ const has = (l, text, needle) =>
   dialogAnswers = [true, true];
   await p.click('#detailCompleteBtn');
   await p.waitForTimeout(1300);
-  has('booking is Completed', await p.locator('#bookingDetailTitle').innerText(), 'Completed');
+  has('booking is Completed', await p.locator('.rec-hero').innerText(), 'Completed');
+
+  console.log('\n-- the tabs --');
+  for (const [pane, needle] of [['overview', 'Agreed terms'], ['payments', 'Payments'],
+                                ['deposit', 'Security Deposit'], ['handover', 'Vehicle Return'],
+                                ['documents', 'Customer Documents'], ['timeline', 'Timeline']]) {
+    await openTab(pane);
+    has(`the ${pane} tab shows its section`, await detailText(), needle);
+  }
+  await openTab('overview');
 
   await p.screenshot({ path: `${SHOT_DIR}/booking_detail.png`, fullPage: false });
 
@@ -235,6 +257,8 @@ const has = (l, text, needle) =>
   await p.reload({ waitUntil: 'networkidle' });
   await p.click('.admin-tab[data-tab="bookings"]');
   await p.waitForTimeout(900);
+  const counts = await p.locator('#bookingStats').innerText();
+  has('the counts are shown above the list', counts, 'Total');
   const afterReload = await p.locator('#bookingListWrap').innerText();
   has('booking survives a reload', afterReload, customer);
   has('still shows as Completed', afterReload, 'Completed');

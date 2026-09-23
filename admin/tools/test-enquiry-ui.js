@@ -84,25 +84,29 @@ const has = (l, text, needle) =>
   has('with its reference', listText, 'ENQ-');
   has('marked New', listText, 'New');
 
+  const stats = await p.locator('#enquiryStats').innerText();
+  has('the counts are shown above the list', stats, 'Total');
+  has('and one for the new ones', stats, 'New');
+
   console.log('\n-- search and filter --');
   await p.fill('#enquirySearch', stamp);
   await p.waitForTimeout(800);
   has('search narrows the list', await p.locator('#inquiriesWrap').innerText(), customer);
   await p.fill('#enquirySearch', '');
   await p.waitForTimeout(800);
-  await p.click('[data-enquiry-status="Converted"]');
+  await p.click('#enquiryChips [data-chip="Converted"]');
   await p.waitForTimeout(800);
   const converted = await p.locator('#inquiriesWrap').innerText();
   converted.includes(customer)
     ? bad('filtering to Converted hides a New enquiry')
     : ok('filtering to Converted hides a New enquiry');
-  await p.click('[data-enquiry-status=""]');
+  await p.click('#enquiryChips [data-chip=""]');
   await p.waitForTimeout(800);
 
   console.log('\n-- open it --');
-  await p.locator('.enquiry-card').filter({ hasText: customer }).first().click();
+  await p.locator('#inquiriesWrap tbody tr').filter({ hasText: customer }).first().click();
   await p.waitForTimeout(900);
-  let detail = await p.locator('#enquiryModalBody').innerText();
+  let detail = await p.locator('#enquiryDetailView').innerText();
   has('shows what they asked for', detail, 'three days in December');
   has('shows the pickup location', detail, 'Nagercoil');
   has('shows the dates', detail, 'Dec 2026');
@@ -111,14 +115,18 @@ const has = (l, text, needle) =>
   dialogAnswers = ['Called back, wants an automatic'];
   await p.locator('[data-enq-status="Contacted"]').click();
   await p.waitForTimeout(1100);
-  detail = await p.locator('#enquiryModalBody').innerText();
+  has('now marked Contacted', await p.locator('.rec-hero').innerText(), 'Contacted');
+  // Notes have a tab of their own, and it says how many are on the record.
+  has('the tab counts the notes', await p.locator('.rec-tab[data-pane="notes"]').innerText(), '1');
+  await p.locator('.rec-tab[data-pane="notes"]').click();
+  await p.waitForTimeout(300);
+  detail = await p.locator('#enquiryDetailView').innerText();
   has('the note is kept', detail, 'wants an automatic');
-  has('now marked Contacted', await p.locator('#enquiryModalTitle').innerText(), 'Contacted');
 
   dialogAnswers = ['Confirmed budget'];
   await p.locator('#enqAddNote').click();
   await p.waitForTimeout(1000);
-  detail = await p.locator('#enquiryModalBody').innerText();
+  detail = await p.locator('#enquiryDetailView').innerText();
   has('notes are appended, not replaced', detail, 'wants an automatic');
   has('and the new one is there too', detail, 'Confirmed budget');
 
@@ -127,7 +135,7 @@ const has = (l, text, needle) =>
   console.log('\n-- accept it into a booking --');
   // A vehicle to book it against.
   const reg = 'EU' + stamp;
-  await p.click('#enquiryModalClose');
+  await p.click('#enquiryDetailBack');
   await p.click('.admin-tab[data-tab="cars"]');
   await p.waitForTimeout(600);
   await p.click('#addCarBtn');
@@ -143,7 +151,7 @@ const has = (l, text, needle) =>
 
   await p.click('.admin-tab[data-tab="inquiries"]');
   await p.waitForTimeout(900);
-  await p.locator('.enquiry-card').filter({ hasText: customer }).first().click();
+  await p.locator('#inquiriesWrap tbody tr').filter({ hasText: customer }).first().click();
   await p.waitForTimeout(900);
   await p.click('#enqConvert');
   await p.waitForTimeout(600);

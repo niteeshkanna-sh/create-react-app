@@ -44,6 +44,12 @@ async function boot() {
  * under -- which would leave somebody scrolling for the booking they had just
  * pointed at.
  */
+/** Brings a panel up if it is not the one on screen. */
+function showPanelFor(tab) {
+  const panel = document.getElementById(`panel-${tab}`);
+  if (panel && panel.hidden) document.querySelector(`.admin-tab[data-tab="${tab}"]`)?.click();
+}
+
 function openFromLink() {
   const params = new URLSearchParams(window.location.search);
   const booking = Number(params.get('booking'));
@@ -531,14 +537,13 @@ carForm.addEventListener('submit', async (e) => {
 let enquiryStatusFilter = '';
 let enquirySearch = '';
 
-document.querySelectorAll('[data-enquiry-status]').forEach((chip) => {
-  chip.addEventListener('click', async () => {
-    document.querySelectorAll('[data-enquiry-status]').forEach((c) => c.classList.remove('active'));
-    chip.classList.add('active');
-    enquiryStatusFilter = chip.dataset.enquiryStatus;
-    await renderInquiries();
-  });
-});
+const enquiryView = { sort: 'created_at', dir: 'desc', page: 1, perPage: 30 };
+
+const ENQUIRY_CHIPS = [
+  ['', 'All'], ['New', 'New'], ['Contacted', 'Contacted'], ['Pending', 'Pending'],
+  ['Accepted', 'Accepted'], ['Converted', 'Converted'], ['Rejected', 'Rejected'],
+  ['Cancelled', 'Cancelled'],
+];
 
 // Typing filters as you go, but only once you stop — a request per keystroke
 // would be a lot of queries for no benefit.
@@ -547,8 +552,18 @@ document.getElementById('enquirySearch')?.addEventListener('input', (e) => {
   clearTimeout(enquirySearchTimer);
   enquirySearchTimer = setTimeout(async () => {
     enquirySearch = e.target.value.trim();
+    enquiryView.page = 1;
     await renderInquiries();
   }, 300);
+});
+
+document.getElementById('enquiryReset')?.addEventListener('click', async () => {
+  enquirySearch = '';
+  enquiryStatusFilter = '';
+  enquiryView.page = 1;
+  const box = document.getElementById('enquirySearch');
+  if (box) box.value = '';
+  await renderInquiries();
 });
 
 /**
@@ -573,47 +588,79 @@ async function renderInquiries() {
   const wrap = document.getElementById('inquiriesWrap');
   if (!wrap) return;
 
+  // Fetched unfiltered and filtered here, so the chips can carry counts: a
+  // count taken from a list the server has already narrowed is a count of
+  // what is on screen, which is the one number nobody needs.
   let answer;
   try {
-    answer = await api.enquiries.list(enquiryStatusFilter, enquirySearch);
+    answer = await api.enquiries.list('', enquirySearch);
   } catch (err) {
     wrap.innerHTML = '<div class="empty-state">Could not load enquiries.</div>';
     showError(err);
     return;
   }
-  const enquiries = answer.enquiries;
+  const all = answer.enquiries;
   setInquiryBadge(answer.unread);
-  // Only mark cards when the database knows what has been read. Otherwise
+  // Only mark rows when the database knows what has been read. Otherwise
   // every viewed_at is null and the whole list would claim to be unread.
   const tracksRead = answer.tracks_read !== false;
 
-  if (!enquiries.length) {
-    wrap.innerHTML = enquirySearch || enquiryStatusFilter
-      ? '<div class="empty-state">No enquiries match that.</div>'
-      : '<div class="empty-state">No enquiries yet. Submissions from the booking form on niteshacars.in appear here.</div>';
-    return;
-  }
+  const by = (status) => all.filter((e) => e.status === status).length;
+  renderRecStats('enquiryStats', [
+    { n: all.length, k: 'Total', icon: 'inbox' },
+    { n: by('New'), k: 'New', icon: 'star' },
+    { n: by('Contacted') + by('Pending'), k: 'In progress', icon: 'phone' },
+    { n: by('Converted'), k: 'Booked', icon: 'tick', tone: 'good' },
+    { n: by('Rejected') + by('Cancelled'), k: 'Closed', icon: 'cross' },
+  ]);
 
-  wrap.innerHTML = enquiries.map((e) => `
-    <div class="enquiry-card${tracksRead && !e.viewed_at ? ' is-unread' : ''}" data-id="${e.id}">
-      <div class="row">
-        <span class="num">${e.enquiry_number}</span>
-        <span class="enquiry-name">${escapeHTML(e.name)}</span>
-        <span class="meta">
-          ${escapeHTML(e.phone)}
-          ${e.vehicle_name ? ` · ${escapeHTML(e.vehicle_name)}` : ''}
-          ${e.start_date ? ` · ${formatDate(e.start_date)}${e.return_date ? ` → ${formatDate(e.return_date)}` : ''}` : ''}
-        </span>
-      </div>
-      <div class="right">
-        ${e.booking_number ? `<span class="meta">${e.booking_number}</span>` : ''}
-        <span class="status-badge status-badge-${e.status}">${e.status}</span>
-        <span class="inquiry-time">${formatDate(e.created_at)}</span>
-      </div>
-    </div>`).join('');
+  renderRecChips('enquiryChips', ENQUIRY_CHIPS.map(([value, label]) => ({
+    value, label, n: value === '' ? all.length : by(value),
+  })), enquiryStatusFilter, (value) => {
+    enquiryStatusFilter = value;
+    enquiryView.page = 1;
+    renderInquiries();
+  });
 
-  wrap.querySelectorAll('.enquiry-card').forEach((card) => {
-    card.addEventListener('click', () => openEnquiry(Number(card.dataset.id)));
+  const rows = all.filter((e) => !enquiryStatusFilter || e.status === enquiryStatusFilter);
+
+  renderRecTable({
+    wrap,
+    pagerId: 'enquiryPager',
+    view: enquiryView,
+    rows,
+    noun: ['inquiry', 'inquiries'],
+    empty: enquirySearch || enquiryStatusFilter
+      ? 'No enquiries match that.'
+      : 'No enquiries yet. Submissions from the booking form on niteshacars.in appear here.',
+    rowClass: (e) => (tracksRead && !e.viewed_at ? 'rec-unread' : ''),
+    columns: [
+      { key: 'enquiry_number', label: 'Inquiry No.', hide: true, sort: (e) => e.enquiry_number,
+        cell: (e) => `<span class="rec-id">${escapeHTML(e.enquiry_number)}</span>` },
+      { key: 'name', label: 'Name', sort: (e) => e.name.toLowerCase(),
+        cell: (e) => `<span class="rec-who">${escapeHTML(e.name)}</span>
+                      <div class="rec-sub">${escapeHTML(e.phone)}</div>
+                      <div class="rec-sub rec-id rec-only-sm">${escapeHTML(e.enquiry_number)}</div>` },
+      { key: 'vehicle_name', label: 'Asked for', hide: true, sort: (e) => (e.vehicle_name || '').toLowerCase(),
+        cell: (e) => `${escapeHTML(e.vehicle_name || 'Not specified')}
+                      <div class="rec-sub">${e.start_date
+                        ? formatDate(e.start_date) + (e.return_date ? ' → ' + formatDate(e.return_date) : '')
+                        : 'No dates given'}</div>` },
+      { key: 'status', label: 'Status', sort: (e) => e.status,
+        cell: (e) => `<span class="status-badge status-badge-${e.status}">${e.status}</span>
+                      ${e.booking_number ? `<div class="rec-sub">${escapeHTML(e.booking_number)}</div>` : ''}` },
+      { key: 'created_at', label: 'Received', sort: (e) => e.created_at,
+        cell: (e) => formatDate(e.created_at) },
+      { key: 'action', label: 'Action', cls: 'rec-act', hide: true, sort: (e) => e.id,
+        cell: (e) => `<span class="rec-acts">
+          <button type="button" class="rec-act-btn" data-act="open" title="Open this inquiry"
+                  aria-label="Open ${escapeHTML(e.enquiry_number)}">${REC_EYE}</button>
+          <a class="rec-act-btn" href="tel:${escapeHTML(e.phone)}" title="Call ${escapeHTML(e.name)}"
+             aria-label="Call ${escapeHTML(e.name)}">${REC_PHONE}</a>
+        </span>` },
+    ],
+    onAction: (e) => openEnquiry(e.id),
+    onRow: (e) => openEnquiry(e.id),
   });
 }
 
@@ -628,95 +675,180 @@ function escapeHTML(value) {
 }
 
 // ---- Enquiry detail ----
-const enquiryModalOverlay = document.getElementById('enquiryModalOverlay');
+//
+// Opens in place of the list, the same as a booking does, so the two screens
+// behave alike -- and so an enquiry can carry the same amount of detail
+// without becoming a dialog you scroll.
 let currentEnquiry = null;
-
-document.getElementById('enquiryModalClose').addEventListener('click', () => {
-  enquiryModalOverlay.hidden = true;
-  currentEnquiry = null;
-});
-enquiryModalOverlay.addEventListener('click', (e) => {
-  if (e.target === enquiryModalOverlay) { enquiryModalOverlay.hidden = true; currentEnquiry = null; }
-});
+let enquiryDetailPane = 'overview';
 
 async function openEnquiry(id) {
-  enquiryModalOverlay.hidden = false;
-  document.getElementById('enquiryModalBody').innerHTML = '<p class="detail-empty">Loading…</p>';
+  enquiryDetailPane = 'overview';
+  showPanelFor('inquiries');
+  const view = document.getElementById('enquiryDetailView');
+  document.getElementById('inquiryListView').hidden = true;
+  view.hidden = false;
+  view.innerHTML = '<p class="detail-empty">Loading…</p>';
+  window.scrollTo({ top: 0, behavior: 'instant' });
   await renderEnquiry(id);
 }
 
+function closeEnquiryDetail() {
+  document.getElementById('enquiryDetailView').hidden = true;
+  document.getElementById('inquiryListView').hidden = false;
+  currentEnquiry = null;
+}
+
 async function renderEnquiry(id) {
-  const body = document.getElementById('enquiryModalBody');
+  const view = document.getElementById('enquiryDetailView');
   let e;
   try {
     const answer = await api.enquiries.get(id);
     e = answer.enquiry;
     // Opening it is what marks it read, so the badge is right the moment the
-    // modal appears rather than after the next refresh of the list behind it.
+    // page appears rather than after the next refresh of the list behind it.
     setInquiryBadge(answer.unread);
-    document.querySelector(`.enquiry-card[data-id="${id}"]`)?.classList.remove('is-unread');
   } catch (err) {
-    body.innerHTML = '<p class="detail-empty">Could not load this enquiry.</p>';
+    view.innerHTML = '<p class="detail-empty">Could not load this enquiry.</p>';
     showError(err);
     return;
   }
   currentEnquiry = e;
 
   const open = !['Converted', 'Rejected', 'Cancelled'].includes(e.status);
+  const row = (k, v) => `<div class="info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const initials = (e.name || '?').split(/\s+/).slice(0, 2)
+    .map((w) => w[0] || '').join('').toUpperCase();
 
-  document.getElementById('enquiryModalTitle').innerHTML =
-    `${e.enquiry_number} <span class="status-badge status-badge-${e.status}">${e.status}</span>`;
-
-  body.innerHTML = `
-    <div class="detail-section">
-      <div class="detail-section-title"><span>Customer</span></div>
-      <div class="detail-grid">
-        <div class="detail-field"><span class="k">Name</span><span class="v">${escapeHTML(e.name)}</span></div>
-        <div class="detail-field"><span class="k">Phone</span><span class="v">
-          <a href="tel:${escapeHTML(e.phone)}">${escapeHTML(e.phone)}</a></span></div>
-        <div class="detail-field"><span class="k">Email</span><span class="v">${escapeHTML(e.email) || '—'}</span></div>
-        <div class="detail-field"><span class="k">Received</span><span class="v">${formatDateTime(e.created_at)}</span></div>
+  const overview = `
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('user')}</span>
+          <h3>Who asked</h3>
+        </div>
+        ${row('Name', escapeHTML(e.name))}
+        ${row('Phone', `<a href="tel:${escapeHTML(e.phone)}">${escapeHTML(e.phone)}</a>`)}
+        ${row('Email', escapeHTML(e.email) || '—')}
+        ${row('Received', formatDateTime(e.created_at))}
+        ${row('Came from', escapeHTML(e.source || 'website'))}
       </div>
-    </div>
 
-    <div class="detail-section">
-      <div class="detail-section-title"><span>What they asked for</span></div>
-      <div class="detail-grid">
-        <div class="detail-field"><span class="k">Vehicle</span><span class="v">${escapeHTML(e.vehicle_name) || 'Not specified'}</span></div>
-        <div class="detail-field"><span class="k">Dates</span><span class="v">
-          ${e.start_date ? formatDate(e.start_date) : '—'}${e.return_date ? ` → ${formatDate(e.return_date)}` : ''}</span></div>
-        <div class="detail-field"><span class="k">Pickup</span><span class="v">${escapeHTML(e.pickup_location) || '—'}</span></div>
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('car')}</span>
+          <h3>What they asked for</h3>
+        </div>
+        ${row('Vehicle', escapeHTML(e.vehicle_name) || 'Not specified')}
+        ${row('Dates', `${e.start_date ? formatDate(e.start_date) : '—'}${
+          e.return_date ? ' → ' + formatDate(e.return_date) : ''}`)}
+        ${row('Pickup', escapeHTML(e.pickup_location) || '—')}
+        ${e.message ? `<p class="field-hint" style="margin-top:8px">“${escapeHTML(e.message)}”</p>` : ''}
+        ${e.requirements ? `<p class="field-hint">${escapeHTML(e.requirements)}</p>` : ''}
       </div>
-      ${e.message ? `<p class="field-hint" style="margin-top:10px">“${escapeHTML(e.message)}”</p>` : ''}
-      ${e.requirements ? `<p class="field-hint">${escapeHTML(e.requirements)}</p>` : ''}
-    </div>
 
-    <div class="detail-section">
-      <div class="detail-section-title"><span>Notes</span></div>
-      ${e.admin_notes
-        ? `<div class="enquiry-notes">${escapeHTML(e.admin_notes)}</div>`
-        : '<p class="detail-empty">No notes yet.</p>'}
-      ${open ? '<div class="enquiry-actions"><button class="btn btn-ghost btn-sm" id="enqAddNote">Add note</button></div>' : ''}
-    </div>
-
-    ${e.booking_number ? `
-      <div class="detail-section">
-        <div class="detail-section-title"><span>Became a booking</span></div>
-        <p class="field-hint">This enquiry was accepted and became <strong>${e.booking_number}</strong>.</p>
+      ${e.booking_number ? `
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('tick')}</span>
+          <h3>Became a booking</h3>
+        </div>
+        <p class="field-hint">Accepted and booked as <strong>${escapeHTML(e.booking_number)}</strong>.</p>
+        <button class="btn btn-outline btn-sm" id="enqOpenBooking" data-booking="${e.booking_id || ''}">
+          Open ${escapeHTML(e.booking_number)}</button>
       </div>` : ''}
+    </div>
 
     ${open ? `
       <div class="detail-section">
-        <div class="detail-section-title"><span>Handle</span></div>
+        <div class="detail-section-title"><span>Handle this enquiry</span></div>
         <div class="enquiry-actions">
           <button class="btn btn-ghost btn-sm" data-enq-status="Contacted">Mark Contacted</button>
           <button class="btn btn-ghost btn-sm" data-enq-status="Pending">Mark Pending</button>
           <button class="btn btn-ghost btn-sm" data-enq-status="Rejected">Reject</button>
-          <button class="btn btn-primary btn-sm" id="enqConvert">Accept &amp; Create Booking</button>
           <button class="btn btn-danger btn-sm btn-icon" id="enqDelete" title="Delete this enquiry" aria-label="Delete this enquiry">${BIN_ICON}</button>
         </div>
-      </div>` : ''}
+      </div>` : ''}`;
+
+  const notes = `
+    <div class="detail-section">
+      <div class="detail-section-title">
+        <span>Notes</span>
+        ${open ? '<button class="btn btn-outline btn-sm" id="enqAddNote">Add note</button>' : ''}
+      </div>
+      ${e.admin_notes
+        ? `<div class="enquiry-notes">${escapeHTML(e.admin_notes)}</div>`
+        : '<p class="detail-empty">No notes yet.</p>'}
+    </div>`;
+
+  view.innerHTML = `
+    <button type="button" class="rec-back" id="enquiryDetailBack">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M9.5 3.5 5 8l4.5 4.5" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back to all inquiries
+    </button>
+
+    <div class="rec-hero">
+      <div class="rec-hero-top">
+        <span class="rec-avatar">${escapeHTML(initials)}</span>
+        <div class="rec-hero-id">
+          <h2>${escapeHTML(e.name)}
+            <span class="status-badge status-badge-${e.status}">${e.status}</span></h2>
+          <p class="rec-hero-sub">${escapeHTML(e.enquiry_number)} ·
+            ${escapeHTML(e.phone)} · ${escapeHTML(e.source || 'website')}</p>
+        </div>
+        <div class="rec-hero-act">
+          <a class="btn btn-ghost btn-sm" href="tel:${escapeHTML(e.phone)}">Call</a>
+          ${open ? '<button class="btn btn-primary btn-sm" id="enqConvert">Accept &amp; Create Booking</button>' : ''}
+        </div>
+      </div>
+
+      <div class="rec-tiles">
+        <div class="rec-tile">
+          <div class="rec-tile-k">Wants</div>
+          <div class="rec-tile-v">${escapeHTML(e.vehicle_name) || '—'}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">From</div>
+          <div class="rec-tile-v">${e.start_date ? formatDate(e.start_date) : '—'}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">Until</div>
+          <div class="rec-tile-v">${e.return_date ? formatDate(e.return_date) : '—'}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">Received</div>
+          <div class="rec-tile-v">${formatDate(e.created_at)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rec-tabs" role="tablist">
+      <button type="button" class="rec-tab is-on" data-pane="overview">Overview</button>
+      <button type="button" class="rec-tab" data-pane="notes">Notes
+        <span class="n">${(e.admin_notes || '').split('\n').filter((l) => l.trim()).length}</span></button>
+    </div>
+
+    <div id="enquiryDetailBody">
+      <div class="rec-pane" data-pane="overview">${overview}</div>
+      <div class="rec-pane" data-pane="notes" hidden>${notes}</div>
+    </div>
   `;
+
+  document.getElementById('enquiryDetailBack').addEventListener('click', async () => {
+    closeEnquiryDetail();
+    await renderInquiries();
+  });
+  wireRecTabs(view, enquiryDetailPane, (pane) => { enquiryDetailPane = pane; });
+
+  document.getElementById('enqOpenBooking')?.addEventListener('click', async (ev) => {
+    const bookingId = Number(ev.currentTarget.dataset.booking);
+    if (!bookingId) return;
+    closeEnquiryDetail();
+    await openBookingDetail(bookingId);
+  });
 
   document.getElementById('enqAddNote')?.addEventListener('click', async () => {
     const note = prompt('Add a note to this enquiry:');
@@ -733,13 +865,12 @@ async function renderEnquiry(id) {
     if (!confirm(`Delete enquiry ${e.enquiry_number} from ${e.name}? This cannot be undone.`)) return;
     try {
       await api.enquiries.remove(e.id);
-      enquiryModalOverlay.hidden = true;
-      currentEnquiry = null;
+      closeEnquiryDetail();
       await renderInquiries();
     } catch (err) { showError(err); }
   });
 
-  body.querySelectorAll('[data-enq-status]').forEach((btn) => {
+  view.querySelectorAll('[data-enq-status]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const status = btn.dataset.enqStatus;
       // Turning someone away needs a reason; the server insists, and asking
@@ -768,8 +899,8 @@ let convertingEnquiry = null;
 
 function openConvertModal(enquiry) {
   convertingEnquiry = enquiry;
-  enquiryModalOverlay.hidden = true;
-
+  // The booking form opens over the enquiry, which stays where it is: if the
+  // form is abandoned, the enquiry is still on screen behind it.
   openBookingModal(null);
   document.getElementById('bookingModalTitle').textContent = `Book ${enquiry.enquiry_number}`;
   document.getElementById('bookingNumberPreview').textContent =
@@ -1174,17 +1305,233 @@ function splitDateTime(value) {
   return [date, time.slice(0, 5)];
 }
 
-// ---- Booking list ----
-let bookingStatusFilter = 'all';
+// ---- The records shape: counts, chips, a sortable table, a pager ---------
+//
+// Bookings and Inquiries are the same kind of screen -- a list of records
+// that each open into a page of their own -- so they are drawn by the same
+// four functions rather than by two sets of nearly-identical ones.
 
-document.querySelectorAll('.filter-chip').forEach((chip) => {
-  chip.addEventListener('click', async () => {
-    document.querySelectorAll('.filter-chip').forEach((c) => c.classList.remove('active'));
-    chip.classList.add('active');
-    bookingStatusFilter = chip.dataset.status;
-    await renderBookingList();
+const REC_ICONS = {
+  book: '<path d="M4 3h9a2 2 0 0 1 2 2v11H6a2 2 0 0 0-2 2V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
+  clock: '<circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M9 5.5V9l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  car: '<path d="M3 11h12M4.5 11l1.2-3.4A1.5 1.5 0 0 1 7.1 6.6h3.8a1.5 1.5 0 0 1 1.4 1L13.5 11v3h-2v-1.5h-5V14h-2v-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
+  tick: '<circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 9.2l2 2 4-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  rupee: '<path d="M6 4h6M6 7h6M11 4c0 2-1.5 3-3.5 3H6l5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  inbox: '<path d="M3 10.5 4.7 4.4A1.5 1.5 0 0 1 6.1 3.3h5.8a1.5 1.5 0 0 1 1.4 1.1L15 10.5V14H3v-3.5zM3 10.5h3l1 2h4l1-2h3" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
+  phone: '<path d="M5.4 3.5 7 6l-1.3 1.4a8 8 0 0 0 4 4L11 10l2.5 1.6-.6 2.2a8.6 8.6 0 0 1-9.1-9.1l2.2-.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
+  star: '<path d="m9 3 1.9 3.9 4.1.6-3 2.9.7 4.1L9 12.6 5.3 14.5l.7-4.1-3-2.9 4.1-.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>',
+  cross: '<circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M6.8 6.8l4.4 4.4M11.2 6.8l-4.4 4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  user: '<circle cx="9" cy="6.5" r="2.8" stroke="currentColor" stroke-width="1.5"/><path d="M3.8 15c.7-2.6 2.7-4 5.2-4s4.5 1.4 5.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  building: '<path d="M4 15V4.5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V15M11 15V8h2.5a1 1 0 0 1 1 1v6M3 15h12M6.2 6.5h2.6M6.2 9h2.6M6.2 11.5h2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+};
+
+const REC_EYE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+  + '<path d="M1.5 8S3.8 3.8 8 3.8 14.5 8 14.5 8 12.2 12.2 8 12.2 1.5 8 1.5 8z" stroke="currentColor" stroke-width="1.4"/>'
+  + '<circle cx="8" cy="8" r="1.9" stroke="currentColor" stroke-width="1.4"/></svg>';
+const REC_PENCIL = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+  + '<path d="M11.2 2.6l2.2 2.2L5.9 12.3l-3 .8.8-3 7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+const REC_PHONE = '<svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">'
+  + REC_ICONS.phone + '</svg>';
+
+function recIcon(name) {
+  return `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">${
+    REC_ICONS[name] || REC_ICONS.book}</svg>`;
+}
+
+/** The row of counts above the filters. */
+function renderRecStats(id, cards) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = cards.map((c) => `
+    <div class="rec-stat${c.tone ? ' rec-stat-' + c.tone : ''}">
+      <div>
+        <div class="rec-stat-n">${c.n}</div>
+        <div class="rec-stat-k">${escapeHTML(c.k)}</div>
+      </div>
+      <span class="rec-stat-ico">${recIcon(c.icon)}</span>
+    </div>`).join('');
+}
+
+/**
+ * The filter chips, each carrying its own count.
+ *
+ * Rebuilt on every render rather than wired once: the counts change with the
+ * data, and a chip that says 3 when there are 4 is worse than no chip.
+ */
+function renderRecChips(id, chips, active, onPick) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = chips.map((c) => `
+    <button type="button" class="rec-chip${c.value === active ? ' is-on' : ''}"
+            data-chip="${escapeHTML(c.value)}" aria-pressed="${c.value === active}">
+      <span class="dot"></span>${escapeHTML(c.label)}<span class="n">${c.n}</span>
+    </button>`).join('');
+  el.querySelectorAll('.rec-chip').forEach((chip) => {
+    chip.addEventListener('click', () => onPick(chip.dataset.chip));
   });
+}
+
+/**
+ * The table itself: sorting by any column, a page at a time.
+ *
+ * Sorting and paging are done here and not on the server because the whole
+ * list is already in hand -- a rental business has hundreds of bookings a
+ * year, not millions -- and a round trip per click would be slower than the
+ * click.
+ */
+function renderRecTable(opts) {
+  // noun is a pair -- ["inquiry", "inquiries"] -- because adding an s to
+  // everything gets you "6 inquirys" at the bottom of the screen.
+  const { wrap, pagerId, view, rows, columns, noun, empty, onRow, rowClass } = opts;
+  const pager = document.getElementById(pagerId);
+
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="empty-state">${escapeHTML(empty)}</div>`;
+    if (pager) pager.hidden = true;
+    return;
+  }
+
+  const column = columns.find((c) => c.key === view.sort) || columns[0];
+  const dir = view.dir === 'asc' ? 1 : -1;
+  const sorted = rows.slice().sort((a, b) => {
+    const x = column.sort(a);
+    const y = column.sort(b);
+    if (x === y) return 0;
+    return (x > y ? 1 : -1) * dir;
+  });
+
+  const pages = Math.max(1, Math.ceil(sorted.length / view.perPage));
+  view.page = Math.min(Math.max(1, view.page), pages);
+  const from = (view.page - 1) * view.perPage;
+  const page = sorted.slice(from, from + view.perPage);
+
+  wrap.innerHTML = `
+    <div class="rec-tablewrap">
+      <table class="rec-table">
+        <thead>
+          <tr>
+            <th class="rec-sno">S. No</th>
+            ${columns.map((c) => `
+              <th class="is-sortable${c.key === view.sort ? ' is-sorted' : ''}${
+                  c.hide ? ' rec-hide-sm' : ''}" data-sort="${c.key}"
+                  aria-sort="${c.key === view.sort ? (view.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">
+                ${escapeHTML(c.label)}<span class="ord">${
+                  c.key === view.sort ? (view.dir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+              </th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${page.map((row, i) => `
+            <tr data-id="${row.id}" class="${rowClass ? rowClass(row) : ''}">
+              <td class="rec-sno">${from + i + 1}</td>
+              ${columns.map((c) => `<td class="${c.cls || ''}${c.hide ? ' rec-hide-sm' : ''}">${
+                  c.cell(row)}</td>`).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  wrap.querySelectorAll('th[data-sort]').forEach((th) => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      // Clicking the column you are already sorted by turns it round; a
+      // different column starts ascending, which is what "sort by name" means.
+      if (view.sort === key) {
+        view.dir = view.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        view.sort = key;
+        view.dir = 'asc';
+      }
+      opts.rerender ? opts.rerender() : renderRecTable(opts);
+    });
+  });
+
+  wrap.querySelectorAll('tbody tr').forEach((tr) => {
+    tr.addEventListener('click', (ev) => {
+      const row = page.find((r) => String(r.id) === tr.dataset.id);
+      if (!row) return;
+      // A link in the row -- ringing the number -- is the browser's job.
+      if (ev.target.closest('a[href]')) return;
+      const act = ev.target.closest('[data-act]');
+      if (act && opts.onAction) { opts.onAction(row, act.dataset.act); return; }
+      onRow(row);
+    });
+  });
+
+  if (!pager) return;
+  pager.hidden = false;
+  pager.innerHTML = `
+    <label class="rec-pager-left">Per page
+      <select data-per-page>
+        ${[10, 20, 30, 50, 100].map((n) =>
+          `<option value="${n}"${n === view.perPage ? ' selected' : ''}>${n}</option>`).join('')}
+      </select>
+    </label>
+    <span>Total ${sorted.length} ${escapeHTML(sorted.length === 1 ? noun[0] : noun[1])}</span>
+    <span class="rec-pager-right">
+      <button type="button" class="btn btn-ghost btn-sm" data-page="prev"${
+        view.page === 1 ? ' disabled' : ''}>Back</button>
+      <span class="page-of">Page ${view.page} of ${pages}</span>
+      <button type="button" class="btn btn-ghost btn-sm" data-page="next"${
+        view.page === pages ? ' disabled' : ''}>Next</button>
+    </span>`;
+
+  pager.querySelector('[data-per-page]').addEventListener('change', (e) => {
+    view.perPage = Number(e.target.value);
+    view.page = 1;
+    opts.rerender ? opts.rerender() : renderRecTable(opts);
+  });
+  pager.querySelectorAll('[data-page]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      view.page += btn.dataset.page === 'next' ? 1 : -1;
+      opts.rerender ? opts.rerender() : renderRecTable(opts);
+    });
+  });
+}
+
+// ---- Booking list ----
+//
+// The counts, the filter chips and the table all come from one fetch of every
+// booking, filtered here. It is a few dozen rows, and doing it this way is
+// what lets a chip carry its own count: a number taken from a list the server
+// has already filtered would be counting the rows on screen.
+
+let bookingStatusFilter = 'all';
+let bookingSearch = '';
+const bookingView = { sort: 'start_at', dir: 'desc', page: 1, perPage: 30 };
+
+const BOOKING_CHIPS = [
+  ['all', 'All'], ['Confirmed', 'Confirmed'], ['Active', 'On rental'],
+  ['Completed', 'Completed'], ['Cancelled', 'Cancelled'],
+];
+
+document.getElementById('bookingSearch')?.addEventListener('input', debounce((e) => {
+  bookingSearch = e.target.value.trim();
+  bookingView.page = 1;
+  renderBookingList();
+}, 250));
+
+document.getElementById('bookingReset')?.addEventListener('click', () => {
+  bookingSearch = '';
+  bookingStatusFilter = 'all';
+  bookingView.page = 1;
+  const box = document.getElementById('bookingSearch');
+  if (box) box.value = '';
+  renderBookingList();
 });
+
+/** Waits for the typing to stop. A request per keystroke is a lot of queries. */
+function debounce(fn, ms) {
+  let timer = null;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+
+function bookingMatches(b, needle) {
+  if (!needle) return true;
+  const hay = [b.booking_number, b.customer_name, b.customer_phone, b.vehicle_name, b.vehicle_reg]
+    .join(' ').toLowerCase();
+  return hay.includes(needle.toLowerCase());
+}
 
 async function renderBookingList() {
   const wrap = document.getElementById('bookingListWrap');
@@ -1192,42 +1539,80 @@ async function renderBookingList() {
   if (!wrap) return;
 
   try {
-    await refreshBookings(bookingStatusFilter === 'all' ? '' : bookingStatusFilter);
+    await refreshBookings('');
   } catch (err) {
     wrap.innerHTML = '<div class="empty-state">Could not load bookings.</div>';
     showError(err);
     return;
   }
 
-  const bookings = loadBookings();
-  countBadge.textContent = bookings.length || '';
+  const all = loadBookings();
+  if (countBadge) countBadge.textContent = all.length || '';
 
-  if (!bookings.length) {
-    wrap.innerHTML = '<div class="empty-state">No bookings yet. Click "+ New Booking" to create one.</div>';
-    return;
-  }
+  const by = (status) => all.filter((b) => b.status === status).length;
+  renderRecStats('bookingStats', [
+    { n: all.length, k: 'Total', icon: 'book' },
+    { n: by('Confirmed'), k: 'Upcoming', icon: 'clock' },
+    { n: by('Active'), k: 'On rental', icon: 'car' },
+    { n: by('Completed'), k: 'Completed', icon: 'tick', tone: 'good' },
+    { n: all.filter((b) => Number(b.balance) > 0 && b.status !== 'Cancelled').length,
+      k: 'Payment due', icon: 'rupee', tone: 'danger' },
+  ]);
 
-  wrap.innerHTML = bookings.map((b) => `
-    <div class="booking-card" data-id="${b.id}">
-      <div class="booking-card-main">
-        <span class="booking-card-number">${b.booking_number}</span>
-        <span class="booking-card-customer">${b.customer_name}</span>
-        <span class="booking-card-meta">${b.vehicle_name} · ${formatDate(b.start_at)} → ${formatDate(b.return_at)} · ${b.duration_days} day(s)</span>
-      </div>
-      <div class="booking-card-right">
-        <span class="status-stack">
-          <span class="status-badge status-badge-${b.status}">${b.status}</span>
-          ${scheduleChipHTML(b)}
-        </span>
-        <div class="booking-card-balance">
-          <span class="label">Balance</span>
-          <span class="amount">${formatBalance(b.balance)}</span>
-        </div>
-      </div>
-    </div>`).join('');
+  renderRecChips('bookingChips', BOOKING_CHIPS.map(([value, label]) => ({
+    value, label,
+    n: value === 'all' ? all.length : by(value),
+  })), bookingStatusFilter, (value) => {
+    bookingStatusFilter = value;
+    bookingView.page = 1;
+    renderBookingList();
+  });
 
-  wrap.querySelectorAll('.booking-card').forEach((card) => {
-    card.addEventListener('click', () => openBookingDetail(Number(card.dataset.id)));
+  const rows = all
+    .filter((b) => bookingStatusFilter === 'all' || b.status === bookingStatusFilter)
+    .filter((b) => bookingMatches(b, bookingSearch));
+
+  renderRecTable({
+    wrap,
+    pagerId: 'bookingPager',
+    view: bookingView,
+    rows,
+    noun: ['booking', 'bookings'],
+    empty: all.length
+      ? 'No bookings match that.'
+      : 'No bookings yet. Click "+ New Booking" to create one.',
+    columns: [
+      { key: 'booking_number', label: 'Booking No.', hide: true, sort: (b) => b.booking_number,
+        cell: (b) => `<span class="rec-id">${escapeHTML(b.booking_number)}</span>` },
+      { key: 'customer_name', label: 'Customer', sort: (b) => b.customer_name.toLowerCase(),
+        cell: (b) => `<span class="rec-who">${escapeHTML(b.customer_name)}</span>
+                      <div class="rec-sub">${escapeHTML(b.customer_phone || '')}</div>
+                      <div class="rec-sub rec-id rec-only-sm">${escapeHTML(b.booking_number)}</div>` },
+      { key: 'vehicle_name', label: 'Vehicle', hide: true, sort: (b) => (b.vehicle_name || '').toLowerCase(),
+        cell: (b) => `${escapeHTML(b.vehicle_name || '—')}
+                      <div class="rec-sub">${escapeHTML(b.vehicle_reg || '')}</div>` },
+      { key: 'start_at', label: 'Dates', hide: true, sort: (b) => b.start_at,
+        cell: (b) => `${formatDate(b.start_at)} → ${formatDate(b.return_at)}
+                      <div class="rec-sub">${b.duration_days} day(s)</div>` },
+      { key: 'status', label: 'Status', sort: (b) => b.status,
+        cell: (b) => `<span class="status-badge status-badge-${b.status}">${b.status}</span>
+                      ${scheduleChipHTML(b)}` },
+      { key: 'balance', label: 'Balance', sort: (b) => Number(b.balance), cls: 'rec-money',
+        cell: (b) => formatBalance(b.balance) },
+      { key: 'action', label: 'Action', cls: 'rec-act', hide: true, sort: (b) => b.id,
+        cell: (b) => `<span class="rec-acts">
+          <button type="button" class="rec-act-btn" data-act="open" title="Open this booking"
+                  aria-label="Open ${escapeHTML(b.booking_number)}">${REC_EYE}</button>
+          ${b.status === 'Completed' || b.status === 'Cancelled' ? '' : `
+          <button type="button" class="rec-act-btn" data-act="edit" title="Edit this booking"
+                  aria-label="Edit ${escapeHTML(b.booking_number)}">${REC_PENCIL}</button>`}
+        </span>` },
+    ],
+    onAction: (b, act) => {
+      if (act === 'edit') openBookingModal(b);
+      else openBookingDetail(b.id);
+    },
+    onRow: (b) => openBookingDetail(b.id),
   });
 }
 
@@ -1424,6 +1809,9 @@ bookingForm.addEventListener('submit', async (e) => {
       convertingEnquiry = null;
       closeBookingModal();
       alert(`${result.enquiry_number} is now booking ${result.booking_number}.`);
+      // Back to the list: the enquiry that was on screen is now a booking,
+      // and the page behind the form is showing what it used to be.
+      closeEnquiryDetail();
       await renderInquiries();
       await renderBookingList();
       await renderOverview();
@@ -1432,8 +1820,9 @@ bookingForm.addEventListener('submit', async (e) => {
 
     await api.bookings.save(payload);
     closeBookingModal();
-    await renderBookingList();
-    await renderOverview();
+    // Everything the change touches, including the record behind the form if
+    // one is open.
+    await refreshAfterBookingChange();
   } catch (err) {
     // A double booking is the expected failure here, so it belongs beside the
     // dates rather than in a dialog the user has to dismiss.
@@ -1448,27 +1837,36 @@ bookingForm.addEventListener('submit', async (e) => {
 });
 
 // ---- Booking detail ----
-const bookingDetailOverlay = document.getElementById('bookingDetailOverlay');
 let currentDetailBookingId = null;
 let currentDetail = null;
 
+// A booking opens in place of the list rather than in a dialog. It carries
+// payments, deposits, two odometer readings, documents and a timeline, and
+// that is a page's worth of material -- in a modal it was a long scroll with
+// the list stranded behind it.
+let bookingDetailPane = 'overview';
+
 async function openBookingDetail(id) {
   currentDetailBookingId = id;
-  bookingDetailOverlay.hidden = false;
-  document.getElementById('bookingDetailBody').innerHTML = '<p class="detail-empty">Loading…</p>';
+  bookingDetailPane = 'overview';
+  // The record lives inside the Bookings panel, so opening one from the
+  // dashboard, the bell or a link has to bring that panel up first --
+  // otherwise the click looks like it did nothing.
+  showPanelFor('bookings');
+  const view = document.getElementById('bookingDetailView');
+  document.getElementById('bookingListView').hidden = true;
+  view.hidden = false;
+  view.innerHTML = '<p class="detail-empty">Loading…</p>';
+  window.scrollTo({ top: 0, behavior: 'instant' });
   await renderBookingDetail(id);
 }
 
 function closeBookingDetail() {
-  bookingDetailOverlay.hidden = true;
+  document.getElementById('bookingDetailView').hidden = true;
+  document.getElementById('bookingListView').hidden = false;
   currentDetailBookingId = null;
   currentDetail = null;
 }
-
-document.getElementById('bookingDetailClose').addEventListener('click', closeBookingDetail);
-bookingDetailOverlay.addEventListener('click', (e) => {
-  if (e.target === bookingDetailOverlay) closeBookingDetail();
-});
 
 async function refreshAfterBookingChange() {
   await renderBookingList();
@@ -1488,13 +1886,13 @@ function timelineHTML(entries) {
 }
 
 async function renderBookingDetail(id) {
-  const body = document.getElementById('bookingDetailBody');
+  const view = document.getElementById('bookingDetailView');
 
   let booking;
   try {
     booking = (await api.bookings.get(id)).booking;
   } catch (err) {
-    body.innerHTML = '<p class="detail-empty">Could not load this booking.</p>';
+    view.innerHTML = '<p class="detail-empty">Could not load this booking.</p>';
     showError(err);
     return;
   }
@@ -1503,9 +1901,6 @@ async function renderBookingDetail(id) {
   const charges = booking.charges || {};
   const km = booking.km || {};
   const open = booking.status !== 'Completed' && booking.status !== 'Cancelled';
-
-  document.getElementById('bookingDetailTitle').innerHTML =
-    `${booking.booking_number} <span class="status-badge status-badge-${booking.status}">${booking.status}</span> ${scheduleChipHTML(booking)}`;
 
   // Payments that have been voided stay listed, struck through: the record of
   // what was entered is part of the trail, not something to hide.
@@ -1523,39 +1918,79 @@ async function renderBookingDetail(id) {
         </div>`).join('')
     : '<p class="detail-empty">No payments recorded yet.</p>';
 
-  body.innerHTML = `
-    <div class="detail-section">
-      <div class="detail-section-title">
-        <span>Customer &amp; Rental Details</span>
-        <div>
-          ${open ? '<button class="btn btn-outline btn-sm" id="detailEditBtn">Edit</button>' : ''}
-          ${open ? '<button class="btn btn-ghost btn-sm" id="detailCancelBtn">Cancel Booking</button>' : ''}
-          ${open ? '<button class="btn btn-primary btn-sm" id="detailCompleteBtn">Mark Completed</button>' : ''}
-          ${booking.status === 'Cancelled' ? '<button class="btn btn-danger btn-sm" id="detailDeleteBtn">Delete Booking</button>' : ''}
-        </div>
-      </div>
-      <div class="detail-grid">
-        <div class="detail-field"><span class="k">Customer</span><span class="v">${booking.customer_name}</span></div>
-        <div class="detail-field"><span class="k">Phone</span><span class="v">${booking.customer_phone}</span></div>
-        <div class="detail-field"><span class="k">Address</span><span class="v">${booking.customer_address || '—'}</span></div>
-        <div class="detail-field"><span class="k">Licence No.</span><span class="v">${booking.licence_number || '—'}</span></div>
-        <div class="detail-field"><span class="k">Vehicle</span><span class="v">${booking.vehicle_name}</span></div>
-        <div class="detail-field"><span class="k">Reg. Number</span><span class="v">${booking.vehicle_reg || '—'}</span></div>
-        <div class="detail-field"><span class="k">Start</span><span class="v">${formatDateTime(booking.start_at)}</span></div>
-        <div class="detail-field"><span class="k">Return</span><span class="v">${formatDateTime(booking.return_at)}</span></div>
-        <div class="detail-field"><span class="k">Duration</span><span class="v">${booking.duration_days} day(s)</span></div>
-        <div class="detail-field"><span class="k">Agreed Rental</span><span class="v">${formatINR(charges.base_rental || 0)}</span></div>
-        <div class="detail-field"><span class="k">KM Limit</span><span class="v">${charges.km_limit_per_day || 0}/day</span></div>
-        <div class="detail-field"><span class="k">Extra KM Rate</span><span class="v">₹${charges.extra_km_rate || 0}/km</span></div>
-      </div>
-      ${booking.notes ? `<p class="field-hint" style="margin-top:10px">Notes: ${booking.notes}</p>` : ''}
-      ${booking.cancelled_reason ? `<p class="field-hint" style="margin-top:10px">
-        Cancelled${booking.cancelled_at ? ' ' + formatDateTime(booking.cancelled_at) : ''}${
-          booking.cancelled_by ? ` · ${booking.cancelled_by === 'customer' ? "the customer's decision" : 'our decision'}` : ''
-        } — ${escapeHTML(booking.cancelled_reason)}</p>` : ''}
-      ${booking.referral_source ? `<p class="field-hint" style="margin-top:6px">Found us through: ${escapeHTML(booking.referral_source.replace(/_/g, ' '))}</p>` : ''}
-    </div>
+  const row = (k, v) => `<div class="info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
 
+  // ---- Overview: who, what, and on what terms -----------------------------
+  const overview = `
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('user')}</span>
+          <h3>Customer</h3>
+        </div>
+        ${row('Name', escapeHTML(booking.customer_name))}
+        ${row('Phone', `<a href="tel:${escapeHTML(booking.customer_phone)}">${escapeHTML(booking.customer_phone)}</a>`)}
+        ${row('Address', escapeHTML(booking.customer_address) || '—')}
+        ${row('Licence No.', escapeHTML(booking.licence_number) || '—')}
+        ${booking.referral_source
+          ? row('Found us through', escapeHTML(booking.referral_source.replace(/_/g, ' ')))
+          : ''}
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('car')}</span>
+          <h3>Rental</h3>
+        </div>
+        ${row('Vehicle', escapeHTML(booking.vehicle_name))}
+        ${row('Reg. Number', escapeHTML(booking.vehicle_reg) || '—')}
+        ${row('Start', formatDateTime(booking.start_at))}
+        ${row('Return', formatDateTime(booking.return_at))}
+        ${row('Duration', `${booking.duration_days} day(s)`)}
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('rupee')}</span>
+          <h3>Agreed terms</h3>
+        </div>
+        ${row('Rental amount', formatINR(charges.base_rental || 0))}
+        ${row('KM limit', `${charges.km_limit_per_day || 0}/day`)}
+        ${row('Extra KM rate', `₹${charges.extra_km_rate || 0}/km`)}
+        ${Number(charges.discount) ? row('Discount', '- ' + formatINR(charges.discount)) : ''}
+        ${Number(charges.other_charges) ? row('Other charges', '+ ' + formatINR(charges.other_charges)) : ''}
+        ${booking.balance_due_on && booking.balance > 0
+          ? row('Balance due by', formatDate(booking.balance_due_on)) : ''}
+      </div>
+
+      ${booking.ownership === 'partner' ? `
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('building')}</span>
+          <h3>Commission</h3>
+        </div>
+        ${row('Whose car', booking.owner_name ? escapeHTML(booking.owner_name) + "'s" : 'A partner’s')}
+        ${row('Customer pays', formatINR(booking.total))}
+        ${row('Your commission', formatINR(booking.commission))}
+        ${row('Payable to owner', formatINR(booking.owner_payout))}
+      </div>` : ''}
+
+      ${booking.notes || booking.cancelled_reason ? `
+      <div class="info-card">
+        <div class="info-card-head">
+          <span class="info-card-ico">${recIcon('book')}</span>
+          <h3>Notes</h3>
+        </div>
+        ${booking.notes ? `<p class="field-hint">${escapeHTML(booking.notes)}</p>` : ''}
+        ${booking.cancelled_reason ? `<p class="field-hint">
+          Cancelled${booking.cancelled_at ? ' ' + formatDateTime(booking.cancelled_at) : ''}${
+            booking.cancelled_by ? ` · ${booking.cancelled_by === 'customer' ? "the customer's decision" : 'our decision'}` : ''
+          } — ${escapeHTML(booking.cancelled_reason)}</p>` : ''}
+      </div>` : ''}
+    </div>`;
+
+  // ---- Payments -----------------------------------------------------------
+  const payments = `
     <div class="detail-section">
       <div class="detail-section-title">
         <span>Payments</span>
@@ -1576,26 +2011,12 @@ async function renderBookingDetail(id) {
         <div class="detail-field"><span class="k">Total Paid</span><span class="v">${formatINR(booking.paid)}</span></div>
         <div class="detail-field"><span class="k">Balance</span><span class="v">${formatBalance(booking.balance)}</span></div>
         <div class="detail-field"><span class="k">Status</span><span class="v">${booking.payment_status}</span></div>
-        ${booking.balance_due_on && booking.balance > 0 ? `
-          <div class="detail-field"><span class="k">Balance Due By</span><span class="v">${formatDate(booking.balance_due_on)}</span></div>` : ''}
       </div>
       ${attachmentsHTML(booking.files, 'payment', 'Payment screenshots')}
-    </div>
+    </div>`;
 
-    ${booking.ownership === 'partner' ? `
-    <div class="detail-section">
-      <div class="detail-section-title"><span>Commission</span></div>
-      <p class="detail-empty" style="margin-bottom:10px">
-        ${booking.owner_name ? escapeHTML(booking.owner_name) + "'s car" : "Somebody else's car"},
-        hired out through us.
-      </p>
-      <div class="detail-grid">
-        <div class="detail-field"><span class="k">Customer Pays</span><span class="v">${formatINR(booking.total)}</span></div>
-        <div class="detail-field"><span class="k">Your Commission</span><span class="v">${formatINR(booking.commission)}</span></div>
-        <div class="detail-field"><span class="k">Payable to Owner</span><span class="v">${formatINR(booking.owner_payout)}</span></div>
-      </div>
-    </div>` : ''}
-
+  // ---- The deposit, which is never revenue --------------------------------
+  const deposit = `
     <div class="detail-section">
       <div class="detail-section-title">
         <span>Security Deposit</span>
@@ -1622,8 +2043,10 @@ async function renderBookingDetail(id) {
       ` : ''}
       ${attachmentsHTML(booking.files, 'deposit', 'Deposit proof')}
       ${attachmentsHTML(booking.files, 'refund', 'Refund proof')}
-    </div>
+    </div>`;
 
+  // ---- Handing the car over, and getting it back --------------------------
+  const handover = `
     <div class="detail-section">
       <div class="detail-section-title">
         <span>Vehicle Pickup</span>
@@ -1667,14 +2090,6 @@ async function renderBookingDetail(id) {
       ${attachmentsHTML(booking.files, 'return', 'Return photos')}
     </div>
 
-    <div class="detail-section">
-      <div class="detail-section-title">
-        <span>Customer Documents</span>
-        <button class="btn btn-outline btn-sm" id="detailAddDocBtn">+ Add Document</button>
-      </div>
-      ${documentsHTML(booking.documents)}
-    </div>
-
     ${(booking.damages || []).length ? `
     <div class="detail-section">
       <div class="detail-section-title"><span>Damage</span></div>
@@ -1687,15 +2102,128 @@ async function renderBookingDetail(id) {
           ${open ? `<button class="btn btn-ghost btn-sm void-damage" data-id="${d.id}">Remove</button>` : ''}
         </div>`).join('')}
       ${attachmentsHTML(booking.files, 'damage', 'Damage photos')}
-    </div>` : ''}
+    </div>` : ''}`;
 
+  const documents = `
+    <div class="detail-section">
+      <div class="detail-section-title">
+        <span>Customer Documents</span>
+        <button class="btn btn-outline btn-sm" id="detailAddDocBtn">+ Add Document</button>
+      </div>
+      ${documentsHTML(booking.documents)}
+    </div>`;
+
+  const timeline = `
     <div class="detail-section">
       <div class="detail-section-title"><span>Booking Timeline</span></div>
       ${timelineHTML(booking.timeline)}
+    </div>`;
+
+  const initials = (booking.customer_name || '?').split(/\s+/).slice(0, 2)
+    .map((w) => w[0] || '').join('').toUpperCase();
+
+  view.innerHTML = `
+    <button type="button" class="rec-back" id="bookingDetailBack">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M9.5 3.5 5 8l4.5 4.5" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back to all bookings
+    </button>
+
+    <div class="rec-hero">
+      <div class="rec-hero-top">
+        <span class="rec-avatar">${escapeHTML(initials)}</span>
+        <div class="rec-hero-id">
+          <h2>${escapeHTML(booking.booking_number)}
+            <span class="status-badge status-badge-${booking.status}">${booking.status}</span>
+            ${scheduleChipHTML(booking)}
+            <!-- Whether the money is in is the other half of "how is this
+                 booking doing", and it belongs beside the status rather than
+                 a tab away. -->
+            <span class="status-badge pay-badge pay-${booking.payment_status.replace(/\s+/g, '')}"
+              >${booking.payment_status}</span></h2>
+          <p class="rec-hero-sub">${escapeHTML(booking.customer_name)} ·
+            ${escapeHTML(booking.vehicle_name)} ·
+            ${formatDate(booking.start_at)} → ${formatDate(booking.return_at)}</p>
+        </div>
+        <div class="rec-hero-act">
+          ${open ? '<button class="btn btn-ghost btn-sm" id="detailEditBtn">Edit</button>' : ''}
+          ${open ? '<button class="btn btn-ghost btn-sm" id="detailCancelBtn">Cancel Booking</button>' : ''}
+          ${open ? '<button class="btn btn-primary btn-sm" id="detailCompleteBtn">Mark Completed</button>' : ''}
+          ${booking.status === 'Cancelled' ? '<button class="btn btn-danger btn-sm" id="detailDeleteBtn">Delete Booking</button>' : ''}
+        </div>
+      </div>
+
+      <div class="rec-tiles">
+        <div class="rec-tile">
+          <div class="rec-tile-k">Rental due</div>
+          <div class="rec-tile-v">${formatINR(booking.total)}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">Received</div>
+          <div class="rec-tile-v">${formatINR(booking.paid)}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">Balance</div>
+          <div class="rec-tile-v${Number(booking.balance) > 0 ? ' is-due' : ''}">${formatINR(booking.balance)}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">Deposit held</div>
+          <div class="rec-tile-v">${formatINR(booking.deposit_held || 0)}</div>
+        </div>
+        <div class="rec-tile">
+          <div class="rec-tile-k">Days</div>
+          <div class="rec-tile-v">${booking.duration_days}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rec-tabs" id="bookingDetailTabs" role="tablist">
+      <button type="button" class="rec-tab is-on" data-pane="overview">Overview</button>
+      <button type="button" class="rec-tab" data-pane="payments">Payments
+        <span class="n">${booking.payments.filter((p) => p.status === 'active').length}</span></button>
+      <button type="button" class="rec-tab" data-pane="deposit">Deposit</button>
+      <button type="button" class="rec-tab" data-pane="handover">Pickup &amp; Return</button>
+      <button type="button" class="rec-tab" data-pane="documents">Documents
+        <span class="n">${(booking.documents || []).length}</span></button>
+      <button type="button" class="rec-tab" data-pane="timeline">Timeline</button>
+    </div>
+
+    <div id="bookingDetailBody">
+      <div class="rec-pane" data-pane="overview">${overview}</div>
+      <div class="rec-pane" data-pane="payments" hidden>${payments}</div>
+      <div class="rec-pane" data-pane="deposit" hidden>${deposit}</div>
+      <div class="rec-pane" data-pane="handover" hidden>${handover}</div>
+      <div class="rec-pane" data-pane="documents" hidden>${documents}</div>
+      <div class="rec-pane" data-pane="timeline" hidden>${timeline}</div>
     </div>
   `;
 
+  document.getElementById('bookingDetailBack').addEventListener('click', async () => {
+    closeBookingDetail();
+    await renderBookingList();
+  });
+  wireRecTabs(view, bookingDetailPane, (pane) => { bookingDetailPane = pane; });
+
   wireDetailActions(booking);
+}
+
+/**
+ * The tabs on a record. Which one is open survives a re-render -- recording a
+ * payment and being thrown back to Overview is how you lose your place.
+ */
+function wireRecTabs(view, current, remember) {
+  const tabs = [...view.querySelectorAll('.rec-tab')];
+  const panes = [...view.querySelectorAll('.rec-pane')];
+  const show = (name) => {
+    if (!tabs.some((t) => t.dataset.pane === name)) name = tabs[0]?.dataset.pane;
+    tabs.forEach((t) => t.classList.toggle('is-on', t.dataset.pane === name));
+    panes.forEach((p) => { p.hidden = p.dataset.pane !== name; });
+    remember(name);
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.pane)));
+  show(current);
 }
 
 function wireDetailActions(booking) {
@@ -1714,7 +2242,9 @@ function wireDetailActions(booking) {
     });
   });
 
-  on('detailEditBtn', () => { closeBookingDetail(); openBookingModal(booking); });
+  // The form opens over the record rather than in place of it: saving
+  // re-renders what is behind, so you end up back where you were.
+  on('detailEditBtn', () => openBookingModal(booking));
 
   on('detailCancelBtn', async () => {
     const reason = prompt('Why is this booking being cancelled?');
