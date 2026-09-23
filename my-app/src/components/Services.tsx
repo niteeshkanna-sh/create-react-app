@@ -13,6 +13,12 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
   const home = useHome();
   const { heading, items } = home.services;
 
+  // On the home page these cards sit under a section heading, so they are the
+  // level below it. On /services there is no section heading -- the page title
+  // is the h1 and these are its sections -- and leaving them at h3 skipped a
+  // level, which is what a screen reader's outline is built from.
+  const CardHeading = showHeading ? 'h3' : 'h2';
+
   return (
     <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
       {showHeading ? (
@@ -47,7 +53,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
               )}
 
               <div className="flex flex-1 flex-col p-6">
-                <h3 className="text-lg font-semibold text-navy">{s.title}</h3>
+                <CardHeading className="text-lg font-semibold text-navy">{s.title}</CardHeading>
                 <p className="mt-2 text-sm leading-relaxed text-ink-dim">{s.body}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-gold-deep">
                   See details

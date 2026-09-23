@@ -5,6 +5,7 @@ import { carPhoto } from '../lib/carPhoto';
 import { useFleet } from '../lib/useFleet';
 import { SectionArt } from './art/SectionArt';
 import { Reveal } from './Reveal';
+import { BrandPanel } from './BrandPanel';
 
 type Filter = 'All' | BodyType;
 const filters: Filter[] = ['All', 'Hatchback', 'Sedan', 'SUV', 'MUV'];
@@ -59,28 +60,11 @@ export function Fleet() {
       {loading ? (
         <p className="mt-10 text-center text-ink-faint">Loading our cars…</p>
       ) : empty ? (
-        <div className="mt-10 rounded-[14px] border border-line bg-white p-10 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
-          <p className="text-lg font-semibold text-navy">
-            Ask us what's available
-          </p>
-          <p className="mx-auto mt-2 max-w-md text-ink-dim">
+        <div className="mt-10">
+          <BrandPanel title="Ask us what's available">
             Our current vehicles are not listed here yet. Tell us your dates and
             what you need, and we will come back with the options and the rate.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <a
-              href="/contact"
-              className="rounded-xl bg-navy px-5 py-2.5 font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-            >
-              Send an enquiry
-            </a>
-            <a
-              href="tel:+916374942976"
-              className="rounded-xl border border-line px-5 py-2.5 font-semibold text-ink-dim transition hover:border-navy/40 hover:text-navy"
-            >
-              Call +91 63749 42976
-            </a>
-          </div>
+          </BrandPanel>
         </div>
       ) : (
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

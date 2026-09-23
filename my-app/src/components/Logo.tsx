@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useSiteImage } from '../content';
 import { Monogram } from './Monogram';
+import { EMBLEM_FALLBACK } from './BrandPanel';
 
 /**
  * The lockup in the header: PREMIUM RENTALS in tracked gold caps above the
@@ -20,31 +21,30 @@ import { Monogram } from './Monogram';
  * both -- two marks side by side is the problem the drawn badge had.
  */
 export function Logo({ onClick }: { onClick?: () => void }) {
-  const logo = useSiteImage('logo');
+  // The owner's own mark, with an upload still able to replace it. The
+  // committed one is the emblem alone; an uploaded logo is used as supplied,
+  // because somebody uploading a logo means the one they uploaded.
+  const logo = useSiteImage('logo') ?? EMBLEM_FALLBACK;
 
   return (
     <Link to="/" onClick={onClick} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-      {!logo ? <Monogram className="size-11 shrink-0 sm:size-12" /> : null}
-
       {logo ? (
-        // The white plate and its padding are what make the logo visible: one
-        // with its own dark background would otherwise be a dark mark on a
-        // dark header with nothing separating them.
-        <span className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-white px-1.5 shadow-[0_2px_10px_rgba(0,0,0,0.25)]">
-          {/* max-h rather than h-full: inside a grid a percentage height
-              resolves against a row the image itself sizes, so h-full came
-              back as the image's own height and overflowed the plate.
-          
-              The name is written out beside this, so the badge repeating it
-              would have a screen reader say the business twice. */}
-          <img
-            src={logo}
-            alt=""
-            aria-hidden="true"
-            className="max-h-9 w-auto max-w-[116px] object-contain"
-          />
-        </span>
-      ) : null}
+        // Straight onto the navy, with no plate behind it. The plate used to
+        // be white, which was right for a mark that might arrive with a dark
+        // background of its own -- and wrong for this one, where "CARS &
+        // BIKES" is set in white and would have vanished into it.
+        //
+        // The name is written out beside this, so a screen reader reading the
+        // mark as well would say the business twice.
+        <img
+          src={logo}
+          alt=""
+          aria-hidden="true"
+          className="h-10 w-auto shrink-0 object-contain sm:h-12"
+        />
+      ) : (
+        <Monogram className="size-11 shrink-0 sm:size-12" />
+      )}
 
       {/* whitespace-nowrap because "NiteSha Cars & Bikes" was breaking after
           "Cars", which reads as two businesses. */}

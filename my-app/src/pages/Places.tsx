@@ -2,6 +2,7 @@ import { usePlaces } from '../lib/usePlaces';
 import { PlaceCard } from '../components/PlaceCard';
 import { Reveal } from '../components/Reveal';
 import { PageHeader } from './PageHeader';
+import { BrandPanel } from '../components/BrandPanel';
 
 /**
  * Everywhere worth driving to, grouped.
@@ -34,10 +35,11 @@ export function Places() {
 
       <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
         {places.length === 0 ? (
-          <p className="text-center text-ink-dim">
-            The list is being updated. Call us and we will tell you what is worth
-            seeing while you have the car.
-          </p>
+          <BrandPanel title="The list is on its way">
+            We are still writing these up. Call us and we will tell you what is
+            worth seeing while you have the car, and how long each one takes
+            from Nagercoil.
+          </BrandPanel>
         ) : (
           [...groups].map(([category, inGroup]) => (
             <section key={category} className="mb-16 last:mb-0">

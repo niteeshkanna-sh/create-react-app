@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
 import { dailyRate, inr } from '../data/cars';
 import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
+import { BrandPanel } from '../components/BrandPanel';
 
 export function Tariff() {
   const fleet = useFleet();
@@ -23,27 +23,10 @@ export function Tariff() {
         {loading ? (
           <p className="text-center text-ink-faint">Loading the rate card…</p>
         ) : empty ? (
-          <div className="rounded-[14px] border border-line bg-white p-10 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
-            <p className="text-lg font-semibold text-navy">Ask us for a quote</p>
-            <p className="mx-auto mt-2 max-w-md text-ink-dim">
-              Our rate card is not published here yet. Tell us the car you want
-              and your dates, and we will give you the figure.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link
-                to="/contact"
-                className="rounded-xl bg-navy px-5 py-2.5 font-semibold text-white transition hover:bg-navy/90"
-              >
-                Ask for a quote
-              </Link>
-              <a
-                href="tel:+916374942976"
-                className="rounded-xl border border-line px-5 py-2.5 font-semibold text-ink-dim transition hover:border-navy/40 hover:text-navy"
-              >
-                Call +91 63749 42976
-              </a>
-            </div>
-          </div>
+          <BrandPanel title="Ask us for a quote">
+            Our rate card is not published here yet. Tell us the car you want
+            and your dates, and we will give you the figure.
+          </BrandPanel>
         ) : (
           <div className="overflow-x-auto rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
             <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
