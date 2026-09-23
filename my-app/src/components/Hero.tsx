@@ -54,7 +54,7 @@ export function Hero() {
             it. On a desktop the points return to under the words, where the
             card has room beside both. */}
         <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-9">
-          <div className="lg:col-span-7 lg:col-start-1 lg:row-start-1">
+          <div className="lg:col-span-7 lg:col-start-1 lg:row-start-1 xl:col-span-8">
             <p data-hero-item="" style={{ ['--hero-delay' as string]: '40ms' }} className="eyebrow-gold mb-4 inline-flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 px-3.5 py-1.5 text-[11px]">
               {h.eyebrow}
             </p>
@@ -95,14 +95,14 @@ export function Hero() {
           {/* Second on a phone, beside the words on a desktop. It spans both
               rows there so the points can sit under the heading without
               leaving a hole next to them. */}
-          <div data-hero-item="" style={{ ['--hero-delay' as string]: '300ms' }} className="lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1">
+          <div data-hero-item="" style={{ ['--hero-delay' as string]: '300ms' }} className="lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 xl:col-span-4 xl:col-start-9">
             <HeroEnquiry
               title={h.formTitle ?? 'Check a date'}
               note={h.formNote ?? 'Tell us when you need it and we will call you back.'}
             />
           </div>
 
-          <ul data-hero-item="" style={{ ['--hero-delay' as string]: '420ms' }} className="grid gap-2.5 sm:grid-cols-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:gap-3">
+          <ul data-hero-item="" style={{ ['--hero-delay' as string]: '420ms' }} className="grid gap-2.5 sm:grid-cols-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:gap-3 xl:col-span-8">
             {h.points.map((p) => (
               <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
                 <span aria-hidden="true" className="bullet-dot" />
