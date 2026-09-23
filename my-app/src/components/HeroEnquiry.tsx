@@ -21,9 +21,9 @@ import { submitEnquiry } from '../lib/enquiry';
  * it opens the same picker the person already knows.
  */
 const box =
-  'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink outline-none transition ' +
+  'w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] text-ink outline-none transition ' +
   'placeholder:text-ink-faint focus:border-navy focus:ring-2 focus:ring-navy/15';
-const cap = 'block text-[13px] font-semibold text-ink-dim mb-1.5';
+const cap = 'block text-[12px] font-semibold text-ink-dim mb-1';
 
 const today = () => new Date().toLocaleDateString('en-CA');
 
@@ -70,7 +70,7 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
 
   if (status.kind === 'sent') {
     return (
-      <div className="hero-card rounded-2xl bg-white p-6 text-center sm:p-7">
+      <div className="hero-card rounded-2xl bg-white p-5 text-center sm:p-6">
         <p aria-hidden="true" className="text-3xl text-ok">✓</p>
         <h2 className="mt-2 text-xl font-bold text-navy">We have it</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-dim">
@@ -95,11 +95,11 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
   const sending = status.kind === 'sending';
 
   return (
-    <div className="hero-card rounded-2xl bg-white p-5 sm:p-6">
-      <h2 className="text-lg font-bold text-navy sm:text-xl">{title}</h2>
-      <p className="mt-1 text-[13px] leading-relaxed text-ink-dim">{note}</p>
+    <div className="hero-card rounded-2xl bg-white p-4 sm:p-5">
+      <h2 className="text-[17px] font-bold text-navy">{title}</h2>
+      <p className="mt-0.5 text-[12px] leading-snug text-ink-dim">{note}</p>
 
-      <form onSubmit={handleSubmit} className="mt-5 space-y-3.5" noValidate={false}>
+      <form onSubmit={handleSubmit} className="mt-4 space-y-2.5" noValidate={false}>
         <div>
           <label className={cap} htmlFor="heroName">Your name</label>
           <input id="heroName" name="name" required autoComplete="name"
@@ -112,7 +112,7 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
                  autoComplete="tel" placeholder="10-digit mobile number" className={box} />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5">
           <div>
             <label className={cap} htmlFor="heroStart">Pick up</label>
             <input id="heroStart" name="start" type="date" min={today()}
@@ -141,12 +141,12 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
         <button
           type="submit"
           disabled={sending}
-          className="w-full rounded-xl bg-navy px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-navy-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy disabled:opacity-60"
+          className="mt-0.5 w-full rounded-lg bg-navy px-4 py-2.5 text-[14px] font-semibold text-white transition hover:bg-navy-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy disabled:opacity-60"
         >
           {sending ? 'Sending…' : 'Check availability'}
         </button>
 
-        <p className="text-center text-[12px] leading-relaxed text-ink-faint">
+        <p className="text-center text-[11px] leading-snug text-ink-faint">
           No payment now. We call you back to confirm.
         </p>
       </form>
