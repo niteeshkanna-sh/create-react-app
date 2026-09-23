@@ -133,6 +133,15 @@ button { font-family: inherit; }
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 .ns-brand .logo-mark { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+
+/* The business's own emblem, where a drawn circle badge used to be.
+   Height-led and auto-width: the file's proportions decide how wide it is, so
+   swapping it for a differently-shaped one cannot squash it. */
+.brand-mark { height: 30px; width: auto; display: block; flex-shrink: 0; }
+/* The sign-in card sets its brand as a row, so the emblem sits beside the
+   name rather than over it. A little larger than the sidebar's, because the
+   card is the first thing seen and has the room. */
+.login-logo .brand-mark { height: 36px; }
 .ns-brand-text { line-height: 1.15; }
 .ns-brand-text span { display: block; font-weight: 500; font-size: 0.76rem; color: rgba(255,255,255,0.6); }
 
