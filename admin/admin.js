@@ -88,6 +88,17 @@ document.querySelectorAll('.admin-tab').forEach((tab) => {
       document.getElementById(`panel-${name}`).hidden = target !== name;
     });
 
+    // Put the panel in the address bar, so refreshing stays where you were
+    // and a tab can be linked to or left open in a second window.
+    //
+    // replaceState rather than assigning location.hash: assigning it fires
+    // hashchange, which shell.js listens to and would route straight back
+    // here -- and it would put an entry in the history for every tab anyone
+    // glanced at, so Back would walk through all of them before leaving.
+    if (window.history?.replaceState) {
+      window.history.replaceState(null, '', '#' + target);
+    }
+
     // The bar used to say "Dashboard" whatever was on screen, so the heading
     // and the highlighted sidebar item disagreed about where you were. Taken
     // from the sidebar rather than a second list of names, which would be a

@@ -53,7 +53,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
           <button class="btn btn-primary btn-sm" data-quick="booking">+ New booking</button>
           <button class="btn btn-outline btn-sm" data-quick="vehicle">+ Add vehicle</button>
           <button class="btn btn-outline btn-sm" data-quick="expense">+ Add expense</button>
-          <button class="btn btn-outline btn-sm" data-quick="enquiries">Inquiries</button>
+          <button class="btn btn-outline btn-sm" data-quick="inquiries">Inquiries</button>
           <button class="btn btn-outline btn-sm" data-quick="bookings">All bookings</button>
           <button class="btn btn-outline btn-sm" data-quick="finance">Finance</button>
         </div>

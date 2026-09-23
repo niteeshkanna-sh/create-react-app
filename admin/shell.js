@@ -51,17 +51,33 @@
   // A link from another page arrives as dashboard.php#bookings. The dashboard
   // opens the Dashboard panel by default, so without this the link would land
   // on the right page and the wrong panel.
-  //
+  function routeToHash() {
+    var wanted = (window.location.hash || '').replace('#', '').replace(/[^a-z]/g, '');
+    // No hash means the dashboard, which is what a bare dashboard.php shows.
+    // Back out of #finance and the hash empties, and without this line the
+    // Finance panel would stay on screen while the address bar said otherwise.
+    if (!wanted) wanted = 'dashboard';
+    var entry = side.querySelector('.admin-tab[data-tab="' + wanted + '"]');
+    // Already there: clicking again would re-run the panel's loaders for
+    // nothing, and on Bookings that is a fetch per booking.
+    if (entry && !entry.classList.contains('is-on')) entry.click();
+  }
+
   // On DOMContentLoaded rather than now: this file is included before admin.js,
   // which is what binds the buttons, so clicking one at this point would do
   // nothing. Not window.load either -- admin.js can put an alert up while it
   // is still waiting, and a blocking dialog swallowed the click.
-  document.addEventListener('DOMContentLoaded', function () {
-    var wanted = (window.location.hash || '').replace('#', '').replace(/[^a-z]/g, '');
-    if (!wanted) return;
-    var entry = side.querySelector('.admin-tab[data-tab="' + wanted + '"]');
-    if (entry) entry.click();
-  });
+  document.addEventListener('DOMContentLoaded', routeToHash);
+
+  // And on every change after that, which is the half that was missing.
+  //
+  // Setting location.hash on a page that is already open is a same-document
+  // navigation: the browser changes the address bar and fires hashchange, and
+  // that is all. Nothing was listening, so the three quick actions that work
+  // by setting it -- Inquiries, All bookings, Finance -- moved the address bar
+  // and left the Dashboard panel showing. The back button did the same
+  // nothing, and so did any link to #bookings from elsewhere on the page.
+  window.addEventListener('hashchange', routeToHash);
 
   }  // end of the drawer
 
