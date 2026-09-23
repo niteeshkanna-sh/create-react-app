@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
 
 /**
@@ -8,9 +9,22 @@ import seo from '../data/seo.json';
  * habit of being the thing people reach for. Back-to-top only appears once
  * there is something to go back to — a button that scrolls to where you
  * already are is a button that teaches people to ignore it.
+ *
+ * WhatsApp is left off the home page. The enquiry card in the banner carries
+ * its own, full width and labelled in words, and two of the same offer on one
+ * screen is one of them being ignored -- on a phone they were within a
+ * thumb's width of each other.
+ *
+ * Back-to-top stays there. It is the longest page on the site and it is the
+ * one control the banner does not duplicate.
  */
 export function FloatingActions() {
   const [scrolled, setScrolled] = useState(false);
+  const { pathname } = useLocation();
+  // Both spellings of the same route, because a trailing slash is what a link
+  // from outside often carries and a missing button is not something anybody
+  // would connect back to it.
+  const onHome = pathname === '/' || pathname === '';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 600);
@@ -49,6 +63,7 @@ export function FloatingActions() {
         </svg>
       </button>
 
+      {onHome ? null : (
       <a
         href={`https://wa.me/${number}?text=${message}`}
         target="_blank"
@@ -61,6 +76,7 @@ export function FloatingActions() {
           <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.76-1.65-2.05-.17-.3-.02-.46.13-.6.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35z" />
         </svg>
       </a>
+      )}
     </div>
   );
 }
