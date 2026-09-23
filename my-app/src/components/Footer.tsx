@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useHome, useSiteImage } from '../content';
+import { LOGO_FALLBACK } from './BrandPanel';
 import { readablePhone } from '../lib/phone';
 import { SocialLinks } from './SocialLinks';
 
@@ -29,22 +30,33 @@ export function Footer() {
       ? null
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.mapQuery)}`;
   // The footer showed a letter N while an uploaded logo sat in the header.
-  const logo = useSiteImage('logo');
+  // The owner's own lockup, with an upload still able to replace it.
+  const logo = useSiteImage('logo') ?? LOGO_FALLBACK;
 
   return (
     <footer className="bg-navy text-white/70">
       <div className="mx-auto grid max-w-[86rem] gap-8 px-5 sm:px-8 lg:px-12 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            {/* No drawn stand-in here either -- the letter N was a placeholder
-                for a logo that can now be uploaded. */}
-            {logo ? (
-              <span className="inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-1.5">
-                <img src={logo} alt="" aria-hidden="true" className="max-h-7 w-auto max-w-[96px] object-contain" />
-              </span>
-            ) : null}
-            <span className="text-lg font-semibold text-white">{seo.site.name}</span>
-          </div>
+          {/* The full lockup here, not the emblem the header uses: the footer
+              has the room for it, and the name in it is the business signing
+              off the page rather than a label on a button.
+
+              On the navy directly, with no white plate. The plate was there
+              for a mark that might arrive with a dark background of its own;
+              this one has "CARS & BIKES" set in white, which a white plate
+              would have swallowed whole.
+
+              The name is not repeated beside it -- the lockup says it, and it
+              is the only place on the page where saying it twice would be
+              two different sizes of the same words. It is still written out
+              for a screen reader, which cannot read the picture. */}
+          <img
+            src={logo}
+            alt={seo.site.name}
+            loading="lazy"
+            decoding="async"
+            className="h-16 w-auto object-contain sm:h-20"
+          />
           <p className="mt-3 text-sm leading-relaxed">{f.blurb}</p>
 
           {/* The social row moves up here so the last column is the map. Brand
