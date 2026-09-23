@@ -639,14 +639,31 @@ body {
    where that row is. Measured against a white photograph -- the worst case a
    scrim has to survive, because the owner uploads whatever they like and a
    bright sky is the commonest thing behind a car. */
+/* The enquiry card in the banner.
+   A white panel on a photograph needs a shadow that reads on both the dark
+   and the bright parts of it, so this is two: a wide soft one for depth and a
+   tight dark one at the edge, which is what keeps the corner defined where the
+   photo behind happens to be pale. The hairline is the gold at a fraction of
+   its strength -- enough to tie it to the brand, not enough to look like a
+   border somebody forgot to remove. */
+.hero-card {
+  box-shadow:
+    0 24px 60px -12px color-mix(in srgb, var(--color-navy-deep) 55%, transparent),
+    0 4px 14px color-mix(in srgb, var(--color-navy-deep) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
+}
+
 .hero-scrim {
   background:
     linear-gradient(
       to right,
-      color-mix(in srgb, var(--color-navy-deep) 92%, transparent) 0%,
-      color-mix(in srgb, var(--color-navy-deep) 86%, transparent) 42%,
-      color-mix(in srgb, var(--color-navy-deep) 62%, transparent) 76%,
-      color-mix(in srgb, var(--color-navy-deep) 50%, transparent) 100%
+      color-mix(in srgb, var(--color-navy-deep) 93%, transparent) 0%,
+      color-mix(in srgb, var(--color-navy-deep) 88%, transparent) 46%,
+      /* Lighter under the card, which brings its own contrast and does not
+         need the photograph dimmed behind it -- the point of keeping a
+         photograph at all is that some of it shows. */
+      color-mix(in srgb, var(--color-navy-deep) 66%, transparent) 72%,
+      color-mix(in srgb, var(--color-navy-deep) 58%, transparent) 100%
     ),
     linear-gradient(
       to bottom,

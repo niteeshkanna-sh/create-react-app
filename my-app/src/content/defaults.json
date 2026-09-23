@@ -11,6 +11,8 @@
       "primaryHref": "/cars",
       "secondaryLabel": "Check availability",
       "secondaryHref": "/contact#enquire",
+      "formTitle": "Check a date",
+      "formNote": "Tell us when you need it and we will call you back.",
       "points": [
         "Unlimited-choice pickup across the city",
         "Clear KM limits and deposits, stated upfront",
