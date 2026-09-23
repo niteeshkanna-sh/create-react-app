@@ -50,6 +50,11 @@ function content_schema(): array
                         'secondaryLabel' => ['label' => 'Second button', 'type' => 'text'],
                         'secondaryHref'  => ['label' => 'Second button link', 'type' => 'text'],
                         'points'         => ['label' => 'Tick points', 'type' => 'list'],
+                        // The short enquiry card beside the heading. Four
+                        // boxes, so the words above them are most of what
+                        // decides whether anybody fills it in.
+                        'formTitle'      => ['label' => 'Enquiry card, heading', 'type' => 'text'],
+                        'formNote'       => ['label' => 'Enquiry card, line under it', 'type' => 'text'],
                     ],
                 ],
                 'services' => [
