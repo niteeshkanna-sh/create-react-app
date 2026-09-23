@@ -1,22 +1,31 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useSiteImage } from '../content';
+import { Monogram } from './Monogram';
 
 /**
  * The lockup in the header: PREMIUM RENTALS in tracked gold caps above the
  * business name, with the uploaded logo beside it.
  *
- * There is no drawn badge any more. One was shipped so the header never looked
- * unfinished before real artwork existed, but a placeholder that looks like a
- * logo is worse than none once there is a real one to upload -- it is a second
- * mark competing with the first. Upload one under Website content and it
- * appears here; until then the name carries the header on its own.
+ * Until then, the initials in a gold ring. The name on its own reads as a
+ * page whose logo failed to load rather than as a deliberate wordmark, which
+ * is what the header looked like once the coiled snake beside it was removed.
+ *
+ * A monogram is not the placeholder the old drawn badge was. That one was a
+ * picture of something, competing with whatever real artwork would arrive; a
+ * business's initials set in its own two colours is what a business uses while
+ * it does not have a logo, and it is honest about being exactly that.
+ *
+ * Upload one under Website content and it takes the monogram's place. Never
+ * both -- two marks side by side is the problem the drawn badge had.
  */
 export function Logo({ onClick }: { onClick?: () => void }) {
   const logo = useSiteImage('logo');
 
   return (
     <Link to="/" onClick={onClick} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+      {!logo ? <Monogram className="size-11 shrink-0 sm:size-12" /> : null}
+
       {logo ? (
         // The white plate and its padding are what make the logo visible: one
         // with its own dark background would otherwise be a dark mark on a
