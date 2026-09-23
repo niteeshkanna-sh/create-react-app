@@ -90,6 +90,15 @@ The only unauthenticated endpoint is `api/enquiry-submit.php`. It can create an
 enquiry and nothing else, and is guarded by an origin allowlist, a honeypot,
 and a per-address hourly limit.
 
+## Tidying up records
+
+`tools/tidy-records.sql` keeps a named set of bookings and inquiries, deletes
+the rest, and renumbers what is left so the numbering starts at 1 again. Edit
+the two lists at the top, look at what it says it will delete, then run it in
+phpMyAdmin. It refuses to do anything unless those lists find exactly what
+they say they will, so a mistyped number changes nothing rather than deleting
+everything.
+
 ## Tests
 
 ```bash
