@@ -2,50 +2,55 @@ import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useSiteImage } from '../content';
 import { Monogram } from './Monogram';
-import { EMBLEM_FALLBACK } from './BrandPanel';
+import { LOGO_FALLBACK } from './BrandPanel';
 
 /**
- * The lockup in the header: PREMIUM RENTALS in tracked gold caps above the
- * business name, with the uploaded logo beside it.
+ * The mark in the header, and nothing beside it.
  *
- * Until then, the initials in a gold ring. The name on its own reads as a
- * page whose logo failed to load rather than as a deliberate wordmark, which
- * is what the header looked like once the coiled snake beside it was removed.
+ * It used to be the mark plus PREMIUM RENTALS over the business name in live
+ * text. That made sense while there was no logo: the words were the logo. It
+ * stopped making sense the moment a real one arrived, because this one has the
+ * name drawn into it -- so the header was saying "NiteSha Cars & Bikes" twice,
+ * once as artwork and once as type, in two faces at two sizes.
  *
- * A monogram is not the placeholder the old drawn badge was. That one was a
- * picture of something, competing with whatever real artwork would arrive; a
- * business's initials set in its own two colours is what a business uses while
- * it does not have a logo, and it is honest about being exactly that.
+ * The full lockup rather than the emblem, precisely because the text is gone:
+ * with no words beside it, the mark has to carry the name itself. It is set
+ * large enough that it does, which makes the header taller than a wordmark
+ * would -- the cost of a logo with its name drawn in.
  *
- * Upload one under Website content and it takes the monogram's place. Never
- * both -- two marks side by side is the problem the drawn badge had.
+ * Alt text rather than aria-hidden, for the same reason. There is no longer a
+ * written name for a screen reader to find, so the picture has to supply it.
+ *
+ * The monogram and the old wordmark stay as the fallback for a site with no
+ * logo at all, which is what this was before the owner sent one.
  */
 export function Logo({ onClick }: { onClick?: () => void }) {
-  // The owner's own mark, with an upload still able to replace it. The
-  // committed one is the emblem alone; an uploaded logo is used as supplied,
-  // because somebody uploading a logo means the one they uploaded.
-  const logo = useSiteImage('logo') ?? EMBLEM_FALLBACK;
+  // An upload replaces it; until then, the file the owner supplied.
+  const logo = useSiteImage('logo') ?? LOGO_FALLBACK;
+
+  if (logo) {
+    return (
+      <Link
+        to="/"
+        onClick={onClick}
+        className="flex shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+      >
+        <img
+          src={logo}
+          alt={seo.site.name}
+          // The one picture above the fold on every page, so it is not left to
+          // be discovered late.
+          fetchPriority="high"
+          decoding="async"
+          className="h-12 w-auto object-contain sm:h-16"
+        />
+      </Link>
+    );
+  }
 
   return (
     <Link to="/" onClick={onClick} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-      {logo ? (
-        // Straight onto the navy, with no plate behind it. The plate used to
-        // be white, which was right for a mark that might arrive with a dark
-        // background of its own -- and wrong for this one, where "CARS &
-        // BIKES" is set in white and would have vanished into it.
-        //
-        // The name is written out beside this, so a screen reader reading the
-        // mark as well would say the business twice.
-        <img
-          src={logo}
-          alt=""
-          aria-hidden="true"
-          className="h-10 w-auto shrink-0 object-contain sm:h-12"
-        />
-      ) : (
-        <Monogram className="size-11 shrink-0 sm:size-12" />
-      )}
-
+      <Monogram className="size-11 shrink-0 sm:size-12" />
       {/* whitespace-nowrap because "NiteSha Cars & Bikes" was breaking after
           "Cars", which reads as two businesses. */}
       <span className="min-w-0 leading-tight">
