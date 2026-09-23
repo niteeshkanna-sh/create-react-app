@@ -670,6 +670,27 @@ body {
   );
 }
 
+/* The panel a page shows when it has nothing to list.
+   The banner's glow at a smaller radius, so an empty page still looks like it
+   belongs to the same site rather than like a box that failed to fill. */
+.brand-panel {
+  box-shadow: 0 18px 44px -14px color-mix(in srgb, var(--color-navy-deep) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 26%, transparent);
+}
+.brand-panel-glow {
+  background:
+    radial-gradient(
+      34rem 22rem at 50% -18%,
+      color-mix(in srgb, var(--color-gold) 22%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      26rem 18rem at 8% 118%,
+      color-mix(in srgb, var(--color-bronze) 16%, transparent) 0%,
+      transparent 62%
+    );
+}
+
 /* The enquiry card in the banner.
    A white panel on a photograph needs a shadow that reads on both the dark
    and the bright parts of it, so this is two: a wide soft one for depth and a
