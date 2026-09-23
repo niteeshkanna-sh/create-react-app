@@ -142,23 +142,46 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
 
       <!-- Bookings tab -->
       <section class="admin-panel" id="panel-bookings" hidden>
-        <div class="panel-header">
-          <div>
-            <h2>Bookings / Rental Management</h2>
-            <p>Create and manage rental bookings, payments, deposits, and vehicle pickup/return.</p>
+        <div id="bookingListView">
+          <div class="panel-header">
+            <div>
+              <h2>Bookings / Rental Management</h2>
+              <p>Create and manage rental bookings, payments, deposits, and vehicle pickup/return.</p>
+            </div>
+            <button class="btn btn-primary" id="addBookingBtn">+ New Booking</button>
           </div>
-          <button class="btn btn-primary" id="addBookingBtn">+ New Booking</button>
+
+          <!-- Counts, filters and the table are all drawn from the same list,
+               so a chip and the number above it can never disagree. -->
+          <div class="rec-stats" id="bookingStats"></div>
+
+          <div class="rec-chipbar">
+            <div class="rec-chips" id="bookingChips"></div>
+          </div>
+
+          <div class="rec-toolbar">
+            <div class="rec-search">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+              <input type="search" id="bookingSearch" aria-label="Search bookings"
+                     placeholder="Search by number, customer or vehicle" />
+            </div>
+            <button type="button" class="rec-icon-btn" id="bookingReset"
+                    title="Clear the search and filters" aria-label="Clear the search and filters">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" stroke="currentColor"
+                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div id="bookingListWrap"></div>
+          <div class="rec-pager" id="bookingPager" hidden></div>
         </div>
 
-        <div class="booking-filters">
-          <button class="filter-chip active" data-status="all">All</button>
-          <button class="filter-chip" data-status="Confirmed">Confirmed</button>
-          <button class="filter-chip" data-status="Active">Active</button>
-          <button class="filter-chip" data-status="Completed">Completed</button>
-          <button class="filter-chip" data-status="Cancelled">Cancelled</button>
-        </div>
-
-        <div id="bookingListWrap"></div>
+        <div id="bookingDetailView" hidden></div>
       </section>
 
       <!-- Vehicles tab -->
@@ -176,30 +199,45 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
 
       <!-- Inquiries tab -->
       <section class="admin-panel" id="panel-inquiries" hidden>
-        <div class="panel-header">
-          <div>
-            <h2>Booking Inquiries</h2>
-            <p>Enquiries submitted from niteshacars.in. Accepting one creates a booking.</p>
+        <div id="inquiryListView">
+          <div class="panel-header">
+            <div>
+              <h2>Booking Inquiries</h2>
+              <p>Enquiries submitted from niteshacars.in. Accepting one creates a booking.</p>
+            </div>
           </div>
+
+          <div class="rec-stats" id="enquiryStats"></div>
+
+          <div class="rec-chipbar">
+            <div class="rec-chips" id="enquiryChips"></div>
+          </div>
+
+          <div class="rec-toolbar">
+            <div class="rec-search">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+              <!-- A placeholder is not a label: it vanishes the moment anyone
+                   types, and a screen reader is not obliged to announce it. -->
+              <input type="search" id="enquirySearch" aria-label="Search enquiries"
+                     placeholder="Search name, phone or ENQ number" />
+            </div>
+            <button type="button" class="rec-icon-btn" id="enquiryReset"
+                    title="Clear the search and filters" aria-label="Clear the search and filters">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" stroke="currentColor"
+                      stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div id="inquiriesWrap"></div>
+          <div class="rec-pager" id="enquiryPager" hidden></div>
         </div>
 
-        <div class="enquiry-toolbar">
-          <!-- A placeholder is not a label: it vanishes the moment anyone
-               types, and a screen reader is not obliged to announce it. -->
-          <input type="search" id="enquirySearch" aria-label="Search enquiries"
-                 placeholder="Search name, phone or ENQ number" />
-          <div class="enquiry-filters">
-            <button class="filter-chip active" data-enquiry-status="">All</button>
-            <button class="filter-chip" data-enquiry-status="New">New</button>
-            <button class="filter-chip" data-enquiry-status="Contacted">Contacted</button>
-            <button class="filter-chip" data-enquiry-status="Pending">Pending</button>
-            <button class="filter-chip" data-enquiry-status="Accepted">Accepted</button>
-            <button class="filter-chip" data-enquiry-status="Converted">Converted</button>
-            <button class="filter-chip" data-enquiry-status="Rejected">Rejected</button>
-          </div>
-        </div>
-
-        <div id="inquiriesWrap"></div>
+        <div id="enquiryDetailView" hidden></div>
       </section>
 
       <!-- Finance tab -->
@@ -700,26 +738,6 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
   </div>
 
   <!-- ===== Booking detail modal (populated dynamically) ===== -->
-  <div class="modal-overlay" id="bookingDetailOverlay" hidden>
-    <div class="modal modal-wide modal-tall">
-      <div class="booking-detail-header">
-        <h3 id="bookingDetailTitle">Booking</h3>
-        <button type="button" class="btn btn-ghost btn-sm" id="bookingDetailClose">✕ Close</button>
-      </div>
-      <div id="bookingDetailBody"></div>
-    </div>
-  </div>
-
-  <!-- ===== Enquiry detail modal ===== -->
-  <div class="modal-overlay" id="enquiryModalOverlay" hidden>
-    <div class="modal modal-wide modal-tall">
-      <div class="booking-detail-header">
-        <h3 id="enquiryModalTitle">Enquiry</h3>
-        <button type="button" class="btn btn-ghost btn-sm" id="enquiryModalClose">✕ Close</button>
-      </div>
-      <div id="enquiryModalBody"></div>
-    </div>
-  </div>
 
   <!-- ===== Payment modal ===== -->
   <div class="modal-overlay" id="paymentModalOverlay" hidden>

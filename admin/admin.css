@@ -688,7 +688,6 @@ label.finance-toggle {
 
 /* ---------- Wide/tall modal variants ---------- */
 .modal-wide { max-width: 720px; }
-.modal-tall { max-height: 92vh; }
 .modal-row-4 { grid-template-columns: repeat(4, 1fr); }
 .modal-section-label {
   font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
@@ -904,13 +903,6 @@ label.finance-toggle {
 .cal-warn { margin-top: 6px; font-size: 0.8rem; font-weight: 600; color: var(--danger); }
 
 /* ---------- Bookings ---------- */
-.booking-filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; }
-.filter-chip {
-  border: 1px solid var(--border); background: #fff; color: var(--ink-dim);
-  padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 0.82rem; cursor: pointer;
-  flex-shrink: 0; white-space: nowrap;
-}
-.filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 .booking-card {
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
@@ -956,11 +948,8 @@ label.finance-toggle {
 .sched-late    { background: #FBECEA; color: var(--danger); }
 
 /* In the detail header the chip sits inline beside the status badge. */
-.booking-detail-header .sched-chip { margin-left: 6px; vertical-align: 2px; }
 
 /* ---------- Booking detail ---------- */
-.booking-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.booking-detail-header h3 { margin: 0; }
 .detail-section {
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 18px; margin-bottom: 14px;
@@ -1022,7 +1011,8 @@ label.finance-toggle {
 
 @media print {
   .ns-side, .ns-bar, .ns-skip, .ns-scrim, .panel-header .btn, .report-tabs, .report-filters,
-  .report-export-row, .booking-filters, .c-actions, .place-actions,
+  .report-export-row, .rec-chipbar, .rec-toolbar, .rec-pager, .rec-back,
+  .c-actions, .place-actions,
   .wa-float, .mobile-footer-nav { display: none !important; }
   body { background: #fff; }
   .ns { display: block; }
@@ -1068,37 +1058,8 @@ label.finance-toggle {
 .payment-row .btn { margin-left: 10px; }
 
 /* ---------- Enquiries ---------- */
-.enquiry-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
-.enquiry-toolbar input[type="search"] {
-  flex: 1 1 260px; min-width: 200px; padding: 10px 14px;
-  border: 1px solid var(--border); border-radius: 9px; font: inherit; font-size: 0.9rem; outline: none;
-}
-.enquiry-toolbar input[type="search"]:focus { border-color: var(--primary); }
-.enquiry-filters { display: flex; gap: 8px; overflow-x: auto; }
-
-.enquiry-card {
-  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center;
-  justify-content: space-between; gap: 16px; flex-wrap: wrap; cursor: pointer;
-  transition: box-shadow 0.15s ease;
-}
-.enquiry-card:hover { box-shadow: var(--shadow); }
-/* Not yet opened by anyone. A gold edge and a heavier name, so the ones that
-   still need a first look are findable in the list and not only countable in
-   the sidebar. Deliberately quiet: this marks "new to you", not "urgent". */
-.enquiry-card.is-unread { border-left: 3px solid var(--accent); }
-.enquiry-card.is-unread .enquiry-name { font-weight: 800; }
-.enquiry-card.is-unread .num::after {
-  content: 'Unread'; margin-left: 8px; padding: 1px 7px; border-radius: 999px;
-  background: #FFF3DC; color: var(--accent-deep); font-size: 0.68rem;
-  font-weight: 700; letter-spacing: 0.02em; vertical-align: 1px;
-}
-.enquiry-card .row { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.enquiry-card .num { font-weight: 800; color: var(--accent-deep); font-size: 0.9rem; }
-.enquiry-card .enquiry-name { font-weight: 700; color: var(--ink); font-size: 1rem; }
-.enquiry-card .meta { font-size: 0.82rem; color: var(--ink-dim); }
-.enquiry-card .right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-
+/* The list itself is the shared records table further down; what is left here
+   is the enquiry's own notes and the row of actions on the record. */
 .status-badge-New       { background: #FFF3DC; color: var(--accent-deep); }
 .status-badge-Contacted { background: #EAF0F8; color: #3A5A8A; }
 .status-badge-Pending   { background: #FDF0D5; color: #8A5A00; }
@@ -1234,7 +1195,7 @@ label.finance-toggle {
   .btn { min-height: 44px; padding: 11px 18px; }
   .btn-sm { min-height: 44px; padding: 10px 16px; font-size: 0.84rem; }
   .link-btn { min-height: 44px; display: inline-flex; align-items: center; }
-  .filter-chip, .report-tab { min-height: 44px; }
+  .rec-chip, .rec-tab, .report-tab { min-height: 44px; }
   /* Not the one that is only there to open the file chooser: stretching it to
      the full width pushed a 390px page out to 447. */
   input[type="file"]:not(.brand-slot-file) { width: 100%; }
@@ -1300,4 +1261,229 @@ label.finance-toggle {
 @media (max-width: 380px) {
   .stat-grid, .stat-grid-3, .stat-grid-4 { grid-template-columns: 1fr; }
   .c-top .btn, .place-actions { width: 100%; }
+}
+
+/* ---- Records: the list-and-view shape used by Bookings and Inquiries -----
+ *
+ * One table, the counts above it, the filters beside them, and a record that
+ * opens in place rather than in a modal -- a booking carries payments,
+ * readings, documents and a timeline, and that is a page's worth of material,
+ * not a dialog's.
+ *
+ * The layout follows the ERP the owner asked it to look like. The colours do
+ * not: this is the navy and gold the rest of the panel and the website are
+ * built from, and a second palette inside one product reads as a bug.
+ */
+
+.rec-stats {
+  display: grid; gap: 12px; margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+}
+.rec-stat {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+}
+.rec-stat-n { font-size: 1.5rem; font-weight: 800; color: var(--primary); line-height: 1.1; }
+.rec-stat-k {
+  font-size: 0.76rem; color: var(--ink-dim); font-weight: 600; margin-top: 2px;
+}
+.rec-stat-ico {
+  width: 38px; height: 38px; flex: 0 0 38px; border-radius: 50%;
+  display: grid; place-items: center; background: #FDF1D8; color: var(--accent-deep);
+}
+.rec-stat-danger .rec-stat-n { color: var(--danger); }
+.rec-stat-danger .rec-stat-ico { background: #FBECEA; color: var(--danger); }
+.rec-stat-good .rec-stat-n { color: #2F6B4F; }
+.rec-stat-good .rec-stat-ico { background: #E7F3EC; color: #2F6B4F; }
+
+.rec-chipbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px 10px; margin-bottom: 14px;
+}
+.rec-chips { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.rec-chip {
+  display: inline-flex; align-items: center; gap: 7px; border: 0; cursor: pointer;
+  background: transparent; color: var(--ink-dim); font-family: var(--font);
+  font-size: 0.82rem; font-weight: 600; padding: 8px 12px; border-radius: 10px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.rec-chip:hover { background: var(--bg); color: var(--ink); }
+.rec-chip.is-on { background: var(--primary); color: #fff; }
+.rec-chip .n {
+  font-size: 0.74rem; font-weight: 700; color: var(--ink-faint);
+  background: var(--bg); border-radius: 999px; padding: 1px 7px;
+}
+.rec-chip.is-on .n { background: rgba(255,255,255,0.18); color: #fff; }
+.rec-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.55; }
+
+.rec-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.rec-search { position: relative; flex: 1; min-width: 0; max-width: 380px; }
+.rec-search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); }
+.rec-search input {
+  width: 100%; padding: 11px 14px 11px 38px; border: 1px solid var(--border);
+  border-radius: 12px; font-family: var(--font); font-size: 0.86rem; background: var(--surface);
+}
+.rec-search input:focus { outline: none; border-color: var(--primary); }
+.rec-icon-btn {
+  width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink-dim);
+  display: grid; place-items: center;
+}
+.rec-icon-btn:hover { background: var(--bg); color: var(--ink); }
+
+.rec-tablewrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow-x: auto;
+}
+.rec-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.rec-table th {
+  text-align: left; padding: 13px 16px; white-space: nowrap;
+  font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--ink-faint); border-bottom: 1px solid var(--border); background: var(--surface);
+}
+.rec-table th.is-sortable { cursor: pointer; user-select: none; }
+.rec-table th.is-sortable:hover { color: var(--ink); }
+.rec-table th .ord { opacity: 0.4; margin-left: 4px; font-size: 0.8em; }
+.rec-table th.is-sorted .ord { opacity: 1; color: var(--accent-deep); }
+.rec-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.rec-table tbody tr { cursor: pointer; }
+.rec-table tbody tr:hover { background: var(--bg); }
+.rec-table tbody tr:last-child td { border-bottom: 0; }
+.rec-table .rec-sno { color: var(--ink-faint); width: 1%; }
+.rec-table .rec-id { font-weight: 800; color: var(--accent-deep); white-space: nowrap; }
+.rec-table .rec-who { font-weight: 700; color: var(--ink); }
+.rec-table .rec-sub { color: var(--ink-dim); font-size: 0.82rem; }
+.rec-table .rec-money { font-weight: 700; white-space: nowrap; }
+.rec-table .rec-act { width: 1%; white-space: nowrap; }
+.rec-unread td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.rec-unread .rec-who::after {
+  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); margin-left: 7px; vertical-align: middle;
+}
+
+.rec-pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  flex-wrap: wrap; padding: 14px 2px 2px; font-size: 0.82rem; color: var(--ink-dim);
+}
+.rec-pager select {
+  font-family: var(--font); font-size: 0.82rem; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+}
+.rec-pager-right { display: flex; align-items: center; gap: 8px; }
+.rec-pager-right .page-of { padding: 0 4px; }
+
+/* ---- Records: one record, opened in place ------------------------------- */
+
+.rec-back {
+  display: inline-flex; align-items: center; gap: 7px; background: none; border: 0;
+  cursor: pointer; font-family: var(--font); font-size: 0.86rem; font-weight: 600;
+  color: var(--ink-dim); padding: 0; margin-bottom: 14px;
+}
+.rec-back:hover { color: var(--primary); }
+
+.rec-hero {
+  background: linear-gradient(135deg, #0A0E20 0%, #1A2148 100%);
+  color: #fff; border-radius: 18px; padding: 20px 22px;
+}
+.rec-hero-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.rec-avatar {
+  width: 52px; height: 52px; flex: 0 0 52px; border-radius: 14px;
+  background: var(--accent); color: #14100D; display: grid; place-items: center;
+  font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+}
+.rec-hero-id { flex: 1; min-width: 0; }
+.rec-hero-id h2 { font-size: 1.24rem; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rec-hero-sub { font-size: 0.82rem; color: rgba(255,255,255,0.62); margin-top: 3px; }
+.rec-hero-act { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rec-hero-act .btn-ghost { background: rgba(255,255,255,0.12); color: #fff; }
+.rec-hero-act .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+.rec-tiles {
+  display: grid; gap: 12px; margin-top: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(146px, 1fr));
+}
+.rec-tile { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; text-align: center; }
+.rec-tile-k {
+  font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(255,255,255,0.6); font-weight: 600;
+}
+.rec-tile-v { font-size: 1.2rem; font-weight: 800; margin-top: 5px; }
+.rec-tile-v.is-due { color: #FFC24D; }
+
+.rec-tabs {
+  display: flex; gap: 2px; overflow-x: auto; margin: 18px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.rec-tab {
+  flex-shrink: 0; background: none; border: 0; cursor: pointer; font-family: var(--font);
+  font-size: 0.86rem; font-weight: 600; color: var(--ink-dim); padding: 12px 14px;
+  border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 7px;
+}
+.rec-tab:hover { color: var(--ink); }
+.rec-tab.is-on { color: var(--primary); border-bottom-color: var(--accent); }
+.rec-tab .n {
+  font-size: 0.72rem; font-weight: 700; background: var(--bg); color: var(--ink-faint);
+  border-radius: 999px; padding: 1px 7px;
+}
+.rec-tab.is-on .n { background: #FDF1D8; color: var(--accent-deep); }
+
+.info-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.info-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 6px 20px 14px;
+}
+.info-card-head {
+  display: flex; align-items: center; gap: 12px; padding: 14px 0 12px;
+  border-bottom: 1px solid var(--border); margin-bottom: 6px;
+}
+.info-card-head h3 { font-size: 0.98rem; margin: 0; }
+.info-card-ico {
+  width: 36px; height: 36px; flex: 0 0 36px; border-radius: 10px; display: grid;
+  place-items: center; background: #FDF1D8; color: var(--accent-deep);
+}
+.info-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 18px;
+  padding: 11px 0; border-bottom: 1px dashed var(--border);
+}
+.info-row:last-child { border-bottom: 0; }
+.info-row .k { color: var(--ink-faint); font-size: 0.82rem; flex-shrink: 0; }
+.info-row .v { font-weight: 600; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.info-row .v a { color: var(--primary); }
+
+@media (max-width: 860px) {
+  .rec-stats { grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)); }
+  .rec-stat { padding: 12px 13px; }
+  .rec-stat-n { font-size: 1.24rem; }
+  .rec-stat-ico { width: 32px; height: 32px; flex-basis: 32px; }
+  .rec-search { max-width: none; }
+  .rec-hero { padding: 16px; }
+  .rec-hero-id h2 { font-size: 1.08rem; }
+  .rec-tiles { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+  .rec-tile-v { font-size: 1.02rem; }
+}
+
+.rec-acts { display: inline-flex; gap: 6px; }
+.rec-act-btn {
+  width: 32px; height: 32px; border-radius: 9px; cursor: pointer; display: grid;
+  place-items: center; border: 1px solid var(--border); background: var(--surface);
+  color: var(--ink-dim);
+}
+.rec-act-btn:hover { background: var(--bg); color: var(--primary); border-color: var(--primary); }
+
+/* The money half of a booking's state, beside the booking's own. */
+.pay-badge { background: rgba(255,255,255,0.14); color: #fff; }
+.pay-Paid { background: #E8F4EC; color: #2F6B4F; }
+.pay-PartiallyPaid { background: #FDF0D5; color: #8A5A00; }
+.pay-Unpaid { background: #FBECEA; color: var(--danger); }
+
+/* On a phone the table is narrower than its columns, and a row that wraps a
+   name over three lines is harder to read than one that leaves the details to
+   the record. These are the columns the record opens with anyway. */
+.rec-only-sm { display: none; }
+
+@media (max-width: 860px) {
+  .rec-hide-sm, .rec-table .rec-sno { display: none; }
+  .rec-only-sm { display: block; font-size: 0.76rem; }
+  .rec-table th, .rec-table td { padding: 12px 10px; }
 }
