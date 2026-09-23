@@ -101,12 +101,20 @@ function shareImageFor(route) {
   return pictureFor(want);
 }
 
-/** Where a slot's picture actually is, or nothing. */
-function pictureFor(slot) {
-  if (!slot) return undefined;
+/**
+ * Where a route's picture actually is, or nothing.
+ *
+ * An upload wins, then a file in public/photos named after the slot, then a
+ * path the route names outright. That last one is for a picture that is not a
+ * slot at all -- the home banner is a file at the site root, shared with the
+ * share card, and without this the page would show a photograph while the
+ * sitemap listed none for it.
+ */
+function pictureFor(slot, fallback) {
   // Uploaded URLs are already absolute; committed ones are site-relative.
-  if (typeof uploaded[slot] === 'string') return uploaded[slot];
-  return typeof photos[slot] === 'string' ? seo.site.origin + photos[slot] : undefined;
+  if (slot && typeof uploaded[slot] === 'string') return uploaded[slot];
+  if (slot && typeof photos[slot] === 'string') return seo.site.origin + photos[slot];
+  return fallback ? seo.site.origin + fallback : undefined;
 }
 
 /** Replace the content of a meta/title/canonical tag, leaving the rest alone. */
@@ -220,7 +228,7 @@ function enrichJsonLd(html) {
   // Only pictures that exist. A schema image pointing at a 404 is a defect
   // Search Console reports, and there is nothing to gain by claiming one.
   const banners = routes
-    .map((r) => pictureFor(r.imageSlot))
+    .map((r) => pictureFor(r.imageSlot, r.imageFallback))
     .filter((url) => typeof url === 'string');
 
   // Same reasoning as og:site_name above: one name, from one place.
@@ -457,7 +465,7 @@ copyFileSync(join(dist, 'index.html'), join(dist, '404.html'));
 // that would 404, and a sitemap full of 404s is worse than a short one.
 
 function imagesFor(route) {
-  const url = pictureFor(route.imageSlot);
+  const url = pictureFor(route.imageSlot, route.imageFallback);
   if (!url) return '';
   return (
     `\n    <image:image>\n` +
