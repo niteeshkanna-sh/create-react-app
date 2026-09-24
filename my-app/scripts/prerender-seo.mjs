@@ -57,6 +57,24 @@ const seo = JSON.parse(readFileSync(join(root, 'src/data/seo.json'), 'utf8'));
 // without a second list being edited.
 const towns = JSON.parse(readFileSync(join(root, 'src/data/towns.json'), 'utf8'));
 const routes = [...seo.routes, ...allTownRoutes(towns.towns, seo.site)];
+// A title or a description longer than a search result shows is not wrong,
+// it is just cut -- and the part that gets cut is the part written last,
+// which is usually the towns. Both numbers are where Google starts trimming
+// in a desktop result. Worth failing the build over: these live in a
+// committed file, the fix is a shorter sentence, and nobody reviews a
+// warning.
+const tooLong = routes
+  .map((r) => [r.path, r.title.length > 62 && `title ${r.title.length}`,
+               r.description.length > 160 && `description ${r.description.length}`])
+  .map(([path, ...bad]) => [path, bad.filter(Boolean)])
+  .filter(([, bad]) => bad.length > 0);
+if (tooLong.length > 0) {
+  throw new Error(
+    'prerender-seo: these would be cut in a search result:\n' +
+    tooLong.map(([path, bad]) => `  ${path}: ${bad.join(', ')}`).join('\n'),
+  );
+}
+
 let template = readFileSync(join(dist, 'index.html'), 'utf8');
 
 // The icons, addressed by a hash of themselves.
@@ -318,6 +336,33 @@ function enrichJsonLd(html) {
   // The phone number in the form a phone can dial and a crawler can parse.
   data.telephone = seo.site.phone;
 
+  // What the business actually hires out, named one by one.
+  //
+  // The page says it in sentences and the block above says "AutoRental",
+  // which between them do not tell a crawler that wedding cars and tourist
+  // vehicles with a driver are two separate things this business does. An
+  // offer catalogue does, in the vocabulary schema.org has for it, and it is
+  // built from the routes so a service added to the site is added here too.
+  const offers = seo.routes
+    .filter((r) => SERVICE_ROUTES.has(r.path))
+    .map((r) => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'Service',
+        name: SERVICE_ROUTES.get(r.path),
+        serviceType: SERVICE_ROUTES.get(r.path),
+        provider: { '@id': seo.site.origin + '#business' },
+        url: seo.site.origin + r.path,
+      },
+    }));
+  if (offers.length > 0) {
+    data.hasOfferCatalog = {
+      '@type': 'OfferCatalog',
+      name: `Vehicle hire in ${seo.site.district} district`,
+      itemListElement: offers,
+    };
+  }
+
   const existing = data.image === undefined ? [] : [data.image].flat();
   const images = [...new Set([...existing, ...banners])];
 
@@ -330,6 +375,21 @@ function enrichJsonLd(html) {
     `<script type="application/ld+json">${JSON.stringify(data)}</script>`,
   );
 }
+
+/**
+ * The services worth naming, and the words to name them with.
+ *
+ * Deliberately the phrases somebody would type rather than the site's own
+ * headings: "self drive car rental" is what is searched for, "What we hire"
+ * is what the page calls the list of them.
+ */
+const SERVICE_ROUTES = new Map([
+  ['/cars', 'Self drive car rental'],
+  ['/bikes', 'Bike and scooty rental'],
+  ['/wedding-cars', 'Wedding car rental'],
+  ['/tourist-vehicles', 'Tourist vehicle hire with a driver'],
+  ['/monthly', 'Monthly and long term car rental'],
+]);
 
 /** The town a route is about, or null for the pages that are not about one. */
 function townFor(route) {
@@ -424,6 +484,36 @@ function townServiceFor(route) {
   };
 }
 
+/**
+ * The questions and answers the page shows, as structured data.
+ *
+ * Only on the pages that show them. Google asks that FAQPage data match
+ * visible content, and a page claiming answers it does not display is the
+ * kind of thing that gets a site's rich results turned off rather than
+ * improved -- so this reads the same content the component renders, and is
+ * attached to the same routes it is rendered on.
+ */
+const FAQ_ROUTES = new Set(['/', '/tariff']);
+
+function faqFor(route) {
+  if (!FAQ_ROUTES.has(route.path)) return null;
+
+  const items = (live?.home?.faq?.items ?? [])
+    .filter((item) => String(item?.question ?? '').trim() && String(item?.answer ?? '').trim());
+  if (items.length === 0) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': seo.site.origin + route.path + '#faq',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: String(item.question).trim(),
+      acceptedAnswer: { '@type': 'Answer', text: String(item.answer).trim() },
+    })),
+  };
+}
+
 let written = 0;for (const route of routes) {
   const url = seo.site.origin + route.path;
   let html = rewrite(template, {
@@ -443,7 +533,7 @@ let written = 0;for (const route of routes) {
   // <img> ends up using -- and a second preload written by hand with the
   // absolute form of the same URL is a second download of the same file, which
   // is what the first version of this did.
-  const extra = [breadcrumbFor(route), townServiceFor(route)]
+  const extra = [breadcrumbFor(route), townServiceFor(route), faqFor(route)]
     .filter(Boolean)
     .map((node) => `\n    <script type="application/ld+json">${JSON.stringify(node)}</script>`)
     .join('');
