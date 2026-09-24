@@ -19,6 +19,7 @@
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 import { allTownRoutes, TOWN_BASE } from '../src/data/town-routes.mjs';
 
 const root = join(import.meta.dirname, '..');
@@ -56,7 +57,25 @@ const seo = JSON.parse(readFileSync(join(root, 'src/data/seo.json'), 'utf8'));
 // without a second list being edited.
 const towns = JSON.parse(readFileSync(join(root, 'src/data/towns.json'), 'utf8'));
 const routes = [...seo.routes, ...allTownRoutes(towns.towns, seo.site)];
-const template = readFileSync(join(dist, 'index.html'), 'utf8');
+let template = readFileSync(join(dist, 'index.html'), 'utf8');
+
+// The icons, addressed by a hash of themselves.
+//
+// A browser caches a favicon by its address and holds on to it far harder
+// than it holds a page: Chrome keeps one across ordinary reloads and reads
+// the new file only when its own store forgets, which can be months. The
+// owner changed the icon and still had the one this project shipped with in
+// his tab, because /favicon.svg is the same address it has always been.
+//
+// Stamped with the file's own hash, a changed icon is a changed address, so
+// nothing cached can match it and nobody has to know to clear anything.
+for (const icon of ['favicon.svg', 'apple-touch-icon.png']) {
+  const stamp = createHash('sha1')
+    .update(readFileSync(join(dist, icon)))
+    .digest('hex')
+    .slice(0, 8);
+  template = template.replaceAll(`/${icon}"`, `/${icon}?v=${stamp}"`);
+}
 // Which photographs actually exist, for the sitemap and the structured data.
 const photos = JSON.parse(readFileSync(join(root, 'src/data/photos.json'), 'utf8'));
 
