@@ -1487,3 +1487,32 @@ label.finance-toggle {
   .rec-only-sm { display: block; font-size: 0.76rem; }
   .rec-table th, .rec-table td { padding: 12px 10px; }
 }
+
+/* ---- Are you sure? ------------------------------------------------------ */
+.modal-confirm { max-width: 460px; }
+.modal-confirm h3 { margin: 0 0 10px; font-size: 1.08rem; }
+.confirm-lead { color: var(--ink-dim); font-size: 0.9rem; line-height: 1.55; margin: 0 0 12px; }
+.confirm-lead strong { color: var(--ink); }
+.confirm-points {
+  list-style: none; margin: 0 0 14px; padding: 12px 14px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+}
+.confirm-points:empty { display: none; }
+.confirm-points li {
+  font-size: 0.86rem; color: var(--ink-dim); padding: 4px 0 4px 18px; position: relative;
+}
+.confirm-points li::before {
+  content: '—'; position: absolute; left: 0; color: var(--ink-faint);
+}
+.confirm-points li strong { color: var(--ink); font-weight: 700; }
+.confirm-final {
+  font-size: 0.82rem; font-weight: 600; color: var(--danger); margin: 0 0 16px;
+}
+/* Solid, because in this dialog the destructive button is the action being
+   offered -- the pale one everywhere else is a secondary among other buttons. */
+#confirmGo { background: var(--danger); color: #fff; }
+#confirmGo:hover { background: #8F1E17; }
+
+.rec-act-btn.is-danger:hover {
+  background: #FBECEA; color: var(--danger); border-color: var(--danger);
+}

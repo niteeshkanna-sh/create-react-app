@@ -189,6 +189,58 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
       ? ok('and opening it clears the unread mark') : bad('opening clears the unread mark');
   }
 
+  console.log('\n-- deleting, and being asked first --');
+  await p.click('.admin-tab[data-tab="bookings"]');
+  await p.waitForTimeout(1100);
+  const rowsBefore = Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]);
+  const doomed = (await p.locator('#bookingListWrap tbody tr .rec-id').first().innerText()).trim();
+
+  await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
+  await p.waitForTimeout(400);
+  (await p.locator('#confirmOverlay').isVisible())
+    ? ok('the bin asks before it does anything') : bad('the bin asks first');
+  const dialog = await p.locator('#confirmOverlay .modal').innerText();
+  has('it names the booking', dialog, doomed);
+  has('and says the money stops being counted', dialog, 'stops being counted');
+  has('and that it cannot be undone', dialog, 'cannot be undone');
+
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(400);
+  (await p.locator('#confirmOverlay').isVisible())
+    ? bad('Escape closes it') : ok('Escape closes it');
+  is('and nothing was deleted',
+    Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore);
+
+  await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
+  await p.waitForTimeout(400);
+  await p.click('#confirmCancel');
+  await p.waitForTimeout(600);
+  is('Cancel leaves it alone',
+    Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore);
+
+  await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
+  await p.waitForTimeout(400);
+  await p.click('#confirmGo');
+  await p.waitForTimeout(1800);
+  is('confirming removes it',
+    Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore - 1);
+  ((await p.locator('#bookingListWrap').innerText()).includes(doomed))
+    ? bad('and it is gone from the table', doomed + ' still listed')
+    : ok('and it is gone from the table', doomed);
+  is('the count above the table agrees',
+    Number((await p.locator('#bookingStats .rec-stat-n').first().innerText()).trim()), rowsBefore - 1);
+
+  await p.click('.admin-tab[data-tab="inquiries"]');
+  await p.waitForTimeout(1100);
+  const inqBefore = Number((await p.locator('#enquiryPager').innerText()).match(/Total (\d+)/)[1]);
+  await p.locator('#inquiriesWrap tbody tr [data-act="delete"]').first().click();
+  await p.waitForTimeout(400);
+  has('an inquiry asks the same way', await p.locator('#confirmOverlay .modal').innerText(), 'ENQ-');
+  await p.click('#confirmGo');
+  await p.waitForTimeout(1600);
+  is('and goes when confirmed',
+    Number((await p.locator('#enquiryPager').innerText()).match(/Total (\d+)/)[1]), inqBefore - 1);
+
   console.log('\nJS errors: ' + (errs.length ? errs.join(' | ') : 'NONE'));
   if (errs.length) fail++;
   console.log(`\n${pass} passed, ${fail} failed`);

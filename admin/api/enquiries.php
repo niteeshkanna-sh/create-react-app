@@ -264,7 +264,7 @@ switch ($action) {
 
     // --------------------------------------------------------------- delete --
     case 'delete': {
-        $user  = api_guard('enquiry.edit', true);
+        $user  = api_guard('enquiry.delete', true);
         $input = json_input();
 
         $data = (new Validator($input))

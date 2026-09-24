@@ -657,9 +657,15 @@ async function renderInquiries() {
                   aria-label="Open ${escapeHTML(e.enquiry_number)}">${REC_EYE}</button>
           <a class="rec-act-btn" href="tel:${escapeHTML(e.phone)}" title="Call ${escapeHTML(e.name)}"
              aria-label="Call ${escapeHTML(e.name)}">${REC_PHONE}</a>
+          <button type="button" class="rec-act-btn is-danger" data-act="delete"
+                  title="Delete this inquiry"
+                  aria-label="Delete ${escapeHTML(e.enquiry_number)}">${REC_BIN}</button>
         </span>` },
     ],
-    onAction: (e) => openEnquiry(e.id),
+    onAction: (e, act) => {
+      if (act === 'delete') deleteEnquiry(e);
+      else openEnquiry(e.id);
+    },
     onRow: (e) => openEnquiry(e.id),
   });
 }
@@ -859,16 +865,7 @@ async function renderEnquiry(id) {
     } catch (err) { showError(err); }
   });
 
-  document.getElementById('enqDelete')?.addEventListener('click', async () => {
-    // Named in the question. "Delete this?" with the thing off-screen is how
-    // the wrong row gets deleted.
-    if (!confirm(`Delete enquiry ${e.enquiry_number} from ${e.name}? This cannot be undone.`)) return;
-    try {
-      await api.enquiries.remove(e.id);
-      closeEnquiryDetail();
-      await renderInquiries();
-    } catch (err) { showError(err); }
-  });
+  document.getElementById('enqDelete')?.addEventListener('click', () => deleteEnquiry(e));
 
   view.querySelectorAll('[data-enq-status]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -1305,6 +1302,117 @@ function splitDateTime(value) {
   return [date, time.slice(0, 5)];
 }
 
+// ---- Deleting a record ---------------------------------------------------
+//
+// In one place, because the list and the record itself both offer it and they
+// have to ask the same question and do the same thing.
+
+/**
+ * Deletes a booking, after saying what goes with it.
+ *
+ * Everything the booking works out goes too -- its charges, the payments
+ * against it, the deposit, the readings, the extras and the photographs --
+ * so Finance and the reports stop counting a booking that is not there. That
+ * is the point of deleting one, and it is also the thing worth spelling out
+ * before anybody presses the button.
+ */
+async function deleteBooking(booking) {
+  const goes = [
+    `The rental of <strong>${formatINR(booking.total)}</strong> stops being counted`,
+  ];
+  if (Number(booking.paid) > 0) {
+    goes.push(`<strong>${formatINR(booking.paid)}</strong> in recorded payments is removed from income`);
+  }
+  if (Number(booking.deposit_held) > 0) {
+    goes.push(`<strong>${formatINR(booking.deposit_held)}</strong> held as a deposit stops showing as held`);
+  }
+  goes.push('Its odometer readings, extras, damage notes and photographs go with it');
+  goes.push('Any expense recorded against it keeps its amount and loses the link');
+  goes.push('The audit trail keeps a note that it existed and who removed it');
+
+  const yes = await askToConfirm({
+    title: `Delete ${booking.booking_number}?`,
+    lead: `<strong>${escapeHTML(booking.customer_name)}</strong> · ${escapeHTML(booking.vehicle_name || '')}`
+        + ` · ${formatDate(booking.start_at)} → ${formatDate(booking.return_at)}`,
+    points: goes,
+    confirmLabel: 'Delete the booking',
+  });
+  if (!yes) return;
+
+  try {
+    await api.bookings.remove(booking.id);
+    if (currentDetailBookingId === booking.id) closeBookingDetail();
+    await refreshAfterBookingChange();
+    await renderInquiries();
+  } catch (err) { showError(err); }
+}
+
+/** Deletes an enquiry, after naming it. */
+async function deleteEnquiry(enquiry) {
+  const yes = await askToConfirm({
+    title: `Delete ${enquiry.enquiry_number}?`,
+    lead: `<strong>${escapeHTML(enquiry.name)}</strong> · ${escapeHTML(enquiry.phone)}`
+        + (enquiry.created_at ? ` · received ${formatDate(enquiry.created_at)}` : ''),
+    points: [
+      'What they asked for, and any notes kept on it, go with it',
+      'The audit trail keeps a note that it existed and who removed it',
+    ],
+    confirmLabel: 'Delete the inquiry',
+  });
+  if (!yes) return;
+
+  try {
+    await api.enquiries.remove(enquiry.id);
+    if (currentEnquiry && currentEnquiry.id === enquiry.id) closeEnquiryDetail();
+    await renderInquiries();
+  } catch (err) { showError(err); }
+}
+
+// ---- Are you sure? -------------------------------------------------------
+//
+// One dialog for everything that cannot be undone. A browser confirm() puts
+// one unstyled line in front of you and calls that consent; what is actually
+// needed is the name of the thing and a list of what goes with it -- deleting
+// a booking takes its payments, its deposit and its readings too, and nobody
+// should have to already know that.
+
+let confirmResolve = null;
+
+function closeConfirm(answer) {
+  document.getElementById('confirmOverlay').hidden = true;
+  const resolve = confirmResolve;
+  confirmResolve = null;
+  if (resolve) resolve(answer);
+}
+
+/**
+ * Asks, and resolves true only if the confirming button was pressed.
+ *
+ * Cancel is focused rather than the destructive button: the reflex press of
+ * space or enter on a dialog that appeared should not delete anything.
+ */
+function askToConfirm({ title, lead, points = [], confirmLabel = 'Delete' }) {
+  const overlay = document.getElementById('confirmOverlay');
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmLead').innerHTML = lead;
+  document.getElementById('confirmPoints').innerHTML =
+    points.map((t) => `<li>${t}</li>`).join('');
+  document.getElementById('confirmGo').textContent = confirmLabel;
+  overlay.hidden = false;
+  document.getElementById('confirmCancel').focus();
+
+  return new Promise((resolve) => { confirmResolve = resolve; });
+}
+
+document.getElementById('confirmCancel')?.addEventListener('click', () => closeConfirm(false));
+document.getElementById('confirmGo')?.addEventListener('click', () => closeConfirm(true));
+document.getElementById('confirmOverlay')?.addEventListener('click', (e) => {
+  if (e.target.id === 'confirmOverlay') closeConfirm(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && confirmResolve) closeConfirm(false);
+});
+
 // ---- The records shape: counts, chips, a sortable table, a pager ---------
 //
 // Bookings and Inquiries are the same kind of screen -- a list of records
@@ -1328,6 +1436,9 @@ const REC_ICONS = {
 const REC_EYE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
   + '<path d="M1.5 8S3.8 3.8 8 3.8 14.5 8 14.5 8 12.2 12.2 8 12.2 1.5 8 1.5 8z" stroke="currentColor" stroke-width="1.4"/>'
   + '<circle cx="8" cy="8" r="1.9" stroke="currentColor" stroke-width="1.4"/></svg>';
+const REC_BIN = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+  + '<path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8a1 1 0 0 0 1 .9h3.8a1 1 0 0 0 1-.9l.6-8"'
+  + ' stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const REC_PENCIL = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
   + '<path d="M11.2 2.6l2.2 2.2L5.9 12.3l-3 .8.8-3 7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
 const REC_PHONE = '<svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">'
@@ -1606,10 +1717,14 @@ async function renderBookingList() {
           ${b.status === 'Completed' || b.status === 'Cancelled' ? '' : `
           <button type="button" class="rec-act-btn" data-act="edit" title="Edit this booking"
                   aria-label="Edit ${escapeHTML(b.booking_number)}">${REC_PENCIL}</button>`}
+          <button type="button" class="rec-act-btn is-danger" data-act="delete"
+                  title="Delete this booking"
+                  aria-label="Delete ${escapeHTML(b.booking_number)}">${REC_BIN}</button>
         </span>` },
     ],
     onAction: (b, act) => {
       if (act === 'edit') openBookingModal(b);
+      else if (act === 'delete') deleteBooking(b);
       else openBookingDetail(b.id);
     },
     onRow: (b) => openBookingDetail(b.id),
@@ -2151,7 +2266,7 @@ async function renderBookingDetail(id) {
           ${open ? '<button class="btn btn-ghost btn-sm" id="detailEditBtn">Edit</button>' : ''}
           ${open ? '<button class="btn btn-ghost btn-sm" id="detailCancelBtn">Cancel Booking</button>' : ''}
           ${open ? '<button class="btn btn-primary btn-sm" id="detailCompleteBtn">Mark Completed</button>' : ''}
-          ${booking.status === 'Cancelled' ? '<button class="btn btn-danger btn-sm" id="detailDeleteBtn">Delete Booking</button>' : ''}
+          <button class="btn btn-danger btn-sm" id="detailDeleteBtn">Delete Booking</button>
         </div>
       </div>
 
@@ -2318,19 +2433,7 @@ function wireDetailActions(booking) {
     });
   });
 
-  on('detailDeleteBtn', async () => {
-    if (!confirm(
-      `Delete ${booking.booking_number} for good?\n\n` +
-      'Cancelling already keeps the record and the reason. This removes the booking, '
-      + 'its charges, its readings and its attachments, and cannot be undone. '
-      + 'The audit trail keeps a note that it existed and who removed it.'
-    )) return;
-    try {
-      await api.bookings.remove(booking.id);
-      closeBookingDetail();
-      await refreshAfterBookingChange();
-    } catch (err) { showError(err); }
-  });
+  on('detailDeleteBtn', () => deleteBooking(booking));
 
   on('detailCompleteBtn', async () => {
     if (!confirm('Mark this booking as completed?')) return;

@@ -119,11 +119,12 @@ node tools/test-records-ui.js <url> <email> <password>
 node tools/test-install-ui.js <url> <db-name> <db-user>   # on a spare database
 ```
 
-Around 420 checks, covering the money arithmetic, the append-only ledger,
+Around 440 checks, covering the money arithmetic, the append-only ledger,
 price freezing, double-booking, the KM audit trail, the enquiry defences,
 expense corrections and voiding, getting from one panel to another, sorting,
-searching and paging the record lists, what a crashed endpoint replies, and
-the booking, enquiry and finance flows driven through a real browser.
+searching and paging the record lists, what deleting a booking takes with it,
+what a crashed endpoint replies, and the booking, enquiry and finance flows
+driven through a real browser.
 
 The suites that take a URL want the panel served at the root of it, as it is
 on the server: `http://127.0.0.1:8210`, not `.../admin`. They write to the
