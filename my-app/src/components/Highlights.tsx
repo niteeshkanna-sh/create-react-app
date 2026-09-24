@@ -3,79 +3,124 @@ import { useHome } from '../content';
 import { Reveal } from './Reveal';
 
 /**
- * The three services worth putting in front of someone on the home page.
+ * One drawn mark per service, rather than an emoji typed into the panel.
  *
- * Set on navy rather than the page's sand, so the band reads as a distinct
- * offer block rather than more body copy -- these are the high-value bookings
- * and should not be skimmed past.
+ * The three were 🗓 ✈ 💍, and a browser draws the first two as flat black
+ * glyphs and the third in full colour, so the row read as two missing icons
+ * and a ring. These are the same weight as each other and take the gold.
+ */
+const MARKS: Record<string, React.ReactNode> = {
+  '/monthly': (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+      <path d="M8 14h3" />
+    </>
+  ),
+  '/nri': (
+    <>
+      <path d="M2.5 13.2 21 5l-4.2 8.6-2.3 6.9-2.6-4.6-4.6-2.6z" />
+      <path d="M9.3 14.7 21 5" />
+    </>
+  ),
+  // Two rings, and nothing else. A diamond on top of them as well was three
+  // shapes inside 22 pixels, which reads as a smudge rather than as rings.
+  '/wedding-cars': (
+    <>
+      <circle cx="9" cy="14" r="5.4" />
+      <circle cx="15" cy="14" r="5.4" />
+    </>
+  ),
+};
+
+const DEFAULT_MARK = (
+  <>
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+    <circle cx="12" cy="12" r="3.2" />
+  </>
+);
+
+function Mark({ to }: { to: string }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {MARKS[to] ?? DEFAULT_MARK}
+    </svg>
+  );
+}
+
+/**
+ * The three bookings worth asking for, on one dark band.
  *
- * Three across rather than three stacked. Each one used to be a full-width
- * row split into a description and a bulleted panel, which meant the three of
- * them ran to about two and a half screens and every row left a column of
- * empty navy beside whichever side had less to say. Side by side they are one
- * screen, they can be compared at a glance -- which is the point of putting
- * three offers next to each other -- and no card has to fill a width it does
- * not need.
+ * It was three cards, each with an eyebrow, a paragraph, a bordered panel
+ * with a heading and four bullets, and a full-width gold button. Three of
+ * those side by side is a wall: about a hundred and forty words and twelve
+ * bullets in a row of boxes, at the point in the page where somebody is still
+ * deciding whether to keep scrolling. Nobody reads a wall.
  *
- * The inner panel goes with it. A bordered box inside a bordered box was what
- * made the gap look deliberate; the points now sit under a gold hairline in
- * the same card, and the button is pushed to the bottom with mt-auto so all
- * three line up however long the copy above them runs.
+ * So there is one sentence each, and the boxes are gone. Three columns
+ * divided by hairlines read as one band rather than three objects, which is
+ * what they are -- and what is left says just enough to earn the click to the
+ * page where the detail actually lives.
  */
 export function Highlights() {
   const home = useHome();
   const { items } = home.highlights;
 
   return (
-    <section className="bg-navy py-16 sm:py-20">
-      <div className="mx-auto grid max-w-[86rem] gap-6 px-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-3 lg:px-12">
+    <section className="bg-navy py-14 sm:py-16">
+      <div
+        className="mx-auto grid max-w-[86rem] gap-px overflow-hidden px-5 sm:px-8 lg:grid-cols-3 lg:px-12"
+      >
         {items.map((h, i) => (
-          <Reveal key={h.to} delay={i * 110} className="h-full">
-            <article className="card-lift on-navy relative flex h-full flex-col rounded-[14px] border border-white/10 bg-white/[0.04] p-6 sm:p-7">
-              <span
-                aria-hidden="true"
-                className="grid size-12 shrink-0 place-items-center rounded-xl bg-gold/20 text-2xl"
-              >
-                {h.icon}
+          <Reveal key={h.to} delay={i * 90} className="h-full">
+            {/* The hairline between columns, and between rows once they
+                stack. Drawn with a border rather than divide-* so the first
+                one in each direction can be left off without a second rule
+                fighting it. */}
+            <div
+              className={[
+                'flex h-full flex-col px-0 py-7 sm:py-8',
+                i > 0 ? 'border-t border-white/10 lg:border-t-0 lg:border-l lg:pl-10' : '',
+                i < items.length - 1 ? 'lg:pr-10' : '',
+              ].join(' ')}
+            >
+              <span className="grid size-11 shrink-0 place-items-center rounded-full border border-gold/30 text-gold">
+                <Mark to={h.to} />
               </span>
 
-              <h3 className="mt-4 text-xl leading-tight font-bold tracking-tight text-white sm:text-2xl">
+              <h3 className="mt-4 text-lg font-bold tracking-tight text-white sm:text-xl">
                 {h.title}
               </h3>
-              <p className="mt-1.5 text-[0.7rem] font-bold tracking-wide text-gold uppercase">
-                {h.eyebrow}
-              </p>
 
-              <p className="mt-3 text-sm leading-relaxed text-white/65">{h.body}</p>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-white/60">{h.body}</p>
 
-              <hr className="gold-hair mt-5 border-0" />
-
-              <h4 className="mt-5 text-sm font-bold text-white">{h.panelTitle}</h4>
-              <ul className="mt-3 space-y-2.5">
-                {h.points.map((p) => (
-                  <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
-                    <span aria-hidden="true" className="bullet-dot" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-
-              {/* mt-auto on the wrapper, so the three buttons sit on one line
-                  whatever the copy above them does. Without it a shorter
-                  card's button floats up the tile and the row reads as three
-                  different sizes. The padding is on the wrapper rather than
-                  the button because auto margins and a margin cannot both
-                  apply to one edge. */}
-              <div className="mt-auto pt-6">
+              {/* mt-auto, so the three links sit on one line however the
+                  sentences above them wrap. */}
+              <div className="mt-auto pt-5">
                 <Link
                   to={h.to}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-gold transition hover:text-gold-light focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
                 >
                   {h.cta}
-                  <span aria-hidden="true">→</span>
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform group-hover:translate-x-0.5"
+                  >
+                    →
+                  </span>
                 </Link>
               </div>
-            </article>
+            </div>
           </Reveal>
         ))}
       </div>
