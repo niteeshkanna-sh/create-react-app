@@ -73,19 +73,18 @@ function content_schema(): array
                     ],
                 ],
                 'highlights' => [
-                    'label'  => 'Highlight bands',
-                    'note'   => 'The three dark bands for the bookings worth the most.',
+                    'label'  => 'The three worth asking for',
+                    'note'   => 'Three lines on the dark band, for the bookings worth the most. One sentence each: this is the part of the page somebody reads while scrolling past, and the page it links to is where the detail belongs.',
                     'fields' => [
                         'items' => [
-                            'label'  => 'Bands',
+                            'label'  => 'Lines',
                             'type'   => 'repeater',
+                            // No icon field: the site draws one per service,
+                            // so the row cannot end up with one colour emoji
+                            // beside two flat ones, which is what it had.
                             'fields' => [
-                                'icon'       => ['label' => 'Icon', 'type' => 'text'],
-                                'eyebrow'    => ['label' => 'Eyebrow', 'type' => 'text'],
                                 'title'      => ['label' => 'Title', 'type' => 'text'],
-                                'body'       => ['label' => 'Description', 'type' => 'textarea'],
-                                'panelTitle' => ['label' => 'Panel heading', 'type' => 'text'],
-                                'points'     => ['label' => 'Panel points', 'type' => 'list'],
+                                'body'       => ['label' => 'One sentence', 'type' => 'textarea'],
                                 'cta'        => ['label' => 'Link text', 'type' => 'text'],
                                 'to'         => ['label' => 'Links to', 'type' => 'text'],
                             ],

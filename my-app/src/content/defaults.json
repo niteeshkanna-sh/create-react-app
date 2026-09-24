@@ -58,47 +58,20 @@
       "items": [
         {
           "to": "/monthly",
-          "icon": "🗓",
-          "title": "Monthly self drive car rental",
-          "eyebrow": "Need a car for weeks, not days?",
-          "body": "Monthly hire across Kanyakumari district for NRI families, work postings and anyone between vehicles. Hatchbacks, sedans, SUVs and 7 seaters, with the daily rate falling the longer you keep it.",
-          "panelTitle": "What decides your monthly rate",
-          "points": [
-            "Vehicle type and transmission",
-            "How long you need it",
-            "Season — festival and wedding periods",
-            "Where in the district we deliver"
-          ],
-          "cta": "Ask about monthly rates"
+          "title": "By the month",
+          "body": "Hatchbacks to 7 seaters for weeks or months, with the daily rate falling the longer you keep it.",
+          "cta": "Monthly rates"
         },
         {
           "to": "/nri",
-          "icon": "✈",
-          "title": "Coming home from abroad?",
-          "eyebrow": "Sort the car out before you land",
-          "body": "For families flying in from the Gulf, Singapore and Malaysia. Tell us your dates on WhatsApp, and the vehicle is ready when you arrive — no hunting for one after a night flight.",
-          "panelTitle": "How it works for visitors",
-          "points": [
-            "Book from abroad, pay when you arrive",
-            "Met at Trivandrum airport",
-            "Long-stay rates for weeks or months",
-            "Licence and document check in advance"
-          ],
-          "cta": "Read the visitor guide"
+          "title": "Coming home from abroad",
+          "body": "Book from the Gulf, Singapore or Malaysia and the vehicle is waiting when you land.",
+          "cta": "For NRI visitors"
         },
         {
           "to": "/wedding-cars",
-          "icon": "💍",
-          "title": "Wedding car rental",
-          "eyebrow": "Book the date before it goes",
-          "body": "Decorated cars for the couple and vehicles for relatives arriving from out of town, across Nagercoil, Marthandam and Colachel. Muhurtham dates fill months ahead.",
-          "panelTitle": "What we arrange",
-          "points": [
-            "Decoration in your colours",
-            "Vehicle held for your date",
-            "Extra cars for the family",
-            "Booked together from abroad"
-          ],
+          "title": "Wedding cars",
+          "body": "A decorated car for the couple and vehicles for the family. Muhurtham dates go months ahead.",
           "cta": "See wedding cars"
         }
       ]
