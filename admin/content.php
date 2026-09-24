@@ -190,8 +190,9 @@ admin_shell_open($me, 'content.php', 'Website content');
       cards under &ldquo;What we hire&rdquo; and the three steps. A slot with
       nothing in it keeps the drawing the site ships with, so an unfinished set
       still looks finished. PNG with a transparent background looks best for
-      the badge; the mark sits on the dark header, so light artwork reads
-      better than dark. Up to 6&nbsp;MB each.
+      the logo; it sits on the dark header, so light artwork reads better than
+      dark. The logo is kept exactly as it is drawn -- the banners are framed
+      to the shape the page lays them out in. Up to 6&nbsp;MB each.
     </p>
     <p class="c-note">
       An upload appears on the website within a minute. If one does not, open

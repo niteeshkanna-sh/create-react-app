@@ -6,7 +6,7 @@ require_once __DIR__ . '/image-names.php';
 require_once __DIR__ . '/vehicle-photos.php';
 
 /**
- * The site's own images: the logo badge, and the mark beside it.
+ * The site's own images: the logo, and the banners across the pages.
  *
  * Same arrangement as vehicle photographs, and for the same reason -- the file
  * is written above the document root so a deploy cannot erase it, and read
