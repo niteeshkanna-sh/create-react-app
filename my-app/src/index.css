@@ -237,8 +237,15 @@ body {
   }
 
   /* Scroll reveal. Elements start hidden and are released by the observer in
-     useReveal, so nothing pops in before it is actually on screen. */
-  [data-reveal] {
+     useReveal, so nothing pops in before it is actually on screen.
+
+     Only where there is a script to release them. The page is written into
+     the HTML at build time so that it reads without one, and a rule that
+     hid two thirds of it until an observer fired undid exactly that: with
+     scripting off, everything below the banner was a blank cream page. The
+     data-js attribute is set by one line in the <head>, so the hiding only
+     ever happens where the unhiding can follow. */
+  :root[data-js] [data-reveal] {
     opacity: 0;
   }
 
@@ -336,8 +343,13 @@ body {
     rgba(212, 175, 55, 0.5) 55%,
     rgba(212, 175, 55, 0) 100%
   );
-  transform: scaleX(0);
   transform-origin: left center;
+}
+
+/* Undrawn until the observer draws it -- and, as above, only where there is
+   an observer. */
+:root[data-js] .step-line {
+  transform: scaleX(0);
 }
 
 /* The photograph, which lifts a little under the pointer. The frame already
@@ -383,7 +395,7 @@ body {
 
   /* The rail is drawn, not faded, so it needs saying separately: with the
      animation off, an untouched scaleX(0) line is an invisible one. */
-  .step-line {
+  :root[data-js] .step-line {
     transform: none;
   }
 
@@ -830,6 +842,115 @@ body {
     0 24px 60px -12px color-mix(in srgb, var(--color-navy-deep) 55%, transparent),
     0 4px 14px color-mix(in srgb, var(--color-navy-deep) 28%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
+}
+
+/* The questions band.
+
+   The list used to be white boxes on cream at the foot of the page, which is
+   where small print goes. It is not small print: it is the ten things people
+   ring up to ask, answered. So it gets a band of its own -- the banner
+   photograph almost entirely under navy, with the same gold glow the banner
+   uses, and the questions on white cards over it. */
+.faq-photo {
+  opacity: 0.22;
+  filter: saturate(0.6);
+}
+
+.faq-wash {
+  background:
+    radial-gradient(
+      38rem 24rem at 50% -12%,
+      color-mix(in srgb, var(--color-gold) 20%, transparent) 0%,
+      transparent 66%
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-navy-deep) 88%, transparent),
+      color-mix(in srgb, var(--color-navy) 80%, transparent)
+    );
+}
+
+/* Safari still draws its own triangle for a summary unless told twice. */
+.faq-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-card {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.faq-card:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+.faq-card[open] {
+  background: #fffdf8;
+  box-shadow: 0 18px 44px rgb(6 12 28 / 0.36);
+}
+
+.faq-plus {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.faq-card[open] .faq-plus {
+  transform: rotate(45deg);
+  background: var(--color-gold);
+  color: var(--color-navy);
+}
+
+/* The answer arrives rather than appears. Only one can be open, so this is
+   also what tells the eye which card just took over. */
+.faq-card[open] .faq-answer {
+  animation: fade-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-card,
+  .faq-plus {
+    transition: none;
+  }
+
+  .faq-card:hover {
+    transform: none;
+  }
+
+  .faq-card[open] .faq-answer {
+    animation: none;
+  }
+}
+
+/* The three badges under the headline.
+   A tinted glass pill on a photograph: the gold hairline ties it to the brand
+   and the eighth of white behind it lifts the words off whatever part of the
+   picture happens to be pale. The lift on hover is the same small one the
+   cards elsewhere use, so the whole page reacts to a pointer the same way. */
+.hero-chip {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.hero-chip:hover {
+  transform: translate3d(0, -2px, 0);
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  background-color: rgb(255 255 255 / 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chip {
+    transition: none;
+  }
+
+  .hero-chip:hover {
+    transform: none;
+  }
 }
 
 .hero-scrim {

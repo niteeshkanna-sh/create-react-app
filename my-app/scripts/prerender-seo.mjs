@@ -544,6 +544,18 @@ let written = 0;for (const route of routes) {
 
   if (renderRoute) {
     const body = await renderRoute(route.path);
+
+    // A page delivered inside <div hidden id="S:0"> is a page that needs
+    // JavaScript to be seen, which is the one thing prerendering is for. It
+    // happens when a route suspends on something entry-server's first pass
+    // cannot resolve; that pass says which, and this says what it costs.
+    if (/<div hidden id="S:/.test(body)) {
+      console.warn(
+        `prerender-seo: ${route.path} is hidden until its script runs -- ` +
+        'the markup is there, but nothing that does not run JavaScript will see it.',
+      );
+    }
+
     // A function replacement, not a string: markup is full of $ sequences and
     // "$&" in a replacement string means "the whole match", which would splice
     // the div back into the middle of the page.

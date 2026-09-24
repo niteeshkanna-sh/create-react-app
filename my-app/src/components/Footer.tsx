@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
-import { useHome, useSiteImage } from '../content';
-import { LOGO_FALLBACK } from './BrandPanel';
+import { useHome } from '../content';
 import { readablePhone } from '../lib/phone';
 import { SocialLinks } from './SocialLinks';
 
@@ -29,34 +28,21 @@ export function Footer() {
     f.mapQuery.trim() === ''
       ? null
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.mapQuery)}`;
-  // The footer showed a letter N while an uploaded logo sat in the header.
-  // The owner's own lockup, with an upload still able to replace it.
-  const logo = useSiteImage('logo') ?? LOGO_FALLBACK;
-
   return (
     <footer className="bg-navy text-white/70">
       <div className="mx-auto grid max-w-[86rem] gap-8 px-5 sm:px-8 lg:px-12 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          {/* The full lockup here, not the emblem the header uses: the footer
-              has the room for it, and the name in it is the business signing
-              off the page rather than a label on a button.
-
-              On the navy directly, with no white plate. The plate was there
-              for a mark that might arrive with a dark background of its own;
-              this one has "CARS & BIKES" set in white, which a white plate
-              would have swallowed whole.
-
-              The name is not repeated beside it -- the lockup says it, and it
-              is the only place on the page where saying it twice would be
-              two different sizes of the same words. It is still written out
-              for a screen reader, which cannot read the picture. */}
-          <img
-            src={logo}
-            alt={seo.site.name}
-            loading="lazy"
-            decoding="async"
-            className="h-16 w-auto object-contain sm:h-20"
-          />
+          {/* The name set in type, not the lockup.
+              The logo was here as a second, larger copy of the one in the
+              header -- the same artwork twice on one screen, once at the top
+              and once at the bottom, with nothing between them that needed
+              reminding whose site this is. Words sign the page off just as
+              well, stay crisp at any size, and are what a search result
+              quotes. */}
+          <p className="text-lg font-bold tracking-tight text-white">
+            {seo.site.name}
+          </p>
+          <p className="eyebrow-gold mt-1 text-[11px]">Premium Rentals</p>
           <p className="mt-3 text-sm leading-relaxed">{f.blurb}</p>
 
           {/* The social row moves up here so the last column is the map. Brand
