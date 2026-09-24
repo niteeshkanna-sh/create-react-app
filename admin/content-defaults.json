@@ -20,6 +20,7 @@
       ]
     },
     "services": {
+      "eyebrow": "Our Services",
       "heading": "What we hire",
       "items": [
         {

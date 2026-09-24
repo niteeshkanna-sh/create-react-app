@@ -60,6 +60,7 @@ function content_schema(): array
                 'services' => [
                     'label'  => 'What we hire',
                     'fields' => [
+                        'eyebrow' => ['label' => 'Small line above', 'type' => 'text'],
                         'heading' => ['label' => 'Heading', 'type' => 'text'],
                         'items'   => [
                             'label'  => 'Services',

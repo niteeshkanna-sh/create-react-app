@@ -83,7 +83,7 @@ export function Highlights() {
     <section className="bg-cream py-16 sm:py-20">
       <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
         <Reveal>
-          <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">{eyebrow}</p>
+          <p className="section-eyebrow">{eyebrow}</p>
           <h2 className="mt-2 max-w-3xl text-3xl font-bold tracking-tight text-navy sm:text-4xl">
             {heading}
           </h2>
