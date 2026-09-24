@@ -173,24 +173,28 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={sending}
-          className="mt-0.5 w-full rounded-lg bg-navy px-4 py-2.5 text-[14px] font-semibold text-white transition hover:bg-navy-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy disabled:opacity-60"
-        >
-          {sending ? 'Sending…' : 'Check availability'}
-        </button>
+        {/* Two ways to ask, side by side rather than stacked: they are
+            alternatives, not steps, and a column of two full-width buttons
+            reads as the second one being what you do after the first.
+            WhatsApp on the left, in its own green, because for a lot of
+            people it is the only one they would use -- and the form's own
+            button on the right, where the thumb ends up. */}
+        <div className="mt-0.5 grid grid-cols-2 gap-2">
+          <WhatsAppButton
+            message="Hello, I would like to check availability for a self-drive vehicle."
+            className="w-full rounded-lg px-2 py-2.5 text-[13px] whitespace-nowrap sm:text-[14px]"
+          >
+            WhatsApp
+          </WhatsAppButton>
 
-        {/* The other way to reach us, and for a lot of people the only one
-            they would use. A link at the bottom is not the same offer as a
-            button, so it is a button -- WhatsApp's own green, because that is
-            what people are looking for rather than anything of ours. */}
-        <WhatsAppButton
-          message="Hello, I would like to check availability for a self-drive vehicle."
-          className="w-full rounded-lg px-4 py-2 text-[14px]"
-        >
-          Ask on WhatsApp
-        </WhatsAppButton>
+          <button
+            type="submit"
+            disabled={sending}
+            className="w-full rounded-lg bg-navy px-2 py-2.5 text-[13px] font-semibold whitespace-nowrap text-white transition hover:bg-navy-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy disabled:opacity-60 sm:text-[14px]"
+          >
+            {sending ? 'Sending…' : 'Check availability'}
+          </button>
+        </div>
 
         {/* On a phone this said the same thing as the line under the heading,
             twice, in a card fighting for the first screen. The one kept is the
