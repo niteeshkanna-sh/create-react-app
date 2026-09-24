@@ -2,6 +2,7 @@ import { dailyRate, inr } from '../data/cars';
 import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
 import { BrandPanel } from '../components/BrandPanel';
+import { Faq } from '../components/Faq';
 
 export function Tariff() {
   const fleet = useFleet();
@@ -73,6 +74,11 @@ export function Tariff() {
           car comes back, less any extra-KM charges or damage.
         </p>
       </section>
+
+      {/* The questions the figures above raise -- the deposit, the kilometre
+          allowance, what happens over it -- answered on the page that raises
+          them. */}
+      <Faq />
     </>
   );
 }

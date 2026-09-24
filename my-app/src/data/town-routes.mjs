@@ -17,9 +17,11 @@ export function townHubRoute(site) {
   return {
     path: TOWN_BASE,
     title: `Car & Bike Rental Across ${site.district} District — Town by Town`,
+    // Kept under the length a search result shows. The old wording ran to
+    // 176 characters, and the last two towns in it were never read by anyone.
     description:
-      `Where we deliver self drive cars, bikes, wedding cars and tourist vehicles across ` +
-      `${site.district} district: ${site.areas.slice(0, 4).join(', ')} and the towns between them.`,
+      `Self drive cars, bikes, wedding cars and tourist vehicles delivered across ` +
+      `${site.district} district — ${site.areas.slice(0, 4).join(', ')} and beyond.`,
     priority: '0.8',
     imageSlot: 'coast',
     imageAlt: `The towns of ${site.district} district where we deliver vehicles`,

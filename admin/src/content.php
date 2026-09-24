@@ -149,6 +149,22 @@ function content_schema(): array
                         'footnoteTail'      => ['label' => 'Footnote, after the link', 'type' => 'text'],
                     ],
                 ],
+                'faq' => [
+                    'label'  => 'Questions and answers',
+                    'note'   => 'The questions people ask before they book, on the home page and the tariff page. Worth keeping honest and specific: this is the part of the site that answers what somebody typed into Google, and Google reads these as questions and answers rather than as paragraphs. Delete one you would rather not answer in writing; add the ones you find yourself repeating on the phone.',
+                    'fields' => [
+                        'heading' => ['label' => 'Heading', 'type' => 'text'],
+                        'intro'   => ['label' => 'Line under it', 'type' => 'text'],
+                        'items'   => [
+                            'label'  => 'Questions',
+                            'type'   => 'repeater',
+                            'fields' => [
+                                'question' => ['label' => 'Question', 'type' => 'text'],
+                                'answer'   => ['label' => 'Answer', 'type' => 'textarea'],
+                            ],
+                        ],
+                    ],
+                ],
                 'closingCta' => [
                     'label'  => 'Closing call to action',
                     'fields' => [
