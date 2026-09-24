@@ -12,7 +12,7 @@ export function HowItWorks() {
     <section id="how" className="bg-white py-20">
       <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
         <Reveal>
-          <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">
+          <p className="section-eyebrow">
             Booking, start to finish
           </p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">

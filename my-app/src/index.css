@@ -338,6 +338,29 @@ body {
   );
 }
 
+/* The gold line above a section heading — "Our Services", "Where we deliver".
+   One class rather than the same five utilities written out in four
+   components, because the four of them have to stay the same size as each
+   other: they are the same thing on the same page, and one of them being
+   bigger reads as a mistake rather than as emphasis.
+
+   16px where it was 14. Wide-tracked caps are read as a label rather than as
+   a sentence, and at 14 that label was smaller than the body text under it. */
+.section-eyebrow {
+  color: var(--color-gold-deep);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .section-eyebrow {
+    font-size: 1.0625rem;
+    letter-spacing: 0.16em;
+  }
+}
+
 /* "PREMIUM RENTALS" — wide-tracked gold caps above the name. */
 .eyebrow-gold {
   color: var(--color-gold-light);

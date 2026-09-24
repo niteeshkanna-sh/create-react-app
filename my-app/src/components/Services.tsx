@@ -11,7 +11,7 @@ import { hasScene } from './art/scenes';
  */
 export function Services({ showHeading = true }: { showHeading?: boolean }) {
   const home = useHome();
-  const { heading, items } = home.services;
+  const { eyebrow, heading, items } = home.services;
 
   // On the home page these cards sit under a section heading, so they are the
   // level below it. On /services there is no section heading -- the page title
@@ -23,9 +23,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
     <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">
       {showHeading ? (
         <Reveal>
-          <p className="text-sm font-bold tracking-widest text-gold-deep uppercase">
-            What we rent
-          </p>
+          <p className="section-eyebrow">{eyebrow}</p>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
             {heading}
           </h2>
