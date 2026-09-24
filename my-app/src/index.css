@@ -832,6 +832,34 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
+/* The three badges under the headline.
+   A tinted glass pill on a photograph: the gold hairline ties it to the brand
+   and the eighth of white behind it lifts the words off whatever part of the
+   picture happens to be pale. The lift on hover is the same small one the
+   cards elsewhere use, so the whole page reacts to a pointer the same way. */
+.hero-chip {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.hero-chip:hover {
+  transform: translate3d(0, -2px, 0);
+  border-color: color-mix(in srgb, var(--color-gold) 65%, transparent);
+  background-color: rgb(255 255 255 / 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chip {
+    transition: none;
+  }
+
+  .hero-chip:hover {
+    transform: none;
+  }
+}
+
 .hero-scrim {
   /* Weighted, not a flat wash. The complaint the last one earned was that the
      picture could not be seen, and the reason was a single curtain drawn over

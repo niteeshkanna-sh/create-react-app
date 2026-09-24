@@ -102,10 +102,21 @@ export function Hero() {
             />
           </div>
 
-          <ul data-hero-item="" style={{ ['--hero-delay' as string]: '420ms' }} className="grid gap-2.5 sm:grid-cols-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:gap-3 xl:col-span-8">
+          {/* Three promises, as badges rather than as a bulleted row.
+              They were three sentences of small grey type -- "Unlimited-choice
+              pickup across the city" and two more -- and three sentences side
+              by side under a headline are read as a paragraph, which means
+              they are not read. A badge is read, because there is nothing in
+              it to skip: a tick and two or three words. The words are still
+              the panel's. */}
+          <ul data-hero-item="" style={{ ['--hero-delay' as string]: '420ms' }} className="flex flex-wrap gap-2.5 lg:col-span-7 lg:col-start-1 lg:row-start-2 xl:col-span-8">
             {h.points.map((p) => (
-              <li key={p} className="flex items-start gap-2.5 text-sm text-white/75">
-                <span aria-hidden="true" className="bullet-dot" />
+              <li key={p} className="hero-chip inline-flex items-center gap-2 rounded-full border border-gold/30 bg-white/[0.08] py-2 pr-4 pl-2.5 text-[13px] font-semibold text-white sm:text-sm">
+                <span aria-hidden="true" className="hero-chip-tick grid size-5 shrink-0 place-items-center rounded-full bg-gold/20 text-gold-light">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path d="M2.5 6.4l2.3 2.3L9.5 3.9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
                 {p}
               </li>
             ))}
