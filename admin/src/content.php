@@ -74,10 +74,12 @@ function content_schema(): array
                 ],
                 'highlights' => [
                     'label'  => 'The three worth asking for',
-                    'note'   => 'Three lines on the dark band, for the bookings worth the most. One sentence each: this is the part of the page somebody reads while scrolling past, and the page it links to is where the detail belongs.',
+                    'note'   => 'Three cards for the bookings worth the most. The first is the big one; the other two sit beside it. One sentence each: this is the part of the page somebody reads while scrolling past, and the page it links to is where the detail belongs.',
                     'fields' => [
+                        'eyebrow' => ['label' => 'Small line above', 'type' => 'text'],
+                        'heading' => ['label' => 'Heading', 'type' => 'text'],
                         'items' => [
-                            'label'  => 'Lines',
+                            'label'  => 'Cards',
                             'type'   => 'repeater',
                             // No icon field: the site draws one per service,
                             // so the row cannot end up with one colour emoji
