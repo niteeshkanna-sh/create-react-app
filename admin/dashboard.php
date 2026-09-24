@@ -305,7 +305,24 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
       </section>
 
       <!-- Record an expense -->
-      <div class="modal-overlay" id="expenseModalOverlay" hidden>
+      <!-- ===== Are you sure? =====
+       One dialog for every destructive action, so what is about to be
+       removed can be listed rather than crammed into a browser confirm(). -->
+  <div class="modal-overlay" id="confirmOverlay" hidden>
+    <div class="modal modal-confirm" role="alertdialog" aria-modal="true"
+         aria-labelledby="confirmTitle" aria-describedby="confirmLead">
+      <h3 id="confirmTitle">Are you sure?</h3>
+      <p id="confirmLead" class="confirm-lead"></p>
+      <ul id="confirmPoints" class="confirm-points"></ul>
+      <p class="confirm-final">This cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="confirmCancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmGo">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="expenseModalOverlay" hidden>
         <div class="modal">
           <h3 id="expenseModalTitle">Record Expense</h3>
           <form id="expenseForm">

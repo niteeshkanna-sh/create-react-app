@@ -118,6 +118,51 @@ STATUS=$(post "bookings.php?action=save" "{\"customer_name\":\"New Customer\",\"
 check "the freed dates can be booked again" "$STATUS" "200"
 
 echo
+echo "-- deleting takes its money with it --"
+# A booking of its own, with money against it, so what the deletion removes
+# can be measured rather than assumed.
+STATUS=$(post "bookings.php?action=save" "{\"customer_name\":\"Delete Me\",\"phone\":\"9000000009\",
+  \"licence_number\":\"TN0120230099999\",\"vehicle_id\":$VID,
+  \"start_at\":\"2026-08-01 10:00\",\"return_at\":\"2026-08-03 10:00\",
+  \"base_rental\":\"4000\",\"km_limit_per_day\":200,\"extra_km_rate\":\"8\"}")
+check "a booking to delete" "$STATUS" "200"
+DID=$(body | sed -n 's/.*"id":\([0-9]*\).*/\1/p')
+
+STATUS=$(post "payments.php?action=add" "{\"booking_id\":$DID,\"kind\":\"advance\",
+  \"amount\":\"1500\",\"paid_on\":\"2026-07-20\",\"method\":\"UPI\"}")
+check "a payment against it" "$STATUS" "200"
+STATUS=$(post "payments.php?action=deposit" "{\"booking_id\":$DID,\"amount\":\"5000\",
+  \"received_on\":\"2026-08-01\",\"method\":\"Cash\"}")
+check "and a deposit" "$STATUS" "200"
+# The whole year, because the summary defaults to this month and the payment
+# above is dated outside it.
+get "expenses.php?action=summary&from=2026-01-01&to=2026-12-31" >/dev/null
+INCOME_BEFORE=$(body | sed -n 's/.*"income":{"total":\([0-9.]*\).*/\1/p')
+
+STATUS=$(post "bookings.php?action=delete" "{\"id\":$DID}")
+check "the booking is deleted" "$STATUS" "200"
+body | grep -q '"deleted":"NSC-' && ok "and says which one" || bad "and says which one" "$(body | head -c 120)"
+
+STATUS=$(get "bookings.php?action=get&id=$DID")
+check "it is really gone" "$STATUS" "404"
+
+get "payments.php?action=list&booking_id=$DID" >/dev/null
+body | grep -q '"amount":"1500' && bad "its payments went with it" "the 1,500 is still listed" \
+  || ok "its payments went with it"
+
+get "expenses.php?action=summary&from=2026-01-01&to=2026-12-31" >/dev/null
+INCOME_AFTER=$(body | sed -n 's/.*"income":{"total":\([0-9.]*\).*/\1/p')
+if [ -n "$INCOME_BEFORE" ] && [ -n "$INCOME_AFTER" ]; then
+  DROP=$(awk -v a="$INCOME_BEFORE" -v b="$INCOME_AFTER" 'BEGIN{printf "%.2f", a-b}')
+  check "income drops by the payment it held" "$DROP" "1500.00"
+else
+  bad "income drops by the payment it held" "no summary figure to compare"
+fi
+
+STATUS=$(post "bookings.php?action=delete" "{\"id\":$DID}")
+check "deleting it twice is refused" "$STATUS" "404"
+
+echo
 echo "-- listing --"
 STATUS=$(get "bookings.php?action=list")
 check "list returns 200" "$STATUS" "200"

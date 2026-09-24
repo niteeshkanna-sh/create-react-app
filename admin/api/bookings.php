@@ -86,7 +86,7 @@ switch ($action) {
     // should never have existed: a test, a duplicate, a booking taken against
     // the wrong car and remade against the right one.
     case 'delete': {
-        $user  = api_guard('booking.cancel', true);
+        $user  = api_guard('booking.delete', true);
         $input = json_input();
         $id    = (int) ($input['id'] ?? 0);
 
@@ -94,27 +94,28 @@ switch ($action) {
         if ($booking === null) {
             json_error('That booking no longer exists.', 404);
         }
-        if ($booking['status'] !== 'Cancelled') {
-            json_error('Only a cancelled booking can be deleted. Cancel it first, '
-                . 'which keeps the record and the reason.', 409);
-        }
 
+        // Everything this booking works out -- what was charged, what came in,
+        // what is held, what the extra kilometres came to -- is deleted with
+        // it, so the figures in Finance and in every report stop counting a
+        // booking that is not there. That is the whole point of removing one,
+        // and doing half of it would leave income with nothing behind it.
+        //
+        // Two things are deliberately kept. An expense is money that really
+        // left the business, so it keeps its amount and loses the booking. And
+        // the audit trail keeps its rows: what the booking said is gone, but
+        // that it existed, what it held and who removed it is the record that
+        // makes the ledger explainable afterwards.
         $money = booking_money($id);
-        if (!money_is_zero($money['paid']) || !money_is_zero($money['deposit_held'])) {
-            json_error(
-                'This booking still holds ' . money_add($money['paid'], $money['deposit_held'])
-                . ' in payments and deposits. Refund or void those first -- deleting it now '
-                . 'would remove the only record of money that is still owed back.',
-                409
-            );
-        }
 
-        // The audit entry is written before the rows go, and deliberately not
-        // deleted with them: what a booking said is gone, but that it existed
-        // and who removed it is the record that makes the ledger explainable.
         audit_log('booking_deleted', 'bookings', 'booking', $id,
-            ['booking_number' => $booking['booking_number'], 'status' => $booking['status'],
-             'start_at' => $booking['start_at'], 'return_at' => $booking['return_at']],
+            ['booking_number'   => $booking['booking_number'],
+             'status'           => $booking['status'],
+             'start_at'         => $booking['start_at'],
+             'return_at'        => $booking['return_at'],
+             'payments_removed' => $money['paid'],
+             'deposit_removed'  => $money['deposit_held'],
+             'was_owed'         => $money['balance']],
             null, $booking['cancelled_reason'] ?? null,
             (int) $user['id'], $user['name'], null,
             (int) $booking['customer_id'], (int) $booking['vehicle_id']);
@@ -135,21 +136,67 @@ switch ($action) {
         }
 
         transaction(function () use ($id) {
-            // Children first: these carry a foreign key to the booking, and
+            // An approval points at the row it is about, not at the booking,
+            // so those go first or they are left pointing at nothing.
+            foreach ([['payment', 'payments'], ['deposit', 'deposits'], ['refund', 'refunds'],
+                      ['km_record', 'km_records'], ['booking_charge', 'booking_charges']] as [$kind, $table]) {
+                if (table_has_column('approvals', 'subject_id') && table_has_column($table, 'booking_id')) {
+                    query("DELETE a FROM approvals a
+                             JOIN {$table} t ON t.id = a.subject_id
+                            WHERE a.subject_type = ? AND t.booking_id = ?", [$kind, $id]);
+                }
+            }
+            if (table_has_column('documents', 'owner_type')) {
+                query("DELETE FROM documents WHERE owner_type = 'booking' AND owner_id = ?", [$id]);
+            }
+
+            // Children first, refunds before the deposits they came out of:
             // the order is what makes the delete work rather than fail halfway.
-            foreach (['booking_files', 'km_records', 'payments', 'deposits',
-                      'refunds', 'booking_charges'] as $table) {
+            foreach (['refunds', 'deposits', 'payments', 'km_records', 'booking_extras',
+                      'booking_damages', 'booking_files', 'booking_charges', 'reminders'] as $table) {
                 if (table_has_column($table, 'booking_id')) {
                     query("DELETE FROM {$table} WHERE booking_id = ?", [$id]);
                 }
             }
+
+            // Money that really was spent keeps its amount and loses the
+            // booking. Deleting it would quietly make the business look more
+            // profitable than it was.
+            if (table_has_column('expenses', 'booking_id')) {
+                query('UPDATE expenses SET booking_id = NULL WHERE booking_id = ?', [$id]);
+            }
+
+            // The enquiry it came from goes back to being an enquiry, rather
+            // than staying Converted into a booking that no longer exists.
+            query("UPDATE enquiries SET status = 'Accepted', booking_id = NULL
+                    WHERE booking_id = ?", [$id]);
+
             // The audit trail keeps its rows but stops pointing at a booking
             // that is not there.
             query('UPDATE audit_logs SET booking_id = NULL WHERE booking_id = ?', [$id]);
             query('DELETE FROM bookings WHERE id = ?', [$id]);
         });
 
-        json_out(['ok' => true, 'deleted' => $booking['booking_number']]);
+        // A car that went out on this booking and never came back would sit on
+        // "On Rental" for good, because the return that frees it has just been
+        // deleted along with everything else.
+        $vehicleId = (int) $booking['vehicle_id'];
+        $stillOut  = fetch_one(
+            "SELECT b.id FROM bookings b
+               JOIN km_records k ON k.booking_id = b.id AND k.leg = 'pickup' AND k.status = 'active'
+              WHERE b.vehicle_id = ? AND b.status = 'Active' LIMIT 1",
+            [$vehicleId]
+        );
+        if ($stillOut === null) {
+            query("UPDATE vehicles SET status = 'Available'
+                    WHERE id = ? AND status = 'On Rental'", [$vehicleId]);
+        }
+
+        json_out([
+            'ok'       => true,
+            'deleted'  => $booking['booking_number'],
+            'removed'  => ['payments' => $money['paid'], 'deposit' => $money['deposit_held']],
+        ]);
     }
 
     // ---------------------------------------------------------------- save --
