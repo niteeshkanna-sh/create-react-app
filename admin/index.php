@@ -6,8 +6,7 @@ require_once __DIR__ . '/src/assets.php';
 
 // Already signed in — go straight through.
 if (current_user() !== null) {
-    header('Location: dashboard.php');
-    exit;
+    panel_redirect('dashboard.php');
 }
 
 $error = null;
@@ -21,8 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     if ($result['ok']) {
-        header('Location: dashboard.php');
-        exit;
+        panel_redirect('dashboard.php');
     }
     $error = $result['error'] ?? 'Sign in failed.';
 }

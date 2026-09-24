@@ -202,20 +202,26 @@ admin_shell_open($me, 'content.php', 'Website content');
 
     <div class="brand-slots">
       <?php foreach (SITE_IMAGE_SLOTS as $slot => $label): ?>
-        <?php [$rw, $rh, $ow, $oh] = site_image_shape($slot); ?>
+        <?php
+        [$rw, $rh, $ow, $oh] = site_image_shape($slot);
+        // A logo is kept whole. There is nothing to frame, so the slot says
+        // so, shows the picture on its own shape, and offers no Edit button.
+        $whole = site_image_whole($slot);
+        ?>
         <!-- One form per slot. The file input is hidden and driven by the
              button beside it: the native control prints "No file chosen" in
              a width nobody chose, which is what made this grid ragged. -->
         <form class="brand-slot" method="post" enctype="multipart/form-data"
               data-slot="<?= e($slot) ?>" data-ratio="<?= $rw ?>:<?= $rh ?>"
-              data-out="<?= $ow ?>x<?= $oh ?>">
+              data-out="<?= $ow ?>x<?= $oh ?>"<?= $whole ? ' data-fit="whole"' : '' ?>>
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="brand-upload">
           <input type="hidden" name="slot" value="<?= e($slot) ?>">
 
           <span class="brand-slot-label"><?= e($label) ?></span>
 
-          <div class="brand-slot-preview" style="aspect-ratio: <?= $rw ?> / <?= $rh ?>">
+          <div class="brand-slot-preview<?= $whole ? ' is-whole' : '' ?>"
+               style="aspect-ratio: <?= $whole ? '16 / 10' : $rw . ' / ' . $rh ?>">
             <?php if (isset($brand[$slot])): ?>
               <!-- The readable address first, and the old ?f= one if the
                    server is not routing it. The panel is where someone looks
@@ -230,7 +236,9 @@ admin_shell_open($me, 'content.php', 'Website content');
             <?php endif; ?>
           </div>
 
-          <p class="brand-slot-shape"><?= $rw ?>:<?= $rh ?> &middot; saved <?= $ow ?>&times;<?= $oh ?></p>
+          <p class="brand-slot-shape"><?= $whole
+              ? 'Kept whole &middot; scaled to fit ' . $ow . '&times;' . $oh
+              : $rw . ':' . $rh . ' &middot; saved ' . $ow . '&times;' . $oh ?></p>
 
           <input class="brand-slot-file" type="file" name="image"
                  accept="image/jpeg,image/png,image/webp,image/avif"
@@ -241,9 +249,12 @@ admin_shell_open($me, 'content.php', 'Website content');
               <?= isset($brand[$slot]) ? 'Replace' : 'Choose image' ?>
             </button>
             <?php if (isset($brand[$slot])): ?>
-              <button class="btn btn-ghost btn-sm brand-edit" type="button"
-                      data-src="<?= e((string) site_image_url($brand[$slot])) ?>"
-                      data-src-fallback="brand.php?f=<?= e(rawurlencode($brand[$slot])) ?>">Edit</button>
+              <?php if (!$whole): ?>
+                <!-- Nothing to frame on a slot that keeps the whole image. -->
+                <button class="btn btn-ghost btn-sm brand-edit" type="button"
+                        data-src="<?= e((string) site_image_url($brand[$slot])) ?>"
+                        data-src-fallback="brand.php?f=<?= e(rawurlencode($brand[$slot])) ?>">Edit</button>
+              <?php endif; ?>
               <!-- Same form, different action: a form cannot contain another,
                    and a second form beside it would be a second cell in the
                    grid. The script sets the action before it submits. -->

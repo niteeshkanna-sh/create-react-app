@@ -174,6 +174,62 @@
     apply();
   }
 
+  /**
+   * A slot that keeps the whole image: scaled down to fit the box and sent,
+   * with no frame in between.
+   *
+   * A logo is artwork that already has its margins decided. Framing one to a
+   * shape cuts the words off it -- which is what a square frame did to the
+   * lockup, leaving "NiteSha CARS" with the rest of the name outside the
+   * crop. Scaling keeps every pixel and only bounds the file.
+   */
+  function sendWhole(file, slotForm) {
+    var out = (slotForm.dataset.out || '1280x800').split('x').map(Number);
+    var url = URL.createObjectURL(file);
+    var probe = new Image();
+
+    probe.onload = function () {
+      URL.revokeObjectURL(url);
+      // Never upscale: a small logo blown up to the box is a blurry logo.
+      var fit = Math.min(1, out[0] / probe.naturalWidth, out[1] / probe.naturalHeight);
+      var w = Math.max(1, Math.round(probe.naturalWidth * fit));
+      var h = Math.max(1, Math.round(probe.naturalHeight * fit));
+
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      // No fill behind it: a logo is drawn on the navy header, and a white
+      // rectangle where the transparency was is worse than no logo at all.
+      ctx.drawImage(probe, 0, 0, w, h);
+
+      canvas.toBlob(function (blob) {
+        // If the canvas cannot produce one, the file the person chose is
+        // still a perfectly good upload; the server checks it either way.
+        submitSlot(slotForm, blob ? new File([blob], 'image.webp', { type: 'image/webp' }) : file);
+      }, 'image/webp', 0.9);
+    };
+
+    probe.onerror = function () {
+      URL.revokeObjectURL(url);
+      submitSlot(slotForm, file);
+    };
+    probe.src = url;
+  }
+
+  /** Puts one file into a slot's form and posts it. */
+  function submitSlot(slotForm, file) {
+    // DataTransfer is the only way to put a file into an <input type=file>,
+    // which is what keeps this an ordinary form post rather than a fetch with
+    // its own error handling.
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    slotForm.querySelector('.brand-slot-file').files = dt.files;
+    slotForm.querySelector('[name="action"]').value = 'brand-upload';
+    slotForm.submit();
+  }
+
   zoom.addEventListener('input', function () { setZoom(Number(zoom.value) / 100); });
   document.getElementById('frameIn').addEventListener('click', function () { setZoom(st.scale + 0.2); });
   document.getElementById('frameOut').addEventListener('click', function () { setZoom(st.scale - 0.2); });
@@ -199,16 +255,8 @@
     var target = form;
     canvas.toBlob(function (blob) {
       if (!blob) { alert('The framed image could not be prepared.'); return; }
-      var file = new File([blob], 'image.webp', { type: 'image/webp' });
-      // DataTransfer is the only way to put a file into an <input type=file>,
-      // which is what keeps this an ordinary form post rather than a fetch
-      // with its own error handling.
-      var dt = new DataTransfer();
-      dt.items.add(file);
-      target.querySelector('.brand-slot-file').files = dt.files;
-      target.querySelector('[name="action"]').value = 'brand-upload';
       close();
-      target.submit();
+      submitSlot(target, new File([blob], 'image.webp', { type: 'image/webp' }));
     }, 'image/webp', 0.85);
   });
 
@@ -242,6 +290,8 @@
     var file = ev.target.files && ev.target.files[0];
     if (!file) return;
     var slot = ev.target.closest('.brand-slot');
+    // The logo goes straight up, whole. Everything else is framed first.
+    if (slot.dataset.fit === 'whole') { sendWhole(file, slot); return; }
     open(URL.createObjectURL(file), slot, slot.querySelector('.brand-slot-label').textContent.trim());
   });
 }());
