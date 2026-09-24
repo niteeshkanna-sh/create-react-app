@@ -8,10 +8,12 @@
  * allowlist headers, which cost nothing and keep it usable from elsewhere if
  * the site is ever split across hosts again.
  *
- * vehicle_id is deliberately NOT sent: the endpoint checks it against the
- * vehicles table, and the ids in src/data/cars.ts are placeholders that do not
- * exist there, so sending one would be rejected. The chosen car travels in
- * `requirements` instead, which is free text.
+ * A chosen vehicle travels two ways: its id, so the panel can show the enquiry
+ * against the real vehicle and count it there, and its name in `requirements`,
+ * which is free text and still reads correctly years later when that vehicle
+ * has been sold. The endpoint ignores an id it does not recognise -- the ids in
+ * src/data/cars.ts are placeholders used only when the panel is unreachable --
+ * so the name is what makes the enquiry answerable either way.
  */
 
 import { apiUrl } from './api';
@@ -25,6 +27,8 @@ export interface EnquiryInput {
   startDate?: string;
   returnDate?: string;
   car?: string;
+  /** The real vehicle id, when the fleet came from the panel. */
+  vehicleId?: string;
   message?: string;
   /** Hidden field. Real people leave it empty; bots fill it in. */
   website?: string;
@@ -48,6 +52,7 @@ export async function submitEnquiry(
   if (input.startDate) payload.start_date = input.startDate;
   if (input.returnDate) payload.return_date = input.returnDate;
   if (input.car) payload.requirements = `Vehicle of interest: ${input.car}`;
+  if (input.vehicleId) payload.vehicle_id = input.vehicleId;
   if (input.message) payload.message = input.message;
 
   let response: Response;

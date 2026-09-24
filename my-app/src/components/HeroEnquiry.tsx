@@ -1,16 +1,21 @@
 import { useState, type FormEvent } from 'react';
 import { submitEnquiry } from '../lib/enquiry';
+import { useFleet } from '../lib/useFleet';
 import { WhatsAppButton } from './WhatsAppButton';
 
 /**
  * The short enquiry card in the home page banner.
  *
- * Deliberately not the full form from the contact page. Four boxes is what
- * somebody will fill in on a banner before they have decided anything; asking
- * for an email, a pickup point and a vehicle at this moment is asking them to
- * make choices they have not made yet, and the usual answer to that is to
- * close the tab. Name, number and the two dates are enough to call them back,
- * which is the only thing this has to achieve.
+ * Deliberately not the full form from the contact page. Name, number, the two
+ * dates and which car -- asking for an email and a pickup point on a banner is
+ * asking for choices nobody has made yet, and the usual answer to that is to
+ * close the tab.
+ *
+ * The car is a single tap on a list that is already there, and it changes the
+ * call back from "what would you like?" to "yes, that one is free" -- so it
+ * earns its place beside the number, which needs ten digits and no more.
+ * It disappears when the fleet cannot be reached, because an empty dropdown
+ * asks a question with no answers.
  *
  * The rest of the detail is gathered on the phone, or on /contact by whoever
  * would rather type it. Both land in the same place.
@@ -38,6 +43,11 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [start, setStart] = useState('');
 
+  const fleet = useFleet();
+  const cars = fleet.status === 'ready' ? fleet.cars : [];
+  const [car, setCar] = useState('');
+  const chosen = cars.find((c) => c.id === car);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus({ kind: 'sending' });
@@ -50,6 +60,10 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
       phone: get('phone'),
       startDate: get('start'),
       returnDate: get('return'),
+      // Both: the id so the panel shows the enquiry against the real vehicle,
+      // the name so it still reads correctly if that vehicle is ever sold.
+      car: chosen ? `${chosen.brand} ${chosen.name}`.trim() : '',
+      vehicleId: chosen?.id,
       message: 'Sent from the home page banner.',
       website: get('website'),
     });
@@ -107,10 +121,30 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
                  placeholder="Name" className={box} />
         </div>
 
-        <div>
-          <label className={cap} htmlFor="heroPhone">Phone number</label>
-          <input id="heroPhone" name="phone" required type="tel" inputMode="tel"
-                 autoComplete="tel" placeholder="10-digit mobile number" className={box} />
+        {/* A number is ten digits wide whatever box it is in, so the room it
+            was taking goes to the car instead. Without a fleet to choose from
+            it keeps the whole row, rather than sitting oddly at two fifths of
+            it beside nothing. */}
+        <div className={cars.length ? 'grid grid-cols-5 gap-2 sm:gap-2.5' : ''}>
+          <div className={cars.length ? 'col-span-2' : ''}>
+            <label className={cap} htmlFor="heroPhone">Phone</label>
+            <input id="heroPhone" name="phone" required type="tel" inputMode="tel"
+                   autoComplete="tel" placeholder="10-digit" className={box} />
+          </div>
+
+          {cars.length ? (
+            <div className="col-span-3">
+              <label className={cap} htmlFor="heroCar">Vehicle</label>
+              <select id="heroCar" name="car" value={car}
+                      onChange={(e) => setCar(e.target.value)}
+                      className={`${box} pr-7`}>
+                <option value="">Any vehicle</option>
+                {cars.map((c) => (
+                  <option key={c.id} value={c.id}>{`${c.brand} ${c.name}`.trim()}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:gap-2.5">

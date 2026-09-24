@@ -51,6 +51,9 @@ export function Enquiry() {
       startDate: get('start'),
       returnDate: get('return'),
       car: get('car'),
+      // The id as well as the name, so the panel shows the enquiry against
+      // the real vehicle rather than only mentioning it in the notes.
+      vehicleId: chosen?.id,
       message: get('message'),
       website: get('website'),
     });
