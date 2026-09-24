@@ -16,7 +16,7 @@
  * dist/404.html stays a copy of the root page: it is what Pages serves for
  * anything unmatched, and the router resolves the URL once the app boots.
  */
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { allTownRoutes, TOWN_BASE } from '../src/data/town-routes.mjs';
@@ -493,6 +493,26 @@ const sitemap =
   '\n</urlset>\n';
 
 writeFileSync(join(dist, 'sitemap.xml'), sitemap);
+
+// The icons are XML, and a browser that cannot parse one draws nothing at
+// all rather than complaining: the tab just goes blank. The way that happens
+// is a comment containing two hyphens, which HTML tolerates and XML forbids,
+// and which is easy to type in a comment explaining a decision. It happened
+// to this very file. Node has no XML parser to check the rest with, so this
+// checks the one thing that actually goes wrong, and says which line.
+for (const icon of readdirSync(dist).filter((f) => f.endsWith('.svg'))) {
+  const text = readFileSync(join(dist, icon), 'utf8');
+  for (const [comment] of text.matchAll(/<!--[\s\S]*?-->/g)) {
+    const body = comment.slice(4, -3);
+    if (body.includes('--')) {
+      const line = text.slice(0, text.indexOf(comment) + comment.indexOf('--', 4)).split('\n').length;
+      throw new Error(
+        `prerender-seo: ${icon} line ${line}: "--" inside a comment. XML forbids it, ` +
+        'so no browser will draw this icon. Use a full stop or an em dash instead.',
+      );
+    }
+  }
+}
 
 console.log(
   `prerender-seo: ${written} routes, plus sitemap.xml and the 404 fallback`,
