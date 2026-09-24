@@ -289,11 +289,115 @@ body {
   }
 }
 
+/* ---- How it works: three steps on a drawn rail -------------------------
+ *
+ * The three were the same card as the fleet grid further up -- a photograph
+ * with a bordered box under it -- which made two sections of the page read as
+ * one long list of cards. These are steps, in an order, and the order is the
+ * thing the section is for, so it is drawn: a numbered node per step and a
+ * gold line running from it towards the next.
+ *
+ * The line draws itself as each step arrives, which is the one place on this
+ * page where an animation says something rather than decorating: it moves
+ * left to right, in the order the steps happen.
+ */
+.step-rail {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+}
+
+.step-node {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 999px;
+  background: var(--color-navy);
+  color: var(--color-gold);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.14);
+}
+
+/* From the node towards the step after it. Not drawn after the last one,
+   which has nothing to point at. */
+.step-line {
+  position: absolute;
+  left: 56px;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--color-gold) 0%,
+    rgba(212, 175, 55, 0.5) 55%,
+    rgba(212, 175, 55, 0) 100%
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* The photograph, which lifts a little under the pointer. The frame already
+   clips, so the picture grows inside it rather than pushing the layout. */
+.step-photo .art-photo,
+.step-photo .art-svg {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step:hover .step-photo .art-photo,
+.step:hover .step-photo .art-svg {
+  transform: scale(1.06);
+}
+
+@keyframes rail-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes node-pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Hung off the reveal the step already has, and offset from its stagger, so
+   the node lands and the line sets off after it rather than with it. */
+[data-reveal].is-visible .step-node {
+  animation: node-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + 60ms);
+}
+
+[data-reveal].is-visible .step-line {
+  animation: rail-draw 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + 240ms);
+}
+
 /* Reduced motion: show everything, move nothing. Without this the reveal rule
    above would leave content permanently invisible. */
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] {
     opacity: 1;
+  }
+
+  /* The rail is drawn, not faded, so it needs saying separately: with the
+     animation off, an untouched scaleX(0) line is an invisible one. */
+  .step-line {
+    transform: none;
+  }
+
+  [data-reveal].is-visible .step-node,
+  [data-reveal].is-visible .step-line {
+    animation: none;
+  }
+
+  .step-photo .art-photo,
+  .step-photo .art-svg,
+  .step:hover .step-photo .art-photo,
+  .step:hover .step-photo .art-svg {
+    transition: none;
+    transform: none;
   }
 }
 
