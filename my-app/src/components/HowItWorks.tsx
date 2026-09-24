@@ -20,23 +20,37 @@ export function HowItWorks() {
           </h2>
         </Reveal>
 
-        <ol className="mt-10 grid gap-6 sm:grid-cols-3">
+        {/* An ordered list, because the order is the point. The rail and
+            the numbered node say the same thing to anyone who can see it,
+            and the <ol> says it to anyone who cannot. */}
+        <ol className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-8">
           {steps.map((s, i) => (
-            <Reveal key={s.n} delay={i * 110} as="li" className="h-full">
-              <div className="card-lift flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
-                {/* The scene list is indexed rather than keyed off s.n, so a
-                    renamed step number in the content file cannot silently
-                    drop the illustration. */}
-                <SectionArt name={SCENES[i % SCENES.length]} alt={s.title} />
-
-                <div className="flex flex-1 flex-col p-6">
-                  <p className="text-sm font-bold tracking-widest text-gold-deep">
-                    {s.n}
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold text-navy">{s.title}</h3>
-                  <p className="mt-1.5 leading-relaxed text-ink-dim">{s.body}</p>
-                </div>
+            <Reveal key={s.n} delay={i * 140} as="li" className="step h-full">
+              <div className="step-rail">
+                <span aria-hidden="true" className="step-node">
+                  {s.n}
+                </span>
+                {/* Nothing to point at after the last one. Hidden while the
+                    three are stacked, where a line running right is a line
+                    running nowhere. */}
+                {i < steps.length - 1 ? (
+                  <span aria-hidden="true" className="step-line hidden sm:block" />
+                ) : null}
               </div>
+
+              {/* The scene list is indexed rather than keyed off s.n, so a
+                  renamed step number in the content file cannot silently
+                  drop the illustration. */}
+              <SectionArt
+                name={SCENES[i % SCENES.length]}
+                alt={s.title}
+                className="step-photo mt-6 rounded-[14px]"
+              />
+
+              <h3 className="mt-5 text-lg font-bold tracking-tight text-navy sm:text-xl">
+                {s.title}
+              </h3>
+              <p className="mt-2 leading-relaxed text-ink-dim">{s.body}</p>
             </Reveal>
           ))}
         </ol>
