@@ -116,13 +116,15 @@ node tools/test-enquiry-ui.js <url> <email> <password>
 node tools/test-finance-ui.js <url> <email> <password>
 node tools/test-nav-ui.js     <url> <email> <password>
 node tools/test-records-ui.js <url> <email> <password>
+node tools/test-brand-ui.js   <url> <email> <password>
 node tools/test-install-ui.js <url> <db-name> <db-user>   # on a spare database
 ```
 
-Around 440 checks, covering the money arithmetic, the append-only ledger,
+Around 455 checks, covering the money arithmetic, the append-only ledger,
 price freezing, double-booking, the KM audit trail, the enquiry defences,
 expense corrections and voiding, getting from one panel to another, sorting,
 searching and paging the record lists, what deleting a booking takes with it,
+which brand images are framed and which are kept whole,
 what a crashed endpoint replies, and the booking, enquiry and finance flows
 driven through a real browser.
 

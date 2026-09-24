@@ -27,3 +27,24 @@ function asset(string $file): string
     $stamp = is_file($path) ? (string) filemtime($path) : '0';
     return $file . '?v=' . $stamp;
 }
+
+/**
+ * Sends the browser to another page of the panel, by a path from the site
+ * root rather than a relative one.
+ *
+ * "Location: dashboard.php" is read against the address that was asked for.
+ * Ask for /site-images/logo.webp on a server that has not been told what that
+ * means, and the panel answers with this redirect, which the browser resolves
+ * to /site-images/dashboard.php -- another address the server does not know,
+ * answered with the same redirect, for as long as the browser will follow it.
+ *
+ * SCRIPT_NAME is the panel's own file, so its directory is the panel's root
+ * whether it is served from a subdomain or from /admin.
+ */
+function panel_redirect(string $page): never
+{
+    $dir = str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php')));
+    $base = $dir === '/' || $dir === '.' ? '' : rtrim($dir, '/');
+    header('Location: ' . $base . '/' . ltrim($page, '/'));
+    exit;
+}

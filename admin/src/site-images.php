@@ -20,7 +20,7 @@ require_once __DIR__ . '/vehicle-photos.php';
 
 const SITE_IMAGE_SLOTS = [
     // The brand marks.
-    'logo'          => 'Logo badge',
+    'logo'          => 'Logo',
 
     // The wide photograph across the top of each page. The names match what
     // the site asks for, so adding one here and adding one there is the same
@@ -73,8 +73,15 @@ const SITE_IMAGE_SLOTS = [
  * Anything not named falls back to the card shape, which is the commonest.
  */
 const SITE_IMAGE_SHAPES = [
-    // The marks sit in a square plate.
-    'logo'  => [1, 1, 512, 512],
+    // A logo is artwork with its own margins, so it is not cropped at all:
+    // the whole image is kept and only scaled to fit inside this box. A ratio
+    // of 0 says so.
+    //
+    // It used to be framed square, from when the header showed a small badge
+    // beside the business name in type. The header now shows the lockup and
+    // nothing else, and a square frame around a wide lockup cuts the words off
+    // it -- which is exactly what happened to the first one uploaded here.
+    'logo'  => [0, 0, 1280, 800],
 
     // The wide band across the top of a page.
     'cars-hero'     => [16, 5, 1600, 500],
@@ -151,6 +158,17 @@ const SITE_IMAGE_KEYWORDS = [
 function site_image_keywords(string $slot): string
 {
     return SITE_IMAGE_KEYWORDS[$slot] ?? ($slot . ' NiteSha Cars Kanyakumari');
+}
+
+/**
+ * Whether the whole image is kept rather than framed to a shape.
+ *
+ * True for the logo, and for anything else given a ratio of zero.
+ */
+function site_image_whole(string $slot): bool
+{
+    [$rw, $rh] = site_image_shape($slot);
+    return $rw <= 0 || $rh <= 0;
 }
 
 /** [width ratio, height ratio, saved width, saved height] for one slot. */

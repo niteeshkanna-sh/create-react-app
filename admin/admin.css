@@ -1516,3 +1516,7 @@ label.finance-toggle {
 .rec-act-btn.is-danger:hover {
   background: #FBECEA; color: var(--danger); border-color: var(--danger);
 }
+
+/* A slot that keeps the whole image gives it a little room, so a logo with
+   no margin of its own is not flush against the edge of the thumbnail. */
+.brand-slot-preview.is-whole img { padding: 8px; }
