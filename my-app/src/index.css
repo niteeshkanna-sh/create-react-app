@@ -844,6 +844,22 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
+/* The foot of the page. The same gold the banner uses, at a fraction of it,
+   so the site ends in the brand rather than in a flat block of navy. */
+.footer-glow {
+  background:
+    radial-gradient(
+      44rem 20rem at 12% -10%,
+      color-mix(in srgb, var(--color-gold) 13%, transparent) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      30rem 16rem at 92% 108%,
+      color-mix(in srgb, var(--color-bronze) 12%, transparent) 0%,
+      transparent 60%
+    );
+}
+
 /* The services page.
 
    Six blocks down one page, alternating white and cream so each one is a
