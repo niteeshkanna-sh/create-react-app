@@ -151,6 +151,11 @@
           "n": "03",
           "title": "Collect and drive",
           "body": "Bring a valid licence and ID. Pay the deposit, take the keys, and the car is yours."
+        },
+        {
+          "n": "04",
+          "title": "Bring it back",
+          "body": "Drop it back at the time agreed. We check it over, and the deposit comes back the same day."
         }
       ],
       "noteLead": "Deposits are refundable.",

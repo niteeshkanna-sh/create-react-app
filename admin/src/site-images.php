@@ -56,10 +56,12 @@ const SITE_IMAGE_SLOTS = [
     'monthly'          => 'Card: monthly rental',
     'nri'              => 'Card: for NRI visitors',
 
-    // The three "How it works" steps.
-    'step-1'        => 'How it works: step 1',
-    'step-2'        => 'How it works: step 2',
-    'step-3'        => 'How it works: step 3',
+    // "How it works" is one picture now, standing between the steps, so it
+    // is one slot rather than three. It keeps the key the middle step used,
+    // so a photograph already uploaded there is the one that shows -- the
+    // site only ever sees a slot this list names, and renaming the key would
+    // have quietly hidden it.
+    'step-2'        => 'How it works: the picture between the steps',
 ];
 
 /**
@@ -104,6 +106,12 @@ const SITE_IMAGE_SHAPES = [
     // The photographs beside "Why hire from us" are laid out 4:3.
     'why-us-1' => [4, 3, 1200, 900],
     'why-us-2' => [4, 3, 1200, 900],
+
+    // The one between the steps stands taller than it is wide. 4:5 rather
+    // than anything narrower: the photographs already uploaded here are
+    // landscape, and a tall crop of a landscape photograph takes the heads
+    // off it.
+    'step-2' => [4, 5, 1000, 1250],
 ];
 
 /**
@@ -149,9 +157,7 @@ const SITE_IMAGE_KEYWORDS = [
     'monthly'          => 'monthly self drive car hire Nagercoil',
     'nri'              => 'airport car hire for NRI families Kanyakumari',
 
-    'step-1' => 'choose a self drive car Nagercoil',
-    'step-2' => 'enquire about a self drive car Nagercoil',
-    'step-3' => 'drive away self drive car Nagercoil',
+    'step-2' => 'booking a self drive car Nagercoil',
 ];
 
 /** The words a slot's uploaded file is named with. */
