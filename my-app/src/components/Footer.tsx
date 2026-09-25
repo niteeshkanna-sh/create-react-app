@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useHome } from '../content';
 import { readablePhone } from '../lib/phone';
-import { SocialLinks, hasSocialLinks, WHATSAPP_PATHS } from './SocialLinks';
+import { SocialLinks, hasSocialLinks } from './SocialLinks';
+import { Icon3d } from './Icon3d';
 
 /**
  * The foot of every page: who we are, where to go, how to reach us.
@@ -17,22 +18,6 @@ import { SocialLinks, hasSocialLinks, WHATSAPP_PATHS } from './SocialLinks';
  * because that is what somebody is looking for when they scroll this far: a
  * number to ring, a number to message, an address, an email.
  */
-
-/** A gold-on-navy circle for the contact rows. */
-function Badge({ tone, children }: { tone: 'gold' | 'green' | 'plain'; children: React.ReactNode }) {
-  const skin =
-    tone === 'gold'
-      ? 'bg-gold text-navy'
-      : tone === 'green'
-        ? 'bg-[#25d366] text-white'
-        : 'bg-white/10 text-gold-light';
-
-  return (
-    <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-full ${skin}`}>
-      {children}
-    </span>
-  );
-}
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return (
@@ -137,11 +122,7 @@ export function Footer() {
           <ul className="tap-list mt-4 space-y-3 text-sm">
             <li>
               <a href={`tel:${seo.site.phone}`} className="flex items-center gap-3 transition hover:text-gold">
-                <Badge tone="gold">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
-                  </svg>
-                </Badge>
+                <Icon3d name="phone" size={38} />
                 {readablePhone(seo.site.phone)}
               </a>
             </li>
@@ -153,37 +134,21 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 transition hover:text-gold"
               >
-                <Badge tone="green">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    {WHATSAPP_PATHS.map((d) => (
-                      <path key={d} d={d} />
-                    ))}
-                  </svg>
-                </Badge>
+                <Icon3d name="whatsapp" size={38} />
                 WhatsApp us
               </a>
             </li>
 
             <li>
               <a href={`mailto:${seo.site.email}`} className="flex items-center gap-3 transition hover:text-gold">
-                <Badge tone="plain">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <path d="M3.5 7l8.5 6 8.5-6" />
-                  </svg>
-                </Badge>
+                <Icon3d name="mail" size={38} />
                 {seo.site.email}
               </a>
             </li>
           </ul>
 
-          <div className="mt-4 flex gap-3">
-            <Badge tone="plain">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
-                <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z" />
-                <circle cx="12" cy="10" r="2.6" />
-              </svg>
-            </Badge>
+          <div className="mt-4 flex items-start gap-3">
+            <Icon3d name="pin" size={38} />
             <address className="text-sm not-italic leading-relaxed">
               {f.address.map((line) => (
                 <span key={line} className="block">

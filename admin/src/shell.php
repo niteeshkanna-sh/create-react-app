@@ -46,23 +46,14 @@ function admin_nav_groups(): array
     ];
 }
 
-/** One of the small line drawings beside a navigation entry. */
+/** The plate beside a navigation entry. */
 function admin_nav_icon(string $name): string
 {
-    $paths = [
-        'chart'     => '<rect x="3" y="12" width="4" height="8" rx="1" fill="currentColor" stroke="none"/><rect x="10" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="17" y="9" width="4" height="11" rx="1" fill="currentColor" stroke="none"/>',
-        'clipboard' => '<rect x="5" y="4" width="14" height="17" rx="2"/><rect x="8.5" y="2" width="7" height="4" rx="1"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="16" y2="15"/>',
-        'car'       => '<path d="M3 13l1.4-4.2A2 2 0 0 1 6.3 7.5h11.4a2 2 0 0 1 1.9 1.3L21 13"/><rect x="2.5" y="13" width="19" height="5" rx="1.5"/><circle cx="7" cy="18.5" r="1.4"/><circle cx="17" cy="18.5" r="1.4"/>',
-        'inbox'     => '<path d="M3 12h5l1.5 3h5L16 12h5"/><path d="M5.5 5h13l2.5 7v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7l2.5-7z"/>',
-        'card'      => '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1"/>',
-        'trend'     => '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
-        'pencil'    => '<path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4z"/><line x1="13.5" y1="6.5" x2="17.5" y2="10.5"/>',
-        'pin'       => '<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
-    ];
+    require_once __DIR__ . '/icons.php';
 
-    return '<svg class="ns-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
-        . ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-        . ($paths[$name] ?? '') . '</svg>';
+    // Twenty-two rather than seventeen: a plate has a gradient, a gloss and a
+    // rim in it, and at seventeen pixels all three are one smudge.
+    return admin_icon3d($name, 22, null, 'ns-ico ns-ico3d');
 }
 
 /**

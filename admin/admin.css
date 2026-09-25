@@ -173,6 +173,7 @@ button { font-family: inherit; }
 .ns-item.is-on { background: var(--accent); color: #14100D; }
 .ns-item.is-on .ns-ico { opacity: 1; }
 .ns-ico { flex-shrink: 0; opacity: 0.82; }
+.ns-item .ns-ico3d { opacity: 1; }
 .ns-item-label { flex: 1; min-width: 0; }
 
 .ns-item .tab-count {
@@ -586,6 +587,24 @@ button { font-family: inherit; }
 .stat-card {
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
   padding: 11px 13px; display: flex; flex-direction: column; gap: 3px;
+}
+/* The plate on a counter card: top right, out of the way of the number, which
+   is what anybody is here to read. Only the five cards that carry one -- the
+   rest of the grid keeps its own rhythm without a hole where an icon is not. */
+.stat-card .ns-ico3d {
+  position: absolute; top: 9px; right: 10px;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stat-card:has(.ns-ico3d) { position: relative; padding-right: 52px; }
+.stat-card:hover .ns-ico3d { transform: translateY(-2px) scale(1.05); }
+
+/* The sidebar's plates sit a hair lower than a hairline did, and brighten
+   rather than fade: the old rule dimmed the icon on every entry but the one
+   you are on, which on a coloured plate reads as a fault. */
+.ns-ico3d { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card .ns-ico3d, .stat-card:hover .ns-ico3d { transition: none; transform: none; }
 }
 /* --ink-faint measures 3.35:1 on white, under the 4.5:1 needed for text this
    small, and it was already being used at 0.78rem. Shrinking it further would

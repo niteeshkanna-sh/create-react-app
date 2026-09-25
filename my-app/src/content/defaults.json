@@ -250,5 +250,30 @@
       "instagram": "",
       "facebook": ""
     }
+  },
+  "about": {
+    "benefits": {
+      "heading": "What you can count on",
+      "headingAccent": "every hire",
+      "badge": "Drive your dreams · NiteSha Cars & Bikes · ",
+      "items": [
+        {
+          "title": "Trusted, 100%",
+          "body": "A written rate, a stated KM limit and a deposit that comes back. Nothing is agreed by guesswork."
+        },
+        {
+          "title": "Cleaned before pickup",
+          "body": "Every vehicle is washed, checked and fuelled to the agreed level before it reaches you."
+        },
+        {
+          "title": "1000+ customers",
+          "body": "Families, visitors from abroad and businesses across Kanyakumari district."
+        },
+        {
+          "title": "20+ vehicles",
+          "body": "Hatchbacks, sedans, SUVs, 7 seaters and two-wheelers, ready to go."
+        }
+      ]
+    }
   }
 }

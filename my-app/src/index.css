@@ -842,6 +842,279 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
+/* A control whose whole face is an icon plate: the button is the hit area,
+   the plate is what anybody sees. Lifting the plate rather than the button
+   keeps the focus ring where the keyboard put it. */
+.icon-btn3d svg {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.icon-btn3d:hover svg {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.icon-btn3d:active svg {
+  transform: translateY(0) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn3d svg,
+  .icon-btn3d:hover svg,
+  .icon-btn3d:active svg {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ---- The about page's four cards -------------------------------------
+ *
+ * Folders rather than boxes, stepped down and up across the row, in the four
+ * colours the site already owns. The shape is the card plus a tab above its
+ * left edge, both painted from one custom property, so a card is one colour
+ * declaration rather than three.
+ */
+.benefit-row {
+  display: grid;
+  gap: 1.25rem;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .benefit-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    /* Each card keeps its own height, so the step down is a step down rather
+       than a card that grew a shorter body to make room for it. */
+    align-items: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .benefit-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.75rem;
+    /* Room for the step down, so the row does not collide with what follows. */
+    padding-bottom: 3.5rem;
+  }
+
+  /* The wave. Flat rows of four are what every other rental site in the
+     district has.
+
+     Margin rather than a transform: these cards are revealed on scroll, and
+     the reveal animates transform to nothing at its last frame -- a
+     translate here would be undone the moment the card arrived. */
+  .benefit-1 { --benefit-lift: 0rem; }
+  .benefit-2 { --benefit-lift: 3.5rem; }
+  .benefit-3 { --benefit-lift: 2.25rem; }
+  .benefit-4 { --benefit-lift: 0.5rem; }
+}
+
+.benefit-card {
+  position: relative;
+  margin-top: calc(1.375rem + var(--benefit-lift, 0rem));
+  border-radius: 22px;
+  background: var(--benefit-bg);
+  color: var(--benefit-fg);
+  padding: 1.5rem 1.5rem 1.75rem;
+  min-height: 14rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: 0 16px 34px rgb(16 24 40 / 0.12);
+}
+
+/* The tab. Painted from the same property as the card and tucked behind it,
+   so the join never shows as a seam. */
+.benefit-tab {
+  position: absolute;
+  top: -1.25rem;
+  left: 0;
+  width: 55%;
+  height: 1.5rem;
+  border-radius: 16px 16px 0 0;
+  background: var(--benefit-bg);
+}
+
+.benefit-1 {
+  --benefit-bg: var(--color-navy);
+  --benefit-fg: #fff;
+  --benefit-badge: linear-gradient(140deg, var(--color-gold-light), var(--color-gold));
+  --benefit-mark: var(--color-navy);
+  --benefit-beat: 0ms;
+}
+
+.benefit-2 {
+  --benefit-bg: #f1e9da;
+  --benefit-fg: var(--color-ink);
+  --benefit-badge: linear-gradient(140deg, var(--color-bronze), #a85f22);
+  --benefit-mark: #fff;
+  --benefit-beat: 450ms;
+}
+
+.benefit-3 {
+  --benefit-bg: var(--color-gold);
+  --benefit-fg: var(--color-navy);
+  --benefit-badge: linear-gradient(140deg, #16204a, var(--color-navy-deep));
+  --benefit-mark: var(--color-gold-light);
+  --benefit-beat: 900ms;
+}
+
+.benefit-4 {
+  --benefit-bg: var(--color-bronze);
+  --benefit-fg: #fff;
+  --benefit-badge: linear-gradient(140deg, #fffdf6, var(--color-cream));
+  --benefit-mark: var(--color-bronze);
+  --benefit-beat: 1350ms;
+}
+
+/* The mark, on a disc of its own and far bigger than the 28px it started at:
+   at that size four line drawings on four coloured cards were four smudges.
+   Each disc is the colour its card is not, which is what gives the row its
+   four colours rather than one gold repeated. */
+.benefit-badge {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: auto;
+  border-radius: 999px;
+  background: var(--benefit-badge);
+  color: var(--benefit-mark);
+  box-shadow: 0 8px 18px rgb(6 12 28 / 0.18);
+  animation: benefit-float 3.6s ease-in-out infinite;
+  animation-delay: var(--benefit-beat, 0ms);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 640px) {
+  .benefit-badge {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+}
+
+.benefit-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+@media (min-width: 640px) {
+  .benefit-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* Drawn on as the card arrives. Gated on data-js for the same reason the
+   reveals are: with no script there is nothing to add .is-visible, and an
+   undrawn icon is an invisible one. */
+:root[data-js] [data-reveal] .benefit-icon > * {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+[data-reveal].is-visible .benefit-icon > * {
+  animation: benefit-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + 220ms);
+}
+
+/* The second stroke of each mark follows the first rather than racing it. */
+[data-reveal].is-visible .benefit-icon > *:nth-child(2) {
+  animation-delay: calc(var(--reveal-delay, 0ms) + 420ms);
+}
+
+[data-reveal].is-visible .benefit-icon > *:nth-child(n + 3) {
+  animation-delay: calc(var(--reveal-delay, 0ms) + 560ms);
+}
+
+.benefit-card:hover .benefit-badge {
+  transform: scale(1.08) rotate(-6deg);
+}
+
+@keyframes benefit-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes benefit-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.benefit-title {
+  margin-top: 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.benefit-body {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  opacity: 0.82;
+}
+
+/* The stamp between the middle two. Only where there is room for it to sit
+   between cards rather than on top of one. */
+.benefit-stamp {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .benefit-stamp {
+    display: block;
+    position: absolute;
+    /* Mostly above the cards rather than across one of them: gold type on a
+       gold card is not type anybody reads. */
+    top: -4.75rem;
+    left: 50%;
+    width: 9rem;
+    height: 9rem;
+    margin-left: -4.5rem;
+    z-index: 3;
+    pointer-events: none;
+  }
+}
+
+.benefit-stamp-svg {
+  width: 100%;
+  height: 100%;
+  animation: benefit-turn 24s linear infinite;
+}
+
+.benefit-stamp-text {
+  fill: var(--color-gold-deep);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+@keyframes benefit-turn {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .benefit-stamp-svg,
+  .benefit-badge,
+  [data-reveal].is-visible .benefit-icon > * {
+    animation: none;
+  }
+
+  /* Drawn rather than undrawn, which is what the animation was for. */
+  :root[data-js] [data-reveal] .benefit-icon > * {
+    stroke-dashoffset: 0;
+  }
+
+  .benefit-badge,
+  .benefit-card:hover .benefit-badge {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* The foot of the page. The same gold the banner uses, at a fraction of it,
    so the site ends in the brand rather than in a flat block of navy. */
 .footer-glow {
