@@ -3,22 +3,27 @@ import { useHome } from '../content';
 /**
  * The social icons in the footer.
  *
+ * The heading above them belongs to the footer column that places them, not
+ * here -- this is the row of icons and nothing else.
+ *
+ * WhatsApp is not among them. It is a way to message us, not a page to
+ * follow, and the footer's contact column now carries it with a number
+ * beside it -- two WhatsApp links a hand's width apart read as a mistake.
+ * The panel's WhatsApp box still feeds that row.
+ *
  * A named field per network rather than a list the owner adds rows to: the
  * icon has to match the link, and a free-text "network" box would let someone
  * type "insta" and get no icon with nothing explaining why. Empty means the
  * icon is not shown at all — an icon that links nowhere is worse than no icon.
  */
+/** The bubble and the handset inside it, shared with the footer's WhatsApp
+ *  row so the same mark is not drawn twice from two copies of the path. */
+export const WHATSAPP_PATHS = [
+  'M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.25-8.23a8.2 8.2 0 0 1 8.24 8.24c0 4.54-3.7 8.21-8.24 8.21z',
+  'M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.76-1.65-2.05-.17-.3-.02-.46.13-.6.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35z',
+];
+
 const NETWORKS = [
-  {
-    key: 'whatsapp',
-    label: 'WhatsApp',
-    // Two subpaths: an outlined bubble and the handset inside it. Combined
-    // into one they fill solid and the handset disappears.
-    paths: [
-      'M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.25-8.23a8.2 8.2 0 0 1 8.24 8.24c0 4.54-3.7 8.21-8.24 8.21z',
-      'M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.48-1.76-1.65-2.05-.17-.3-.02-.46.13-.6.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35z',
-    ],
-  },
   {
     key: 'instagram',
     label: 'Instagram',
@@ -31,6 +36,15 @@ const NETWORKS = [
   },
 ] as const;
 
+/** Whether any network has an address, so a column can decide to print the
+ *  heading above them at all rather than leaving one over an empty space. */
+export function hasSocialLinks(social: Record<string, string | undefined> | undefined): boolean {
+  return NETWORKS.some((n) => {
+    const url = social?.[n.key];
+    return typeof url === 'string' && url.trim() !== '';
+  });
+}
+
 export function SocialLinks() {
   const social = useHome().social;
 
@@ -42,32 +56,27 @@ export function SocialLinks() {
   if (shown.length === 0) return null;
 
   return (
-    <div>
-      <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
-        {social.heading || 'Follow us'}
-      </h2>
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {shown.map((n) => (
-          <li key={n.key}>
-            <a
-              href={social[n.key]}
-              target="_blank"
-              rel="noopener noreferrer"
-              // The accessible name is the network, not "link": a row of icons
-              // announced as six identical links is a row nobody can use.
-              aria-label={n.label}
-              title={n.label}
-              className="grid size-11 place-items-center rounded-xl bg-white/10 text-white/80 transition hover:bg-gold hover:text-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                {n.paths.map((d) => (
-                  <path key={d} d={d} />
-                ))}
-              </svg>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul className="flex flex-wrap gap-2.5">
+      {shown.map((n) => (
+        <li key={n.key}>
+          <a
+            href={social[n.key]}
+            target="_blank"
+            rel="noopener noreferrer"
+            // The accessible name is the network, not "link": a row of icons
+            // announced as six identical links is a row nobody can use.
+            aria-label={n.label}
+            title={n.label}
+            className="grid size-11 place-items-center rounded-full bg-white/10 text-white/80 transition hover:bg-gold hover:text-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              {n.paths.map((d) => (
+                <path key={d} d={d} />
+              ))}
+            </svg>
+          </a>
+        </li>
+      ))}
+    </ul>
   );
 }
