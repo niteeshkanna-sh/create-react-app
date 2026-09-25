@@ -842,6 +842,30 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
+/* A control whose whole face is an icon plate: the button is the hit area,
+   the plate is what anybody sees. Lifting the plate rather than the button
+   keeps the focus ring where the keyboard put it. */
+.icon-btn3d svg {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.icon-btn3d:hover svg {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.icon-btn3d:active svg {
+  transform: translateY(0) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn3d svg,
+  .icon-btn3d:hover svg,
+  .icon-btn3d:active svg {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* ---- The about page's four cards -------------------------------------
  *
  * Folders rather than boxes, stepped down and up across the row, in the four

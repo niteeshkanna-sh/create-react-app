@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/src/icons.php';
+
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/vocab.php';
@@ -84,22 +86,27 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
 
         <div class="stat-grid">
           <div class="stat-card">
+            <?= admin_icon3d('car', 34) ?>
             <span class="stat-label">Cars Listed</span>
             <span class="stat-value" id="statCarCount">0</span>
           </div>
           <div class="stat-card">
+            <?= admin_icon3d('inbox', 34) ?>
             <span class="stat-label">Booking Inquiries</span>
             <span class="stat-value" id="statInquiryCount">0</span>
           </div>
           <div class="stat-card stat-card-income">
+            <?= admin_icon3d('rupee', 34) ?>
             <span class="stat-label">Total Income</span>
             <span class="stat-value" id="statIncome">₹0</span>
           </div>
           <div class="stat-card stat-card-expense">
+            <?= admin_icon3d('wallet', 34) ?>
             <span class="stat-label">Total Expenses</span>
             <span class="stat-value" id="statExpense">₹0</span>
           </div>
           <div class="stat-card stat-card-balance">
+            <?= admin_icon3d('scales', 34) ?>
             <span class="stat-label">Net Balance</span>
             <span class="stat-value" id="statBalance">₹0</span>
           </div>
