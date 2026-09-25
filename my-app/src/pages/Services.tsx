@@ -1,14 +1,18 @@
-import { Services as ServiceGrid } from '../components/Services';
+import { ServicesInFull } from '../components/ServicesInFull';
 import { PageHeader } from './PageHeader';
 
 /**
  * Everything we hire, on one page.
  *
- * The footer lists five and sends the rest here, because a footer column that
- * runs to nine entries stops being a summary. The grid itself is the same
- * component the home page uses, reading the same list from the panel -- adding
- * a service there puts it on the home page, on this page and in the footer at
- * once, rather than in three places that drift.
+ * It was the home page's card grid again -- six pictures with a sentence each
+ * and "See details", which is a menu of six pages rather than an answer. The
+ * page now carries the services themselves: what each one covers, what comes
+ * with it, and the two ways to ask, with the row of buttons at the top
+ * jumping to whichever one somebody came for.
+ *
+ * The six pages underneath are untouched and linked from every block. They
+ * are separate searches -- a wedding car is not a scooter -- and a page can
+ * only rank for what it is about.
  */
 export function Services() {
   return (
@@ -18,9 +22,9 @@ export function Services() {
         scene="/cars"
         title="What we hire"
         imageAlt="Self-drive cars, bikes and tourist vehicles for hire across Kanyakumari district"
-        intro="Cars you drive yourself, bikes by the day, vehicles with a driver, and cars for a wedding. Everything below is hired out across Kanyakumari district."
+        intro="Cars you drive yourself, bikes by the day, vehicles with a driver, and cars for a wedding. All of it is here on one page, and all of it is hired out across Kanyakumari district."
       />
-      <ServiceGrid showHeading={false} />
+      <ServicesInFull />
     </>
   );
 }

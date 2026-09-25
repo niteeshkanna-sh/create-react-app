@@ -26,32 +26,68 @@
         {
           "to": "/cars",
           "title": "Self drive cars",
-          "body": "Hatchbacks, sedans and SUVs by the day, week or month. You drive."
+          "body": "Hatchbacks, sedans and SUVs by the day, week or month. You drive.",
+          "points": [
+            "Hatchbacks, sedans, SUVs and 7 seaters",
+            "By the day, the week or the month",
+            "KM limit, extra-KM rate and deposit on every car",
+            "Delivered across the district"
+          ]
         },
         {
           "to": "/bikes",
           "title": "Bike rental",
-          "body": "Scooters and motorcycles by the hour, day or week. Helmets included."
+          "body": "Scooters and motorcycles by the hour, day or week. Helmets included.",
+          "points": [
+            "Scooters and motorcycles",
+            "By the hour, the day or the week",
+            "Helmets included",
+            "Refundable deposit, returned with the bike"
+          ]
         },
         {
           "to": "/wedding-cars",
           "title": "Wedding cars",
-          "body": "Decorated cars reserved for your date, and vehicles for the family."
+          "body": "Decorated cars reserved for your date, and vehicles for the family.",
+          "points": [
+            "Decorated to your colours",
+            "Held for your date once it is fixed",
+            "Extra cars for the family",
+            "At the mandapam, church or hall on time"
+          ]
         },
         {
           "to": "/tourist-vehicles",
           "title": "Tourist vehicles",
-          "body": "Cars and vans with a driver who knows the district and its roads."
+          "body": "Cars and vans with a driver who knows the district and its roads.",
+          "points": [
+            "A driver who knows the district",
+            "Sized for a family or a group",
+            "Per-day and per-trip rates",
+            "Temple tours and outstation trips"
+          ]
         },
         {
           "to": "/monthly",
           "title": "Monthly rental",
-          "body": "Weeks rather than days, at a rate that drops the longer you keep it."
+          "body": "Weeks rather than days, at a rate that drops the longer you keep it.",
+          "points": [
+            "Weeks rather than days",
+            "The daily rate falls the longer you keep it",
+            "A monthly KM allowance, not a daily one",
+            "Servicing while you have it is ours"
+          ]
         },
         {
           "to": "/nri",
           "title": "Coming from abroad?",
-          "body": "Book before you land. Airport pickup and long-stay rates for visiting families."
+          "body": "Book before you land. Airport pickup and long-stay rates for visiting families.",
+          "points": [
+            "Booked before you land",
+            "Airport and station pickup",
+            "Long-stay rates for visiting families",
+            "Help with licences for visitors"
+          ]
         }
       ]
     },

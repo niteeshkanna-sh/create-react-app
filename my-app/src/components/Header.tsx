@@ -1,18 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { Logo } from './Logo';
 
-const services = [
-  // First, so the page that lists them all is reachable from the menu that
-  // lists them all -- otherwise /services exists only as a footer button.
-  { to: '/services', label: 'All services' },
-  { to: '/cars', label: 'Self-drive cars' },
-  { to: '/bikes', label: 'Bike rental' },
-  { to: '/wedding-cars', label: 'Wedding cars' },
-  { to: '/tourist-vehicles', label: 'Tourist vehicles' },
-  { to: '/monthly', label: 'Monthly rental' },
-  { to: '/nri', label: 'For NRI visitors' },
+/* The menu used to open onto these six. They are still pages, still linked
+   from /services and from the footer -- but a visitor asking "what do you
+   hire?" was being handed a list of six places to go and read instead of an
+   answer. /services is the answer now, and the menu says so once.
+
+   The list stays for one job: telling the menu to light up while somebody is
+   on one of them. */
+const servicePaths = [
+  '/services',
+  '/cars',
+  '/bikes',
+  '/wedding-cars',
+  '/tourist-vehicles',
+  '/monthly',
+  '/nri',
 ];
 
 const links = [
@@ -29,40 +34,19 @@ const activeDot =
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
   const { pathname } = useLocation();
-  const servicesRef = useRef<HTMLDivElement>(null);
 
   // Closing on navigation belongs to the click that navigates, not to an
   // effect watching the path: an effect would set state during render and
   // cascade an extra one.
   const closeMenus = () => {
     setOpen(false);
-    setServicesOpen(false);
   };
 
-  // Nine nav items do not fit a desktop row, so the four services live behind
-  // one trigger. Each still has its own route and page -- they are separate
-  // searches, and a page can only rank for what it is about.
-  const onServicePage = services.some((s) => s.to === pathname);
-
-  useEffect(() => {
-    if (!servicesOpen) return;
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (!servicesRef.current?.contains(e.target as Node)) setServicesOpen(false);
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setServicesOpen(false);
-    };
-
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [servicesOpen]);
+  // Lit while somebody is on any of the pages behind it, not only on
+  // /services itself: a menu that goes dark when you follow it reads as a
+  // page that lost its place.
+  const onServicePage = servicePaths.includes(pathname);
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     [
@@ -83,41 +67,18 @@ export function Header() {
             About Us
           </NavLink>
 
-          <div className="relative" ref={servicesRef}>
-            <button
-              type="button"
-              onClick={() => setServicesOpen((s) => !s)}
-              aria-expanded={servicesOpen}
-              className={`relative flex items-center gap-1 py-1 text-sm font-semibold transition ${
-                onServicePage ? `text-gold-light ${activeDot}` : 'text-white/70 hover:text-gold-light'
-              }`}
-            >
-              Services
-              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" fill="none">
-                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-              </svg>
-            </button>
-
-            {servicesOpen ? (
-              <ul data-menu="" className="absolute top-full left-0 mt-2 w-52 overflow-hidden rounded-[14px] border border-line bg-white py-1.5 shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
-                {services.map((s) => (
-                  <li key={s.to}>
-                    <NavLink
-                      to={s.to}
-                      onClick={closeMenus}
-                      className={({ isActive }) =>
-                        `block px-4 py-2 text-sm font-medium transition ${
-                          isActive ? 'bg-navy text-gold-light' : 'text-ink-dim hover:bg-cream hover:text-navy'
-                        }`
-                      }
-                    >
-                      {s.label}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
+          <NavLink
+            to="/services"
+            onClick={closeMenus}
+            className={() =>
+              [
+                'relative py-1 text-sm font-semibold transition',
+                onServicePage ? `text-gold-light ${activeDot}` : 'text-white/70 hover:text-gold-light',
+              ].join(' ')
+            }
+          >
+            Services
+          </NavLink>
 
           {links.slice(2).map((l) => (
             <NavLink key={l.to} to={l.to} onClick={closeMenus} className={linkClass}>
@@ -161,7 +122,7 @@ export function Header() {
           className="border-t border-white/10 bg-navy-deep px-5 pb-4 lg:hidden"
         >
           <ul className="grid gap-1 pt-2">
-            {[links[0], links[1], ...services, ...links.slice(2)].map((l) => (
+            {[links[0], links[1], { to: '/services', label: 'Services' }, ...links.slice(2)].map((l) => (
               <li key={l.to}>
                 <NavLink
                   to={l.to}
