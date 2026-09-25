@@ -3,7 +3,11 @@ import { useSiteImage } from '../content';
 import seo from '../data/seo.json';
 import { readablePhone } from '../lib/phone';
 
-export const LOGO_FALLBACK = '/nitesha-cars-and-bikes-logo-nagercoil.webp';
+/* -v2 because the artwork changed and the name had to: images are cached for
+   a week, so keeping the old name would have shown the old lockup -- tagline
+   and all -- to everyone who had already been to the site. A new name is a
+   new URL, and nothing cached can answer for it. */
+export const LOGO_FALLBACK = '/nitesha-cars-and-bikes-logo-nagercoil-v2.webp';
 
 /** The mark on its own, without the name under it.
  *

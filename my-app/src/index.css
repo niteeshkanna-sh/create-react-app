@@ -844,6 +844,66 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
+/* The services page.
+
+   Six blocks down one page, alternating white and cream so each one is a
+   place rather than a paragraph, with the picture changing sides as they go.
+   The numeral is the only ornament: it says how far down the list you are
+   without another line of type saying it. */
+.service-n {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  background: color-mix(in srgb, var(--color-gold) 12%, transparent);
+  color: var(--color-gold-deep);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Taller than the 2:1 the cards use: beside a column of type, a letterbox
+   reads as a banner that lost its heading. */
+.service-art {
+  aspect-ratio: 16 / 11;
+  box-shadow: 0 18px 40px rgb(16 24 40 / 0.14);
+}
+
+@media (min-width: 1024px) {
+  .service-art {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+/* The row of jump buttons at the top. */
+.service-jump {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.service-jump:hover {
+  transform: translate3d(0, -2px, 0);
+  border-color: color-mix(in srgb, var(--color-gold) 60%, transparent);
+  background: var(--color-gold);
+  color: var(--color-navy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-jump {
+    transition: none;
+  }
+
+  .service-jump:hover {
+    transform: none;
+  }
+}
+
 /* The questions band.
 
    The list used to be white boxes on cream at the foot of the page, which is

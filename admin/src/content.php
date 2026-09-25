@@ -66,9 +66,18 @@ function content_schema(): array
                             'label'  => 'Services',
                             'type'   => 'repeater',
                             'fields' => [
-                                'title' => ['label' => 'Title', 'type' => 'text'],
-                                'body'  => ['label' => 'Description', 'type' => 'textarea'],
-                                'to'    => ['label' => 'Links to', 'type' => 'text'],
+                                'title'  => ['label' => 'Title', 'type' => 'text'],
+                                'body'   => ['label' => 'Description', 'type' => 'textarea'],
+                                'to'     => ['label' => 'Links to', 'type' => 'text'],
+                                // Shown as ticks on /services, where all six
+                                // are laid out in full. The home page and the
+                                // footer read the title and the description
+                                // only, so these cost nothing there.
+                                'points' => [
+                                    'label' => 'Tick points',
+                                    'type'  => 'list',
+                                    'hint'  => 'One per line, three or four. Shown beside this service on the services page.',
+                                ],
                             ],
                         ],
                     ],
