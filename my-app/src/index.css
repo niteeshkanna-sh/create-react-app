@@ -842,6 +842,163 @@ body {
   border: 1px solid color-mix(in srgb, var(--color-gold) 22%, transparent);
 }
 
+/* ---- The about page's four cards -------------------------------------
+ *
+ * Folders rather than boxes, stepped down and up across the row, in the four
+ * colours the site already owns. The shape is the card plus a tab above its
+ * left edge, both painted from one custom property, so a card is one colour
+ * declaration rather than three.
+ */
+.benefit-row {
+  display: grid;
+  gap: 1.25rem;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .benefit-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    /* Each card keeps its own height, so the step down is a step down rather
+       than a card that grew a shorter body to make room for it. */
+    align-items: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .benefit-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.75rem;
+    /* Room for the step down, so the row does not collide with what follows. */
+    padding-bottom: 3.5rem;
+  }
+
+  /* The wave. Flat rows of four are what every other rental site in the
+     district has.
+
+     Margin rather than a transform: these cards are revealed on scroll, and
+     the reveal animates transform to nothing at its last frame -- a
+     translate here would be undone the moment the card arrived. */
+  .benefit-1 { --benefit-lift: 0rem; }
+  .benefit-2 { --benefit-lift: 3.5rem; }
+  .benefit-3 { --benefit-lift: 2.25rem; }
+  .benefit-4 { --benefit-lift: 0.5rem; }
+}
+
+.benefit-card {
+  position: relative;
+  margin-top: calc(1.375rem + var(--benefit-lift, 0rem));
+  border-radius: 22px;
+  background: var(--benefit-bg);
+  color: var(--benefit-fg);
+  padding: 1.5rem 1.5rem 1.75rem;
+  min-height: 14rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: 0 16px 34px rgb(16 24 40 / 0.12);
+}
+
+/* The tab. Painted from the same property as the card and tucked behind it,
+   so the join never shows as a seam. */
+.benefit-tab {
+  position: absolute;
+  top: -1.25rem;
+  left: 0;
+  width: 55%;
+  height: 1.5rem;
+  border-radius: 16px 16px 0 0;
+  background: var(--benefit-bg);
+}
+
+.benefit-1 {
+  --benefit-bg: var(--color-navy);
+  --benefit-fg: #fff;
+}
+
+.benefit-2 {
+  --benefit-bg: #f1e9da;
+  --benefit-fg: var(--color-ink);
+}
+
+.benefit-3 {
+  --benefit-bg: var(--color-gold);
+  --benefit-fg: var(--color-navy);
+}
+
+.benefit-4 {
+  --benefit-bg: var(--color-bronze);
+  --benefit-fg: #fff;
+}
+
+.benefit-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: auto;
+  opacity: 0.9;
+}
+
+.benefit-title {
+  margin-top: 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.benefit-body {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  opacity: 0.82;
+}
+
+/* The stamp between the middle two. Only where there is room for it to sit
+   between cards rather than on top of one. */
+.benefit-stamp {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .benefit-stamp {
+    display: block;
+    position: absolute;
+    /* Mostly above the cards rather than across one of them: gold type on a
+       gold card is not type anybody reads. */
+    top: -4.75rem;
+    left: 50%;
+    width: 9rem;
+    height: 9rem;
+    margin-left: -4.5rem;
+    z-index: 3;
+    pointer-events: none;
+  }
+}
+
+.benefit-stamp-svg {
+  width: 100%;
+  height: 100%;
+  animation: benefit-turn 24s linear infinite;
+}
+
+.benefit-stamp-text {
+  fill: var(--color-gold-deep);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+@keyframes benefit-turn {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .benefit-stamp-svg {
+    animation: none;
+  }
+}
+
 /* The foot of the page. The same gold the banner uses, at a fraction of it,
    so the site ends in the brand rather than in a flat block of navy. */
 .footer-glow {

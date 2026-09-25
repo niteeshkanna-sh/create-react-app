@@ -121,6 +121,15 @@ export function useHome(): Content['home'] {
   );
 }
 
+/** The about page's copy, the same way. */
+export function useAbout(): Content['about'] {
+  return useSyncExternalStore(
+    subscribe,
+    () => current.about,
+    () => live.about,
+  );
+}
+
 /** Images uploaded in the panel, empty until it answers. */
 export function useBrand(): Brand {
   return useSyncExternalStore(

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { PageHeader } from './PageHeader';
+import { Benefits } from '../components/Benefits';
 
 /**
  * TODO for the owner: the copy below is deliberately generic. It states only
@@ -69,6 +70,10 @@ export function About() {
           </p>
         </div>
       </section>
+
+      {/* Four things worth knowing, after the page has said who we are and
+          before it asks for the call. */}
+      <Benefits />
     </>
   );
 }
