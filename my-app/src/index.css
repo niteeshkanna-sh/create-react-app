@@ -296,118 +296,116 @@ body {
   }
 }
 
-/* ---- How it works: three steps on a drawn rail -------------------------
+/* ---- How it works: the steps either side of one picture ---------------
  *
- * The three were the same card as the fleet grid further up -- a photograph
- * with a bordered box under it -- which made two sections of the page read as
- * one long list of cards. These are steps, in an order, and the order is the
- * thing the section is for, so it is drawn: a numbered node per step and a
- * gold line running from it towards the next.
+ * They were three cards in a row, each with its own photograph, then a rail
+ * drawn between numbered nodes. Both had the same fault: the numeral -- the
+ * only part of a step that carries the order -- was the smallest thing in the
+ * card, and three small photographs were three things to look at and nothing
+ * to read.
  *
- * The line draws itself as each step arrives, which is the one place on this
- * page where an animation says something rather than decorating: it moves
- * left to right, in the order the steps happen.
+ * So the numeral is the largest thing in the step now, the steps stand in two
+ * columns, and between them is one picture big enough to be worth having.
+ *
+ * The list runs 1, 2, 3, 4 in the markup and is placed into the grid, so what
+ * a screen reader hears and what the eye follows are the same order by two
+ * different routes.
  */
-.step-rail {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 44px;
-}
-
-.step-node {
+.how-grid {
   display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-  border-radius: 999px;
-  background: var(--color-navy);
-  color: var(--color-gold);
-  font-size: 0.95rem;
+  gap: 2.5rem;
+}
+
+.how-photo {
+  /* Above the steps while there is one column, and between them once there
+     are three. */
+  order: -1;
+}
+
+@media (min-width: 1024px) {
+  .how-grid {
+    grid-template-columns: 1fr minmax(17rem, 21rem) 1fr;
+    grid-template-rows: repeat(var(--how-rows, 2), auto);
+    column-gap: 3.5rem;
+    row-gap: 3rem;
+    align-items: center;
+  }
+
+  .how-item {
+    grid-column: var(--how-col);
+    grid-row: var(--how-row);
+  }
+
+  .how-photo {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    order: 0;
+  }
+}
+
+/* Three corners round and one square. A rectangle with a photograph in it is
+   what every other section on this page already has; this is the one that is
+   allowed to be a shape. */
+.art-frame.how-leaf {
+  aspect-ratio: 4 / 5;
+  border-radius: 46% 46% 0 46%;
+  box-shadow: 0 22px 50px rgb(16 24 40 / 0.18);
+}
+
+/* The gold hairline the card frames carry runs along the bottom edge, which
+   on a curve cuts straight across it. */
+.art-frame.how-leaf::after {
+  content: none;
+}
+
+.how-n {
+  flex: none;
+  font-size: 2.5rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.14);
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  /* The deep gold, not the bright one: at this size on white the bright gold
+     is a pale smear, and this is text somebody reads. */
+  color: var(--color-gold-deep);
 }
 
-/* From the node towards the step after it. Not drawn after the last one,
-   which has nothing to point at. */
-.step-line {
-  position: absolute;
-  left: 56px;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--color-gold) 0%,
-    rgba(212, 175, 55, 0.5) 55%,
-    rgba(212, 175, 55, 0) 100%
-  );
-  transform-origin: left center;
+@media (min-width: 640px) {
+  .how-n {
+    font-size: 3rem;
+  }
 }
 
-/* Undrawn until the observer draws it -- and, as above, only where there is
-   an observer. */
-:root[data-js] .step-line {
-  transform: scaleX(0);
+/* Under each step, fading out: it separates them without drawing a box. */
+.how-rule {
+  display: block;
+  margin-top: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-line), transparent);
 }
 
-/* The photograph, which lifts a little under the pointer. The frame already
-   clips, so the picture grows inside it rather than pushing the layout. */
-.step-photo .art-photo,
-.step-photo .art-svg {
+/* The picture lifts a little under the pointer. The frame already clips, so
+   it grows inside the shape rather than pushing the layout. */
+.how-leaf .art-photo,
+.how-leaf .art-svg {
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.step:hover .step-photo .art-photo,
-.step:hover .step-photo .art-svg {
+.how-leaf:hover .art-photo,
+.how-leaf:hover .art-svg {
   transform: scale(1.06);
 }
 
-@keyframes rail-draw {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-
-@keyframes node-pop {
-  from { transform: scale(0.4); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* Hung off the reveal the step already has, and offset from its stagger, so
-   the node lands and the line sets off after it rather than with it. */
-[data-reveal].is-visible .step-node {
-  animation: node-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: calc(var(--reveal-delay, 0ms) + 60ms);
-}
-
-[data-reveal].is-visible .step-line {
-  animation: rail-draw 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--reveal-delay, 0ms) + 240ms);
-}
-
 /* Reduced motion: show everything, move nothing. Without this the reveal rule
-   above would leave content permanently invisible. */
+   further up would leave content permanently invisible. */
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] {
     opacity: 1;
   }
 
-  /* The rail is drawn, not faded, so it needs saying separately: with the
-     animation off, an untouched scaleX(0) line is an invisible one. */
-  :root[data-js] .step-line {
-    transform: none;
-  }
-
-  [data-reveal].is-visible .step-node,
-  [data-reveal].is-visible .step-line {
-    animation: none;
-  }
-
-  .step-photo .art-photo,
-  .step-photo .art-svg,
-  .step:hover .step-photo .art-photo,
-  .step:hover .step-photo .art-svg {
+  .how-leaf .art-photo,
+  .how-leaf .art-svg,
+  .how-leaf:hover .art-photo,
+  .how-leaf:hover .art-svg {
     transition: none;
     transform: none;
   }

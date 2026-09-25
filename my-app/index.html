@@ -99,12 +99,12 @@
     <link rel="preload" href="/fonts/poppins-latin-700.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Says that there is a script running, before anything is painted.
-         The scroll reveals hide what they are about to animate, and the rail
-         on "How it works" starts undrawn; both are keyed on this, so a
-         browser with scripting off is never shown a page whose sections are
-         waiting for an observer that will never run. One line rather than a
-         <noscript> block, because this way the page is visible by default
-         and hidden only where something can unhide it. -->
+         The scroll reveals hide what they are about to animate, and that
+         hiding is keyed on this, so a browser with scripting off is never
+         shown a page whose sections are waiting for an observer that will
+         never run. One line rather than a <noscript> block, because this way
+         the page is visible by default and hidden only where something can
+         unhide it. -->
     <script>document.documentElement.dataset.js = '';</script>
   </head>
   <body>
