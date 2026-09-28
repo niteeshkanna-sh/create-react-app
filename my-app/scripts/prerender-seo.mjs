@@ -22,6 +22,8 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { allTownRoutes, TOWN_BASE } from '../src/data/town-routes.mjs';
 import { modelRoutes, MODEL_BASE } from '../src/data/model-routes.mjs';
+import { serviceAreaRoutes, serviceAreaPath } from '../src/data/service-area-routes.mjs';
+import { postRoutes, BLOG_BASE } from '../src/data/post-routes.mjs';
 
 const root = join(import.meta.dirname, '..');
 
@@ -62,10 +64,18 @@ const models = JSON.parse(readFileSync(join(root, 'src/data/models.json'), 'utf8
 // The vehicle list as baked in by fetch-fleet.mjs, so a car page's structured
 // data can carry the rate when the panel has published one.
 const fleet = JSON.parse(readFileSync(join(root, 'src/data/fleet.json'), 'utf8'));
+// And one per service-in-a-town pair worth having a page of its own.
+const serviceAreas = JSON.parse(
+  readFileSync(join(root, 'src/data/service-areas.json'), 'utf8'),
+);
+// And one per article.
+const blog = JSON.parse(readFileSync(join(root, 'src/data/posts.json'), 'utf8'));
 const routes = [
   ...seo.routes,
   ...allTownRoutes(towns.towns, seo.site),
   ...modelRoutes(models.models),
+  ...serviceAreaRoutes(serviceAreas.pages),
+  ...postRoutes(blog.posts),
 ];
 // A title or a description longer than a search result shows is not wrong,
 // it is just cut -- and the part that gets cut is the part written last,
@@ -408,6 +418,18 @@ function townFor(route) {
   return towns.towns.find((t) => t.slug === slug) ?? null;
 }
 
+/** The article a route is about, or null. */
+function postFor(route) {
+  if (!route.path.startsWith(BLOG_BASE + '/')) return null;
+  const slug = route.path.slice(BLOG_BASE.length + 1);
+  return blog.posts.find((post) => post.slug === slug) ?? null;
+}
+
+/** The service-in-a-town page a route is about, or null. */
+function serviceAreaFor(route) {
+  return serviceAreas.pages.find((page) => serviceAreaPath(page) === route.path) ?? null;
+}
+
 /** The car a route is about, or null for the pages that are not about one. */
 function modelFor(route) {
   if (!route.path.startsWith(MODEL_BASE + '/')) return null;
@@ -439,13 +461,19 @@ function breadcrumbFor(route) {
   // other eleven, and left twelve trails all ending "Self Drive Car Rental".
   const town = townFor(route);
   const model = modelFor(route);
+  const area = serviceAreaFor(route);
+  const post = postFor(route);
   const leaf = town
     ? town.name
     : model
       ? model.name
-      : route.path === TOWN_BASE
-        ? 'Where we deliver'
-        : route.title.split(/\s—\s|\sin\s/)[0].trim();
+      : area
+        ? area.town
+        : post
+          ? post.title
+          : route.path === TOWN_BASE
+            ? 'Where we deliver'
+            : route.title.split(/\s—\s|\sin\s/)[0].trim();
 
   const trail = [
     { '@type': 'ListItem', position: 1, name: 'Home', item: seo.site.origin + '/' },
@@ -476,6 +504,27 @@ function breadcrumbFor(route) {
     });
   }
 
+  // An article sits under the blog.
+  if (post) {
+    trail.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Blog',
+      item: seo.site.origin + BLOG_BASE,
+    });
+  }
+
+  // A service-in-a-town page sits under its service: "niteshacars.in >
+  // Bike and scooter rental > Kanyakumari".
+  if (area) {
+    trail.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: area.service,
+      item: seo.site.origin + area.base,
+    });
+  }
+
   trail.push({
     '@type': 'ListItem',
     position: trail.length + 1,
@@ -495,6 +544,28 @@ function breadcrumbFor(route) {
  * business's @id rather than repeating it, so there is still one business.
  */
 function townServiceFor(route) {
+  // A service-in-a-town page makes the same claim, but narrower: this one
+  // service, in this one town, which is exactly the search it answers.
+  const area = serviceAreaFor(route);
+  if (area) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: `${area.service} in ${area.town}`,
+      serviceType: area.service,
+      provider: { '@id': seo.site.origin + '#business' },
+      areaServed: {
+        '@type': 'City',
+        name: area.town,
+        containedInPlace: {
+          '@type': 'AdministrativeArea',
+          name: `${seo.site.district} district`,
+        },
+      },
+      url: seo.site.origin + route.path,
+    };
+  }
+
   const town = townFor(route);
   if (!town) return null;
 
@@ -538,6 +609,21 @@ function faqFor(route) {
       '@type': 'FAQPage',
       '@id': seo.site.origin + route.path + '#faq',
       mainEntity: model.faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    };
+  }
+
+  // As do the service-in-a-town pages, which render theirs in full.
+  const area = serviceAreaFor(route);
+  if (area) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      '@id': seo.site.origin + route.path + '#faq',
+      mainEntity: area.faq.map((item) => ({
         '@type': 'Question',
         name: item.question,
         acceptedAnswer: { '@type': 'Answer', text: item.answer },
@@ -622,6 +708,36 @@ function vehicleFor(route) {
 }
 
 /**
+ * The article itself.
+ *
+ * Google does not give rich results to a blog post the way it does to a
+ * recipe, so this is not decoration: it is what says the page is an article
+ * with a date and an author rather than another service page, which is the
+ * difference between it being read as editorial and as another sales page on
+ * the same site. dateModified is the honest one -- an article that claims to
+ * be fresh and is not gets treated accordingly.
+ */
+function articleFor(route) {
+  const post = postFor(route);
+  if (!post) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': seo.site.origin + route.path + '#article',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: post.updated ?? post.date,
+    inLanguage: 'en-IN',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': seo.site.origin + route.path },
+    author: { '@id': seo.site.origin + '#organization' },
+    publisher: { '@id': seo.site.origin + '#organization' },
+    ...(pictureFor('blog-hero') ? { image: pictureFor('blog-hero') } : {}),
+  };
+}
+
+/**
  * Who publishes this site, and what the site is -- on the home page only.
  *
  * The AutoRental block on every page says what the business does. These two
@@ -695,6 +811,7 @@ let written = 0;for (const route of routes) {
     breadcrumbFor(route),
     townServiceFor(route),
     vehicleFor(route),
+    articleFor(route),
     faqFor(route),
     ...(publisherFor(route) ?? []),
   ]

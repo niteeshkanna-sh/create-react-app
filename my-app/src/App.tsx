@@ -39,6 +39,8 @@ const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.N
 const CarRentalAreas = lazy(() => import('./pages/CarRentalAreas').then(m => ({ default: m.CarRentalAreas })));
 const Town = lazy(() => import('./pages/Town').then(m => ({ default: m.Town })));
 const CarModel = lazy(() => import('./pages/CarModel').then(m => ({ default: m.CarModel })));
+const ServiceArea = lazy(() => import('./pages/ServiceArea').then(m => ({ default: m.ServiceArea })));
+const Post = lazy(() => import('./pages/Post').then(m => ({ default: m.Post })));
 
 /**
  * A browser restores scroll position on navigation, which on a client-side
@@ -94,12 +96,21 @@ function App() {
               it. */}
           <Route path="/cars/:slug" element={<CarModel />} />
           <Route path="/bikes" element={<Bikes />} />
+          {/* One service in one town, where that pair has something of its
+              own to say. Matched on the whole path inside ServiceArea, which
+              renders the 404 page for a combination nobody has written --
+              there is no matrix here on purpose. */}
+          <Route path="/bikes/:slug" element={<ServiceArea />} />
           <Route path="/wedding-cars" element={<WeddingCars />} />
+          <Route path="/wedding-cars/:slug" element={<ServiceArea />} />
           <Route path="/tourist-vehicles" element={<TouristVehicles />} />
+          <Route path="/tourist-vehicles/:slug" element={<ServiceArea />} />
           <Route path="/monthly" element={<Monthly />} />
+          <Route path="/monthly/:slug" element={<ServiceArea />} />
           <Route path="/nri" element={<Nri />} />
           <Route path="/tariff" element={<Tariff />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<Post />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/places" element={<Places />} />
           <Route path="/services" element={<Services />} />

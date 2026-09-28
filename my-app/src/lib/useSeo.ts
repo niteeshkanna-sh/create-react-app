@@ -3,11 +3,17 @@ import { useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
 import townData from '../data/towns.json';
 import modelData from '../data/models.json';
+import serviceAreaData from '../data/service-areas.json';
+import postData from '../data/posts.json';
 // @ts-expect-error -- plain ESM, shared verbatim with the build so the routes
 // the app knows about and the routes the sitemap lists cannot disagree.
 import { allTownRoutes } from '../data/town-routes.mjs';
 // @ts-expect-error -- as above.
 import { modelRoutes } from '../data/model-routes.mjs';
+// @ts-expect-error -- as above.
+import { serviceAreaRoutes } from '../data/service-area-routes.mjs';
+// @ts-expect-error -- as above.
+import { postRoutes } from '../data/post-routes.mjs';
 
 // The fixed pages, plus one per town and one per car. Composed rather than
 // written into seo.json, because towns.json and models.json are where those
@@ -16,6 +22,8 @@ const routes = [
   ...seo.routes,
   ...allTownRoutes(townData.towns, seo.site),
   ...modelRoutes(modelData.models),
+  ...serviceAreaRoutes(serviceAreaData.pages),
+  ...postRoutes(postData.posts),
 ];
 
 /**
