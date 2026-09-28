@@ -37,14 +37,32 @@ export type Icon3dName =
   | 'car'
   | 'arrow-up';
 
-/** Light and dark ends of the plate, and the shadow under it. */
+/**
+ * The plate's colours: the stops across it, the shadow it casts, and -- where
+ * a brand's own gradient runs a particular way -- the corners it runs between.
+ *
+ * Two stops is the house recipe. More than two is for a mark whose colour is
+ * not ours to choose: Instagram's is five, from yellow at the bottom left
+ * through orange and pink to blue at the top right, and anything else reads
+ * as the wrong icon rather than as a design decision.
+ */
 const TONES = {
-  gold: ['#f6dc84', '#c9a227'],
-  bronze: ['#e6a860', '#a85f22'],
-  navy: ['#2b3a72', '#0a0e20'],
-  cream: ['#fffdf6', '#e8dcc4'],
-  green: ['#5ee08a', '#128c3e'],
-  plum: ['#d08bd6', '#7b2f86'],
+  gold: { stops: ['#f6dc84', '#c9a227'], shadow: '#c9a227' },
+  bronze: { stops: ['#e6a860', '#a85f22'], shadow: '#a85f22' },
+  navy: { stops: ['#2b3a72', '#0a0e20'], shadow: '#0a0e20' },
+  cream: { stops: ['#fffdf6', '#e8dcc4'], shadow: '#e8dcc4' },
+  green: { stops: ['#5ee08a', '#128c3e'], shadow: '#128c3e' },
+  plum: { stops: ['#d08bd6', '#7b2f86'], shadow: '#7b2f86' },
+  // Instagram's own, and running its own way: bottom left to top right.
+  instagram: {
+    stops: ['#feda75', '#fa7e1e', '#d62976', '#962fbf', '#4f5bd5'],
+    shadow: '#962fbf',
+    // The shadow of a five-stop plate takes its colour from the middle,
+    // because neither end is what the eye reads the plate as.
+    line: [0.1, 1, 0.9, 0] as const,
+  },
+  // Facebook's blue, for the same reason.
+  facebook: { stops: ['#3b8bf5', '#1877f2'], shadow: '#0b4ea2' },
 } as const;
 
 export type Icon3dTone = keyof typeof TONES;
@@ -55,8 +73,8 @@ const DEFAULT_TONE: Record<Icon3dName, Icon3dTone> = {
   whatsapp: 'green',
   mail: 'navy',
   pin: 'bronze',
-  instagram: 'plum',
-  facebook: 'navy',
+  instagram: 'instagram',
+  facebook: 'facebook',
   shield: 'gold',
   drop: 'bronze',
   people: 'navy',
@@ -174,8 +192,12 @@ export function Icon3d({
   // One set of gradient ids per instance: six plates all defining #plate would
   // every one of them paint with whichever definition the browser read last.
   const uid = useId().replace(/:/g, '');
-  const [light, dark] = TONES[tone ?? DEFAULT_TONE[name]];
-  const ink = INK[tone ?? DEFAULT_TONE[name]] ?? '#fff';
+  const key = tone ?? DEFAULT_TONE[name];
+  const plate: { stops: readonly string[]; shadow: string; line?: readonly number[] } = TONES[key];
+  const { stops, shadow } = plate;
+  // Top left to bottom right unless the brand's own gradient runs elsewhere.
+  const [x1, y1, x2, y2] = plate.line ?? [0.15, 0, 0.85, 1];
+  const ink = INK[key] ?? '#fff';
 
   return (
     <svg
@@ -187,9 +209,14 @@ export function Icon3d({
       focusable="false"
     >
       <defs>
-        <linearGradient id={`plate-${uid}`} x1="0.15" y1="0" x2="0.85" y2="1">
-          <stop offset="0%" stopColor={light} />
-          <stop offset="100%" stopColor={dark} />
+        <linearGradient id={`plate-${uid}`} x1={x1} y1={y1} x2={x2} y2={y2}>
+          {stops.map((colour, i) => (
+            <stop
+              key={colour}
+              offset={`${Math.round((i / (stops.length - 1)) * 100)}%`}
+              stopColor={colour}
+            />
+          ))}
         </linearGradient>
         {/* The gloss: bright at the top edge, gone by the middle. */}
         <linearGradient id={`gloss-${uid}`} x1="0" y1="0" x2="0" y2="1">
@@ -197,7 +224,7 @@ export function Icon3d({
           <stop offset="100%" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
         <filter id={`drop-${uid}`} x="-30%" y="-20%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2.2" floodColor={dark} floodOpacity="0.45" />
+          <feDropShadow dx="0" dy="2" stdDeviation="2.2" floodColor={shadow} floodOpacity="0.45" />
         </filter>
       </defs>
 
