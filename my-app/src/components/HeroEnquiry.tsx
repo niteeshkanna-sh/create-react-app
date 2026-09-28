@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { submitEnquiry } from '../lib/enquiry';
 import { useFleet } from '../lib/useFleet';
+import { useAvailability, busyForVehicle } from '../lib/useAvailability';
+import { DatePick } from './DatePick';
 import { WhatsAppButton } from './WhatsAppButton';
 
 /**
@@ -20,18 +22,18 @@ import { WhatsAppButton } from './WhatsAppButton';
  * The rest of the detail is gathered on the phone, or on /contact by whoever
  * would rather type it. Both land in the same place.
  *
- * No calendar widget here on purpose. The contact page draws its own grid so
- * it can grey out days a vehicle is already out on; that is a real feature and
- * a lot of markup, and this card sits in the part of the page the browser
- * measures for loading speed. A native date box is a few bytes, and on a phone
- * it opens the same picker the person already knows.
+ * The dates use the site's own picker, the same one the contact form uses.
+ * They were native date boxes, for weight: this card sits in the part of the
+ * page the browser measures for loading speed. But a native box opens the
+ * browser's calendar, and the browser's calendar does not know that the car
+ * they have just chosen is out that weekend -- so the first this person heard
+ * of it was the call back. The picker only puts a month in the page once it is
+ * opened, which is what makes it affordable here.
  */
 const box =
   'w-full rounded-lg border border-line bg-white px-3 py-1.5 text-[14px] text-ink outline-none transition ' +
   'placeholder:text-ink-faint focus:border-navy focus:ring-2 focus:ring-navy/15 sm:py-2';
 const cap = 'block text-[11px] font-semibold text-ink-dim mb-0.5 sm:text-[12px] sm:mb-1';
-
-const today = () => new Date().toLocaleDateString('en-CA');
 
 type Status =
   | { kind: 'idle' }
@@ -42,11 +44,17 @@ type Status =
 export function HeroEnquiry({ title, note }: { title: string; note: string }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const [start, setStart] = useState('');
+  const [back, setBack] = useState('');
 
   const fleet = useFleet();
   const cars = fleet.status === 'ready' ? fleet.cars : [];
   const [car, setCar] = useState('');
   const chosen = cars.find((c) => c.id === car);
+
+  // That vehicle's diary once one is chosen; before then, only the days on
+  // which nothing at all is free -- one car being out says nothing about
+  // whether we can help.
+  const busy = busyForVehicle(useAvailability(), chosen?.id);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -149,17 +157,37 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
 
         <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
           <div>
-            <label className={cap} htmlFor="heroStart">Pick up</label>
-            <input id="heroStart" name="start" type="date" min={today()}
-                   value={start} onChange={(e) => setStart(e.target.value)}
-                   className={box} />
+            <label className={cap} id="heroStartLabel" htmlFor="heroStart">Pick up</label>
+            <DatePick
+              id="heroStart"
+              name="start"
+              size="sm"
+              placeholder="Date"
+              labelledBy="heroStartLabel"
+              value={start}
+              busy={busy}
+              onChange={(next) => {
+                setStart(next);
+                // A return before the pickup is not a date anyone meant.
+                if (back !== '' && next !== '' && back < next) setBack(next);
+              }}
+            />
           </div>
           <div>
-            <label className={cap} htmlFor="heroReturn">Return</label>
-            {/* Never before the pickup. The box itself refuses it, so a wrong
-                pair cannot be sent and then argued about on the phone. */}
-            <input id="heroReturn" name="return" type="date" min={start || today()}
-                   className={box} />
+            <label className={cap} id="heroReturnLabel" htmlFor="heroReturn">Return</label>
+            {/* Never before the pickup: the calendar will not offer it, so a
+                wrong pair cannot be sent and then argued about on the phone. */}
+            <DatePick
+              id="heroReturn"
+              name="return"
+              size="sm"
+              placeholder="Date"
+              labelledBy="heroReturnLabel"
+              value={back}
+              busy={busy}
+              onChange={setBack}
+              min={start || undefined}
+            />
           </div>
         </div>
 
