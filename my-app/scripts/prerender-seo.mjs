@@ -731,8 +731,14 @@ function articleFor(route) {
     dateModified: post.updated ?? post.date,
     inLanguage: 'en-IN',
     mainEntityOfPage: { '@type': 'WebPage', '@id': seo.site.origin + route.path },
-    author: { '@id': seo.site.origin + '#organization' },
-    publisher: { '@id': seo.site.origin + '#organization' },
+    // #business rather than #organization: the AutoRental block is on every
+    // page, so this reference resolves on the page it is read from. The
+    // Organization node is on the home page alone, and a reference to an @id
+    // that is not on the page is a reference a parser may not follow.
+    // AutoRental is a LocalBusiness is an Organization, so it is a valid
+    // author and publisher either way.
+    author: { '@id': seo.site.origin + '#business' },
+    publisher: { '@id': seo.site.origin + '#business' },
     ...(pictureFor('blog-hero') ? { image: pictureFor('blog-hero') } : {}),
   };
 }

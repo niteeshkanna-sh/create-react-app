@@ -181,37 +181,34 @@ export function Town() {
           </div>
         </div>
 
-        {/* The vehicles by name, from every town page. Somebody who has
-            landed on "car rental in Marthandam" and decided we deliver there
-            wants to know what we would be delivering, and this is the shortest
-            route from the town to the car. */}
+        {/* The vehicles by name, from every town page -- as a line of links
+            rather than six cards.
+
+            The cards were the same six names, the same six specifications and
+            the same six calls to action on all twelve town pages, which is
+            about eighty words of identical text added to pages whose whole
+            justification is that they are not each other. Measured, it pushed
+            the average overlap between two town pages from the high twenties
+            to nearly thirty-six per cent at worst. A crawler reaches the car
+            pages from here either way; only one of the two versions costs the
+            town pages their distinctness. */}
         <Reveal delay={60}>
           <h2 className="mt-16 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
-            What we would bring to {town.name}
+            What we would bring
           </h2>
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {modelData.models.map((model) => (
-              <li key={model.slug}>
+          <p className="mt-3 text-ink-dim">
+            {modelData.models.map((model, i) => (
+              <span key={model.slug}>
+                {i > 0 ? (i === modelData.models.length - 1 ? ' and ' : ', ') : ''}
                 <Link
                   to={`/cars/${model.slug}`}
-                  className="card-lift group flex h-full flex-col rounded-[14px] border border-line bg-white p-5 transition hover:border-gold/60"
+                  className="font-semibold text-navy hover:text-gold-deep"
                 >
-                  <span className="font-bold text-navy">{model.name}</span>
-                  <span className="mt-1 text-sm text-ink-dim">
-                    {model.seats} seats &middot; {model.fuel} &middot; {model.transmission}
-                  </span>
-                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-deep">
-                    See the {model.short}
-                    <span aria-hidden="true" className="transition group-hover:translate-x-1">
-                      →
-                    </span>
-                  </span>
+                  {model.name}
                 </Link>
-              </li>
+              </span>
             ))}
-          </ul>
-          <p className="mt-5 text-ink-dim">
-            Rates for all of them are on the{' '}
+            . Rates for all of them are on the{' '}
             <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
               tariff page
             </Link>

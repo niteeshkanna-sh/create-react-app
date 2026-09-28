@@ -28,6 +28,15 @@ export function CarRentalAreas() {
       />
 
       <div className="mx-auto max-w-[86rem] px-5 py-16 sm:px-8 lg:px-12">
+        {/* Said once, above the grid, rather than on each of twelve cards.
+            "About 30 km from Nagercoil" twelve times made the name of the base
+            town nearly eight per cent of every word on this page, which reads
+            as a page written for a search engine rather than for a reader. */}
+        <p className="mb-8 text-ink-dim">
+          Distances are approximate road distances from {townData.base}, where
+          the vehicles are kept.
+        </p>
+
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {towns.map((town, i) => (
             <Reveal key={town.slug} as="li" delay={i * 50} className="h-full">
@@ -39,7 +48,7 @@ export function CarRentalAreas() {
                 <p className="mt-1 text-sm font-medium text-gold-deep">
                   {town.distanceKm === 0
                     ? 'Where the vehicles are kept'
-                    : `About ${town.distanceKm} km from ${townData.base}`}
+                    : `About ${town.distanceKm} km away`}
                 </p>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-dim">
                   Known for {town.knownFor}.
