@@ -26,7 +26,26 @@ import { LOGO_FALLBACK } from './BrandPanel';
  */
 export function Logo({ onClick }: { onClick?: () => void }) {
   // An upload replaces it; until then, the file the owner supplied.
-  const logo = useSiteImage('logo') ?? LOGO_FALLBACK;
+  const uploaded = useSiteImage('logo');
+  const logo = uploaded ?? LOGO_FALLBACK;
+
+  // The committed lockup is 1209 pixels wide and is drawn at about 110. That
+  // is 108 KB fetched at high priority, above the fold, on every page, to
+  // paint something a tenth of the size -- and on the home page it is
+  // competing for bandwidth with the banner photograph, which is what the
+  // page's loading speed is actually measured on. At 400 wide it is 27 KB and
+  // still sharper than any screen will show.
+  //
+  // Only for the committed file, as with the banner: a logo uploaded in the
+  // panel is served by the panel, and inventing -400w addresses for it would
+  // be inventing files that 404.
+  const sources = uploaded
+    ? undefined
+    : [
+        `${LOGO_FALLBACK.replace('.webp', '-400w.webp')} 400w`,
+        `${LOGO_FALLBACK.replace('.webp', '-800w.webp')} 800w`,
+        `${LOGO_FALLBACK} 1209w`,
+      ].join(', ');
 
   if (logo) {
     return (
@@ -37,11 +56,19 @@ export function Logo({ onClick }: { onClick?: () => void }) {
       >
         <img
           src={logo}
+          srcSet={sources}
+          // 48px tall below the sm breakpoint and 64px above it; the lockup is
+          // about 1.72 times as wide as it is tall, so that is 83 and 110
+          // points of width. Stated in pixels rather than as a vw fraction
+          // because the header does not scale with the window.
+          sizes={sources ? '(min-width: 640px) 110px, 83px' : undefined}
           alt={seo.site.name}
           // The one picture above the fold on every page, so it is not left to
           // be discovered late.
           fetchPriority="high"
           decoding="async"
+          width={1209}
+          height={705}
           className="h-12 w-auto object-contain sm:h-16"
         />
       </Link>

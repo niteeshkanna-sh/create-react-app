@@ -1,15 +1,21 @@
 /**
- * The fleet shown on the site.
+ * The fleet's shape, and the copy of it that ships with the build.
  *
- * These are PLACEHOLDERS. The live vehicle list lives in the admin database,
- * but api/vehicles.php calls api_guard('vehicle.view'), so it cannot be read
- * without signing in — a public site has no way to fetch it. Edit this file to
- * match the real fleet; every push to main redeploys the site.
+ * The live list lives in the admin database. scripts/fetch-fleet.mjs pulls it
+ * in before Vite runs and writes fleet.json, which is what this exports -- so
+ * the vehicles are in the HTML as served rather than arriving after a fetch.
+ * That matters more here than almost anywhere else on the site: /cars and
+ * /tariff are the two pages people search for by car name, and they used to be
+ * served to a crawler as "Loading our cars…".
+ *
+ * The browser still asks the panel on load, so this is the floor rather than
+ * the ceiling: a car added this morning appears this morning.
  *
  * Fields mirror the vehicles and vehicle_rates tables so the two stay
  * comparable: rates are rupees, kmLimitPerDay and extraKmRate come from the
  * current rate card, and deposit is security_deposit.
  */
+import snapshot from './fleet.json';
 
 export type BodyType = 'Hatchback' | 'Sedan' | 'SUV' | 'MUV';
 export type Fuel = 'Petrol' | 'Diesel' | 'Electric' | 'CNG';
@@ -42,36 +48,16 @@ export interface Car {
   available: boolean;
 }
 
-export const cars: Car[] = [
-  // Empty on purpose. The site previously shipped invented vehicles, which
-  // meant customers could enquire about cars that do not exist.
-  //
-  // Add the real fleet here and it appears immediately -- the listing, the
-  // body-type filters and the enquiry form's car picker all read from this
-  // array, and all of them handle an empty fleet on their own. Every push to
-  // main redeploys.
-  //
-  // Shape one like this:
-  //
-  // {
-  //   id: 'swift-01',
-  //   brand: 'Maruti Suzuki',
-  //   name: 'Swift',
-  //   bodyType: 'Hatchback',
-  //   fuel: 'Petrol',
-  //   transmission: 'Manual',
-  //   seats: 5,
-  //   year: 2021,
-  //   rateDaily: 1600,
-  //   rateWeekly: 1400,      // optional, per day
-  //   rateMonthly: 1200,     // optional, per day
-  //   kmLimitPerDay: 200,
-  //   extraKmRate: 9,
-  //   deposit: 3000,
-  //   image: '/swift.webp',  // optional, put the file in my-app/public/
-  //   available: true,
-  // },
-];
+/**
+ * What ships in the bundle: the panel's list as of the last build.
+ *
+ * Not hand-edited except to correct a model name. Rates are the panel's, and
+ * a rate of 0 means the panel had none to give -- see dailyRate below.
+ */
+export const cars = snapshot.vehicles as Car[];
+
+/** Whether that snapshot came from the panel or is the committed floor. */
+export const fleetIsLive = snapshot.live;
 
 /** Rupee formatting, Indian digit grouping, no decimals. */
 export const inr = (n: number) =>
@@ -88,8 +74,17 @@ export const inr = (n: number) =>
  * rate equal to or below the daily rate is treated as no band at all: printing
  * "₹1,600 – ₹1,600" would look like a fault, and "₹1,800 – ₹1,600" like a
  * different one.
+ *
+ * Nothing at all becomes "On request", never ₹0. A tariff is a promise, and a
+ * figure nobody at the business typed is not one they can keep -- which is
+ * exactly what would get published if a missing rate printed as a number.
  */
 export const dailyRate = (car: Pick<Car, 'rateDaily' | 'rateDailyMax'>) =>
-  car.rateDailyMax !== undefined && car.rateDailyMax > car.rateDaily
-    ? `${inr(car.rateDaily)} – ${inr(car.rateDailyMax)}`
-    : inr(car.rateDaily);
+  car.rateDaily <= 0
+    ? 'On request'
+    : car.rateDailyMax !== undefined && car.rateDailyMax > car.rateDaily
+      ? `${inr(car.rateDaily)} – ${inr(car.rateDailyMax)}`
+      : inr(car.rateDaily);
+
+/** A figure, or a dash where the panel has none. For the tariff table. */
+export const orDash = (n: number | undefined) => (n && n > 0 ? inr(n) : '—');

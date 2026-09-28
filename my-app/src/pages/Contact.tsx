@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import seo from '../data/seo.json';
 import { useHome } from '../content';
 import { readablePhone } from '../lib/phone';
@@ -140,6 +141,75 @@ export function Contact() {
           <Reveal delay={90} className="lg:col-span-7">
             <Enquiry />
           </Reveal>
+        </div>
+      </section>
+
+      {/* What happens next, which is the question a form leaves unanswered
+          and the reason a lot of people close the tab instead of sending it. */}
+      <section className="mx-auto max-w-[86rem] px-5 pb-16 sm:px-8 lg:px-12">
+        <div className="grid gap-8 rounded-[18px] border border-line bg-cream p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-navy">
+              What happens after you send it
+            </h2>
+            <ol className="mt-5 space-y-4">
+              {[
+                'We check what is free on your dates. If the vehicle you asked for is out, we will say so and tell you what else would suit rather than quietly substituting something.',
+                'We call you back with the daily rate, the kilometre allowance, the extra-KM rate and the deposit. All four, before anything is agreed.',
+                'If it suits you, we book it. Nothing is paid now — the deposit is taken at handover and comes back when the vehicle does.',
+                'We bring the vehicle to you at the time agreed, anywhere in the district, with its papers in it.',
+              ].map((step, i) => (
+                <li key={step} className="flex gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-navy text-sm font-bold text-gold"
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="leading-relaxed text-ink-dim">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-navy">
+              What to have ready
+            </h2>
+            <p className="mt-4 leading-relaxed text-ink-dim">
+              Nothing, to enquire — a name and a number is enough. To take a
+              vehicle you will need an original driving licence for the class
+              you are hiring, one government photo ID, and the deposit.
+              Visitors from abroad should bring a passport and an international
+              driving permit alongside their home licence.
+            </p>
+            <p className="mt-4 leading-relaxed text-ink-dim">
+              The{' '}
+              <Link
+                to="/blog/documents-to-rent-a-self-drive-car"
+                className="font-semibold text-navy hover:text-gold-deep"
+              >
+                full list of documents
+              </Link>{' '}
+              covers the exceptions, and{' '}
+              <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
+                the tariff
+              </Link>{' '}
+              has the figures for every vehicle if you would rather look before
+              you ask.
+            </p>
+            <p className="mt-4 leading-relaxed text-ink-dim">
+              A call is quicker than the form if your dates are close. We
+              answer{' '}
+              <a
+                href={`tel:${seo.site.phone}`}
+                className="font-semibold text-navy hover:text-gold-deep"
+              >
+                {readablePhone(seo.site.phone)}
+              </a>{' '}
+              and the same number on WhatsApp.
+            </p>
+          </div>
         </div>
       </section>
 

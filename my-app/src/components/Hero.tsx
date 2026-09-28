@@ -13,8 +13,25 @@ export function Hero() {
   //
   // It is the site's only photograph of that size, and it was being spent on
   // a band halfway down the page. The banner is where it earns its weight.
-  const background = useSiteImage('home-hero')
-    ?? '/mountain-road-at-sunrise-self-drive-car-rental.webp';
+  const uploaded = useSiteImage('home-hero');
+  const BAKED = '/mountain-road-at-sunrise-self-drive-car-rental.webp';
+  const background = uploaded ?? BAKED;
+
+  // Narrower copies of the committed photograph, so a phone is not sent a
+  // 1920-pixel-wide file to paint across 390 points. At 800 wide it is 44 KB
+  // rather than 166 -- and this image is the largest thing above the fold,
+  // which is to say it is what Google measures this page's loading speed by.
+  //
+  // Only for the committed one. A photograph uploaded in the panel is served
+  // by the panel at whatever size it was cropped to, and inventing -800w
+  // addresses for it would be inventing files that 404.
+  const sources = uploaded
+    ? undefined
+    : [
+        `${BAKED.replace('.webp', '-800w.webp')} 800w`,
+        `${BAKED.replace('.webp', '-1280w.webp')} 1280w`,
+        `${BAKED} 1920w`,
+      ].join(', ');
 
   return (
     <section id="top" className="relative isolate overflow-hidden bg-navy text-white">
@@ -33,10 +50,19 @@ export function Hero() {
           is nothing here". The words are editable beside the heading. */}
       <img
         src={background}
+        srcSet={sources}
+        // The band is full width at every size, so the browser needs no more
+        // than that to pick from the set above.
+        sizes={sources ? '100vw' : undefined}
         alt={h.imageAlt ?? `${h.headingLead} ${h.headingAccent}`}
         loading="eager"
         fetchPriority="high"
         decoding="async"
+        // Stated so the space is reserved before the file lands. The element
+        // is absolutely positioned and object-cover, so these are the source's
+        // proportions rather than a size it will be drawn at.
+        width={1920}
+        height={1080}
         className="hero-photo absolute inset-0 -z-10 h-full w-full object-cover object-center"
       />
       <div aria-hidden="true" className="hero-scrim absolute inset-0 -z-10" />

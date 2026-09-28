@@ -173,7 +173,11 @@ export function Monthly() {
               <Link to="/nri" className="font-medium text-navy hover:text-gold-deep">
                 We can have it waiting at the airport
               </Link>
-              .
+              . Based in the district headquarters?{' '}
+              <Link to="/monthly/nagercoil" className="font-medium text-navy hover:text-gold-deep">
+                Monthly hire in Nagercoil
+              </Link>{' '}
+              covers how it works there.
             </p>
           </div>
         </Reveal>

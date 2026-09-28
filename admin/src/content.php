@@ -82,27 +82,6 @@ function content_schema(): array
                         ],
                     ],
                 ],
-                'highlights' => [
-                    'label'  => 'The three worth asking for',
-                    'note'   => 'Three cards for the bookings worth the most. The first is the big one; the other two sit beside it. One sentence each: this is the part of the page somebody reads while scrolling past, and the page it links to is where the detail belongs.',
-                    'fields' => [
-                        'eyebrow' => ['label' => 'Small line above', 'type' => 'text'],
-                        'heading' => ['label' => 'Heading', 'type' => 'text'],
-                        'items' => [
-                            'label'  => 'Cards',
-                            'type'   => 'repeater',
-                            // No icon field: the site draws one per service,
-                            // so the row cannot end up with one colour emoji
-                            // beside two flat ones, which is what it had.
-                            'fields' => [
-                                'title'      => ['label' => 'Title', 'type' => 'text'],
-                                'body'       => ['label' => 'One sentence', 'type' => 'textarea'],
-                                'cta'        => ['label' => 'Link text', 'type' => 'text'],
-                                'to'         => ['label' => 'Links to', 'type' => 'text'],
-                            ],
-                        ],
-                    ],
-                ],
                 'whyUs' => [
                     'label'  => 'Why hire from us',
                     'fields' => [
@@ -134,19 +113,6 @@ function content_schema(): array
                         ],
                         'noteLead' => ['label' => 'Note, bold start', 'type' => 'text'],
                         'noteBody' => ['label' => 'Note', 'type' => 'textarea'],
-                    ],
-                ],
-                'openRoad' => [
-                    'label'  => 'Open road band',
-                    'fields' => [
-                        'eyebrow'        => ['label' => 'Eyebrow', 'type' => 'text'],
-                        'headingLead'    => ['label' => 'Heading', 'type' => 'text'],
-                        'headingAccent'  => ['label' => 'Heading, gold line', 'type' => 'text'],
-                        'body'           => ['label' => 'Paragraph', 'type' => 'textarea'],
-                        'primaryLabel'   => ['label' => 'Main button', 'type' => 'text'],
-                        'primaryHref'    => ['label' => 'Main button link', 'type' => 'text'],
-                        'secondaryLabel' => ['label' => 'Second button', 'type' => 'text'],
-                        'secondaryHref'  => ['label' => 'Second button link', 'type' => 'text'],
                     ],
                 ],
                 'areasServed' => [

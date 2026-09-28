@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import seo from '../data/seo.json';
 import townData from '../data/towns.json';
+import serviceAreaData from '../data/service-areas.json';
+import modelData from '../data/models.json';
 import { readablePhone } from '../lib/phone';
 import { Reveal } from '../components/Reveal';
 import { PageHeader } from './PageHeader';
@@ -36,6 +38,12 @@ export function Town() {
 
   const others = towns.filter((t) => t.slug !== town.slug);
   const enquire = `/contact?town=${encodeURIComponent(town.name)}`;
+
+  // Where a service has a page written for this particular town, the list
+  // below points at that rather than at the general one -- which is the more
+  // useful link for the reader and the one that gets those pages crawled.
+  const areas = serviceAreaData.pages.filter((page) => page.slug === town.slug);
+  const areaFor = (base: string) => areas.find((page) => page.base === base);
 
   return (
     <>
@@ -128,7 +136,12 @@ export function Town() {
                     { to: '/wedding-cars', label: 'Wedding cars', note: 'Decorated, for the season' },
                     { to: '/tourist-vehicles', label: 'Tourist vehicles', note: 'With a driver, for groups' },
                     { to: '/monthly', label: 'Monthly hire', note: 'Cheaper the longer you keep it' },
-                  ].map((item) => (
+                  ].map((base) => {
+                    const local = areaFor(base.to);
+                    return local
+                      ? { ...base, to: `${local.base}/${local.slug}`, note: `Written for ${town.name}` }
+                      : base;
+                  }).map((item) => (
                     <li key={item.to}>
                       <Link
                         to={item.to}
@@ -167,6 +180,41 @@ export function Town() {
             </Reveal>
           </div>
         </div>
+
+        {/* The vehicles by name, from every town page -- as a line of links
+            rather than six cards.
+
+            The cards were the same six names, the same six specifications and
+            the same six calls to action on all twelve town pages, which is
+            about eighty words of identical text added to pages whose whole
+            justification is that they are not each other. Measured, it pushed
+            the average overlap between two town pages from the high twenties
+            to nearly thirty-six per cent at worst. A crawler reaches the car
+            pages from here either way; only one of the two versions costs the
+            town pages their distinctness. */}
+        <Reveal delay={60}>
+          <h2 className="mt-16 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
+            What we would bring
+          </h2>
+          <p className="mt-3 text-ink-dim">
+            {modelData.models.map((model, i) => (
+              <span key={model.slug}>
+                {i > 0 ? (i === modelData.models.length - 1 ? ' and ' : ', ') : ''}
+                <Link
+                  to={`/cars/${model.slug}`}
+                  className="font-semibold text-navy hover:text-gold-deep"
+                >
+                  {model.name}
+                </Link>
+              </span>
+            ))}
+            . Rates for all of them are on the{' '}
+            <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
+              tariff page
+            </Link>
+            , and they come down on a longer hire.
+          </p>
+        </Reveal>
 
         {/* The other towns, from every town page. Twelve pages that each link
             to the other eleven is how a crawler finds all of them from any one

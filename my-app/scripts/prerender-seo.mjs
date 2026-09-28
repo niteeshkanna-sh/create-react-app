@@ -21,6 +21,9 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { allTownRoutes, TOWN_BASE } from '../src/data/town-routes.mjs';
+import { modelRoutes, MODEL_BASE } from '../src/data/model-routes.mjs';
+import { serviceAreaRoutes, serviceAreaPath } from '../src/data/service-area-routes.mjs';
+import { postRoutes, BLOG_BASE } from '../src/data/post-routes.mjs';
 
 const root = join(import.meta.dirname, '..');
 
@@ -56,7 +59,24 @@ const seo = JSON.parse(readFileSync(join(root, 'src/data/seo.json'), 'utf8'));
 // so a town added there gets its page, its tags and its line in the sitemap
 // without a second list being edited.
 const towns = JSON.parse(readFileSync(join(root, 'src/data/towns.json'), 'utf8'));
-const routes = [...seo.routes, ...allTownRoutes(towns.towns, seo.site)];
+// And one per vehicle people ask for by name, for the same reason.
+const models = JSON.parse(readFileSync(join(root, 'src/data/models.json'), 'utf8'));
+// The vehicle list as baked in by fetch-fleet.mjs, so a car page's structured
+// data can carry the rate when the panel has published one.
+const fleet = JSON.parse(readFileSync(join(root, 'src/data/fleet.json'), 'utf8'));
+// And one per service-in-a-town pair worth having a page of its own.
+const serviceAreas = JSON.parse(
+  readFileSync(join(root, 'src/data/service-areas.json'), 'utf8'),
+);
+// And one per article.
+const blog = JSON.parse(readFileSync(join(root, 'src/data/posts.json'), 'utf8'));
+const routes = [
+  ...seo.routes,
+  ...allTownRoutes(towns.towns, seo.site),
+  ...modelRoutes(models.models),
+  ...serviceAreaRoutes(serviceAreas.pages),
+  ...postRoutes(blog.posts),
+];
 // A title or a description longer than a search result shows is not wrong,
 // it is just cut -- and the part that gets cut is the part written last,
 // which is usually the towns. Both numbers are where Google starts trimming
@@ -398,6 +418,25 @@ function townFor(route) {
   return towns.towns.find((t) => t.slug === slug) ?? null;
 }
 
+/** The article a route is about, or null. */
+function postFor(route) {
+  if (!route.path.startsWith(BLOG_BASE + '/')) return null;
+  const slug = route.path.slice(BLOG_BASE.length + 1);
+  return blog.posts.find((post) => post.slug === slug) ?? null;
+}
+
+/** The service-in-a-town page a route is about, or null. */
+function serviceAreaFor(route) {
+  return serviceAreas.pages.find((page) => serviceAreaPath(page) === route.path) ?? null;
+}
+
+/** The car a route is about, or null for the pages that are not about one. */
+function modelFor(route) {
+  if (!route.path.startsWith(MODEL_BASE + '/')) return null;
+  const slug = route.path.slice(MODEL_BASE.length + 1);
+  return models.models.find((m) => m.slug === slug) ?? null;
+}
+
 /**
  * The trail from the home page to this one, as Google shows it.
  *
@@ -421,11 +460,20 @@ function breadcrumbFor(route) {
   // threw away the only word that distinguishes one of these pages from the
   // other eleven, and left twelve trails all ending "Self Drive Car Rental".
   const town = townFor(route);
+  const model = modelFor(route);
+  const area = serviceAreaFor(route);
+  const post = postFor(route);
   const leaf = town
     ? town.name
-    : route.path === TOWN_BASE
-      ? 'Where we deliver'
-      : route.title.split(/\s—\s|\sin\s/)[0].trim();
+    : model
+      ? model.name
+      : area
+        ? area.town
+        : post
+          ? post.title
+          : route.path === TOWN_BASE
+            ? 'Where we deliver'
+            : route.title.split(/\s—\s|\sin\s/)[0].trim();
 
   const trail = [
     { '@type': 'ListItem', position: 1, name: 'Home', item: seo.site.origin + '/' },
@@ -441,6 +489,39 @@ function breadcrumbFor(route) {
       position: 2,
       name: 'Where we deliver',
       item: seo.site.origin + TOWN_BASE,
+    });
+  }
+
+  // And a car page sits under the listing every car appears on, for the same
+  // reason: "niteshacars.in > Our cars > Maruti Suzuki Swift" says this is one
+  // of a fleet rather than the whole of a site.
+  if (route.path.startsWith(MODEL_BASE + '/')) {
+    trail.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Our cars',
+      item: seo.site.origin + MODEL_BASE,
+    });
+  }
+
+  // An article sits under the blog.
+  if (post) {
+    trail.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Blog',
+      item: seo.site.origin + BLOG_BASE,
+    });
+  }
+
+  // A service-in-a-town page sits under its service: "niteshacars.in >
+  // Bike and scooter rental > Kanyakumari".
+  if (area) {
+    trail.push({
+      '@type': 'ListItem',
+      position: 2,
+      name: area.service,
+      item: seo.site.origin + area.base,
     });
   }
 
@@ -463,6 +544,28 @@ function breadcrumbFor(route) {
  * business's @id rather than repeating it, so there is still one business.
  */
 function townServiceFor(route) {
+  // A service-in-a-town page makes the same claim, but narrower: this one
+  // service, in this one town, which is exactly the search it answers.
+  const area = serviceAreaFor(route);
+  if (area) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: `${area.service} in ${area.town}`,
+      serviceType: area.service,
+      provider: { '@id': seo.site.origin + '#business' },
+      areaServed: {
+        '@type': 'City',
+        name: area.town,
+        containedInPlace: {
+          '@type': 'AdministrativeArea',
+          name: `${seo.site.district} district`,
+        },
+      },
+      url: seo.site.origin + route.path,
+    };
+  }
+
   const town = townFor(route);
   if (!town) return null;
 
@@ -496,6 +599,38 @@ function townServiceFor(route) {
 const FAQ_ROUTES = new Set(['/', '/tariff']);
 
 function faqFor(route) {
+  // A car page asks and answers its own three, and renders every one of them,
+  // so the same rule is satisfied by reading them from the same file the page
+  // does.
+  const model = modelFor(route);
+  if (model) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      '@id': seo.site.origin + route.path + '#faq',
+      mainEntity: model.faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    };
+  }
+
+  // As do the service-in-a-town pages, which render theirs in full.
+  const area = serviceAreaFor(route);
+  if (area) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      '@id': seo.site.origin + route.path + '#faq',
+      mainEntity: area.faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    };
+  }
+
   if (!FAQ_ROUTES.has(route.path)) return null;
 
   const items = (live?.home?.faq?.items ?? [])
@@ -512,6 +647,236 @@ function faqFor(route) {
       acceptedAnswer: { '@type': 'Answer', text: String(item.answer).trim() },
     })),
   };
+}
+
+/**
+ * The vehicle a car page is about.
+ *
+ * schema.org has a type for this and the page is entirely about one car, so
+ * saying so costs a few hundred bytes and tells a crawler that "Rumion" is a
+ * seven-seat petrol vehicle rather than a word in a heading.
+ *
+ * No price attached. The rate lives in the panel, it is not always published,
+ * and an offer carrying a figure nobody typed is worse than an offer missing.
+ * When the panel does carry one the build has it here, and it is quoted per
+ * day, which is the unit a rental is actually offered in.
+ */
+function vehicleFor(route) {
+  const model = modelFor(route);
+  if (!model) return null;
+
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'Car',
+    '@id': seo.site.origin + route.path + '#vehicle',
+    name: model.name,
+    url: seo.site.origin + route.path,
+    description: model.intro,
+    vehicleConfiguration: model.bodyType,
+    fuelType: model.fuel,
+    vehicleTransmission: model.transmission,
+    vehicleSeatingCapacity: {
+      '@type': 'QuantitativeValue',
+      value: model.seats,
+    },
+  };
+
+  const brand = String(model.name).split(' ')[0];
+  if (brand) data.brand = { '@type': 'Brand', name: brand };
+
+  const car = fleet.vehicles.find((v) =>
+    `${v.brand} ${v.name}`.toLowerCase().includes(model.match.toLowerCase()),
+  );
+  if (car && car.rateDaily > 0) {
+    data.offers = {
+      '@type': 'Offer',
+      availability: 'https://schema.org/InStock',
+      priceCurrency: 'INR',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: car.rateDaily,
+        priceCurrency: 'INR',
+        unitCode: 'DAY',
+        referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'DAY' },
+      },
+      seller: { '@id': seo.site.origin + '#business' },
+      url: seo.site.origin + route.path,
+    };
+  }
+
+  return data;
+}
+
+/**
+ * The article itself.
+ *
+ * Google does not give rich results to a blog post the way it does to a
+ * recipe, so this is not decoration: it is what says the page is an article
+ * with a date and an author rather than another service page, which is the
+ * difference between it being read as editorial and as another sales page on
+ * the same site. dateModified is the honest one -- an article that claims to
+ * be fresh and is not gets treated accordingly.
+ */
+function articleFor(route) {
+  const post = postFor(route);
+  if (!post) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': seo.site.origin + route.path + '#article',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: post.updated ?? post.date,
+    inLanguage: 'en-IN',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': seo.site.origin + route.path },
+    // #business rather than #organization: the AutoRental block is on every
+    // page, so this reference resolves on the page it is read from. The
+    // Organization node is on the home page alone, and a reference to an @id
+    // that is not on the page is a reference a parser may not follow.
+    // AutoRental is a LocalBusiness is an Organization, so it is a valid
+    // author and publisher either way.
+    author: { '@id': seo.site.origin + '#business' },
+    publisher: { '@id': seo.site.origin + '#business' },
+    ...(pictureFor('blog-hero') ? { image: pictureFor('blog-hero') } : {}),
+  };
+}
+
+/**
+ * Who publishes this site, and what the site is -- on the home page only.
+ *
+ * The AutoRental block on every page says what the business does. These two
+ * say who it is and what this domain is, which is what a knowledge panel is
+ * assembled from and what lets a crawler treat the logo, the name and the
+ * social profiles as belonging together.
+ *
+ * Home page only, deliberately. Repeating an Organization on thirty-two pages
+ * does not make it thirty-two times truer; the @id is what the other blocks
+ * point at.
+ */
+function publisherFor(route) {
+  if (route.path !== '/') return null;
+
+  const org = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': seo.site.origin + '#organization',
+    name: seo.site.name,
+    url: seo.site.origin + '/',
+    telephone: seo.site.phone,
+    email: seo.site.email,
+    areaServed: {
+      '@type': 'AdministrativeArea',
+      name: `${seo.site.district} district, ${seo.site.region}`,
+    },
+  };
+
+  const logo = pictureFor('logo');
+  if (logo) org.logo = { '@type': 'ImageObject', url: logo };
+
+  const profiles = [social.facebook, social.instagram, social.youtube, social.linkedin]
+    .map((v) => String(v ?? '').trim())
+    .filter((v) => /^https?:\/\//.test(v));
+  if (profiles.length > 0) org.sameAs = profiles;
+
+  return [
+    org,
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': seo.site.origin + '#website',
+      name: seo.site.name,
+      url: seo.site.origin + '/',
+      inLanguage: 'en-IN',
+      publisher: { '@id': seo.site.origin + '#organization' },
+    },
+  ];
+}
+
+/**
+ * The chunk each route's page compiles to, so the prerendered HTML can ask
+ * for it up front.
+ *
+ * Pages are lazy(), which is right -- the entry bundle should not carry
+ * eighteen pages. But it means hydration reaches a route whose chunk has not
+ * arrived, suspends, and replaces the prerendered markup with the Suspense
+ * fallback until it does. The page that was already on screen collapses to a
+ * navy band and comes back a third of a second later: 0.19 CLS on every inner
+ * page, and the whole point of prerendering undone at the last step.
+ *
+ * A modulepreload alongside the entry script means the chunk is in the module
+ * map before React looks for it, so there is nothing to wait for.
+ *
+ * The map is by hand because the routes come from five different files and
+ * the chunk names come from Vite. It is checked below rather than trusted: a
+ * route missing from it only loses its preload, which is the behaviour this
+ * replaced, so drift costs speed and never correctness.
+ */
+const PAGE_MODULE = new Map([
+  ['/', 'src/pages/Home.tsx'],
+  ['/about', 'src/pages/About.tsx'],
+  ['/cars', 'src/pages/Cars.tsx'],
+  ['/bikes', 'src/pages/Bikes.tsx'],
+  ['/wedding-cars', 'src/pages/WeddingCars.tsx'],
+  ['/tourist-vehicles', 'src/pages/TouristVehicles.tsx'],
+  ['/monthly', 'src/pages/Monthly.tsx'],
+  ['/nri', 'src/pages/Nri.tsx'],
+  ['/tariff', 'src/pages/Tariff.tsx'],
+  ['/blog', 'src/pages/Blog.tsx'],
+  ['/contact', 'src/pages/Contact.tsx'],
+  ['/places', 'src/pages/Places.tsx'],
+  ['/services', 'src/pages/Services.tsx'],
+  [TOWN_BASE, 'src/pages/CarRentalAreas.tsx'],
+]);
+
+/** The generated families, matched by prefix after the fixed paths. */
+const PAGE_MODULE_BY_PREFIX = [
+  [TOWN_BASE + '/', 'src/pages/Town.tsx'],
+  [MODEL_BASE + '/', 'src/pages/CarModel.tsx'],
+  [BLOG_BASE + '/', 'src/pages/Post.tsx'],
+];
+
+let manifest = null;
+try {
+  manifest = JSON.parse(readFileSync(join(dist, '.vite/manifest.json'), 'utf8'));
+} catch {
+  console.warn(
+    'prerender-seo: no build manifest, so no route chunks are preloaded -- ' +
+      'pages will hydrate through the Suspense fallback',
+  );
+}
+
+function moduleFor(route) {
+  const fixed = PAGE_MODULE.get(route.path);
+  if (fixed) return fixed;
+
+  const prefixed = PAGE_MODULE_BY_PREFIX.find(([prefix]) => route.path.startsWith(prefix));
+  if (prefixed) return prefixed[1];
+
+  // Everything else is a service-in-a-town page, which lives under its own
+  // service (/bikes/kanyakumari) and so cannot be matched by one prefix.
+  return serviceAreaFor(route) ? 'src/pages/ServiceArea.tsx' : null;
+}
+
+/** <link rel="modulepreload"> for this route's chunk, and its CSS if it has any. */
+function preloadFor(route) {
+  if (!manifest) return '';
+
+  const source = moduleFor(route);
+  if (!source) {
+    console.warn(`prerender-seo: ${route.path} has no page module mapped -- not preloaded`);
+    return '';
+  }
+
+  const entry = manifest[source];
+  if (!entry?.file) return '';
+
+  const links = [`\n    <link rel="modulepreload" href="/${entry.file}" />`];
+  for (const css of entry.css ?? []) {
+    links.push(`\n    <link rel="stylesheet" href="/${css}" />`);
+  }
+  return links.join('');
 }
 
 let written = 0;for (const route of routes) {
@@ -533,13 +898,21 @@ let written = 0;for (const route of routes) {
   // <img> ends up using -- and a second preload written by hand with the
   // absolute form of the same URL is a second download of the same file, which
   // is what the first version of this did.
-  const extra = [breadcrumbFor(route), townServiceFor(route), faqFor(route)]
+  const extra = [
+    breadcrumbFor(route),
+    townServiceFor(route),
+    vehicleFor(route),
+    articleFor(route),
+    faqFor(route),
+    ...(publisherFor(route) ?? []),
+  ]
     .filter(Boolean)
     .map((node) => `\n    <script type="application/ld+json">${JSON.stringify(node)}</script>`)
     .join('');
 
-  if (extra !== '') {
-    html = html.replace('</head>', () => `${extra}\n  </head>`);
+  const head = preloadFor(route) + extra;
+  if (head !== '') {
+    html = html.replace('</head>', () => `${head}\n  </head>`);
   }
 
   if (renderRoute) {
@@ -559,7 +932,14 @@ let written = 0;for (const route of routes) {
     // A function replacement, not a string: markup is full of $ sequences and
     // "$&" in a replacement string means "the whole match", which would splice
     // the div back into the middle of the page.
-    html = html.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
+    // Stamped with the route it was rendered for. The client hydrates only
+    // when the markup on the page is the markup for the page it is on --
+    // which is not true of 404.html, a copy of the home page served by the
+    // host for every address it does not have a file for.
+    html = html.replace(
+      '<div id="root"></div>',
+      () => `<div id="root" data-route="${route.path}">${body}</div>`,
+    );
   }
 
   if (route.path === '/') {
