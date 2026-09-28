@@ -34,6 +34,7 @@ Allow: /admin/site-images/
 Disallow: /my-app/
 Disallow: /scripts/
 Disallow: /assets-original/
+Disallow: /marketing/
 
 # The diagnostic page. Useful to the owner, meaningless to anyone else, and it
 # carries a noindex tag as well -- but a crawler has to fetch a page to read

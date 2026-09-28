@@ -174,7 +174,7 @@ ErrorDocument 404 /404.html
   # The rest of the repository, which now sits in the web root beside the
   # site. FilesMatch cannot express these because it matches one filename at a
   # time, and what needs blocking here is whole trees.
-  RewriteRule ^(my-app|scripts|assets-original)(/|$) - [F,L]
+  RewriteRule ^(my-app|scripts|assets-original|marketing)(/|$) - [F,L]
 </IfModule>
 
 # Source and build files are not content either. None of these should ever
