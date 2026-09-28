@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/photo-manifest.mjs && node scripts/fetch-content.mjs && vite",
-    "build": "node scripts/photo-manifest.mjs && node scripts/fetch-content.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/copy-admin-panel.mjs && node scripts/prerender-seo.mjs",
+    "dev": "node scripts/photo-manifest.mjs && node scripts/fetch-content.mjs && node scripts/fetch-fleet.mjs && vite",
+    "build": "node scripts/photo-manifest.mjs && node scripts/fetch-content.mjs && node scripts/fetch-fleet.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/copy-admin-panel.mjs && node scripts/prerender-seo.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

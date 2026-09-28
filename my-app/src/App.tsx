@@ -38,6 +38,7 @@ const Services = lazy(() => import('./pages/Services').then(m => ({ default: m.S
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 const CarRentalAreas = lazy(() => import('./pages/CarRentalAreas').then(m => ({ default: m.CarRentalAreas })));
 const Town = lazy(() => import('./pages/Town').then(m => ({ default: m.Town })));
+const CarModel = lazy(() => import('./pages/CarModel').then(m => ({ default: m.CarModel })));
 
 /**
  * A browser restores scroll position on navigation, which on a client-side
@@ -86,6 +87,12 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/cars" element={<Cars />} />
+          {/* One page per vehicle people ask for by name, under the listing
+              they all appear on. Matched inside CarModel, which renders the
+              404 page for a slug nobody has written -- a route that matched
+              anything would turn every typo into a thin page with a name on
+              it. */}
+          <Route path="/cars/:slug" element={<CarModel />} />
           <Route path="/bikes" element={<Bikes />} />
           <Route path="/wedding-cars" element={<WeddingCars />} />
           <Route path="/tourist-vehicles" element={<TouristVehicles />} />

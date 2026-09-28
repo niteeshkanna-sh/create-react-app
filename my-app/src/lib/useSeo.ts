@@ -2,14 +2,21 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
 import townData from '../data/towns.json';
+import modelData from '../data/models.json';
 // @ts-expect-error -- plain ESM, shared verbatim with the build so the routes
 // the app knows about and the routes the sitemap lists cannot disagree.
 import { allTownRoutes } from '../data/town-routes.mjs';
+// @ts-expect-error -- as above.
+import { modelRoutes } from '../data/model-routes.mjs';
 
-// The fixed pages, plus one per town. Composed rather than written into
-// seo.json, because towns.json is where a town is added and a second list to
-// edit is a second list to forget.
-const routes = [...seo.routes, ...allTownRoutes(townData.towns, seo.site)];
+// The fixed pages, plus one per town and one per car. Composed rather than
+// written into seo.json, because towns.json and models.json are where those
+// are added and a second list to edit is a second list to forget.
+const routes = [
+  ...seo.routes,
+  ...allTownRoutes(townData.towns, seo.site),
+  ...modelRoutes(modelData.models),
+];
 
 /**
  * Keeps the document title, description and canonical in step with the route.

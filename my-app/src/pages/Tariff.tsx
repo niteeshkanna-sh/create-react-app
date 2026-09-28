@@ -1,4 +1,4 @@
-import { dailyRate, inr } from '../data/cars';
+import { dailyRate, orDash } from '../data/cars';
 import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
 import { BrandPanel } from '../components/BrandPanel';
@@ -7,8 +7,7 @@ import { Faq } from '../components/Faq';
 export function Tariff() {
   const fleet = useFleet();
   const cars = fleet.status === 'ready' ? fleet.cars : [];
-  const loading = fleet.status === 'loading';
-  const empty = !loading && cars.length === 0;
+  const empty = cars.length === 0;
 
   return (
     <>
@@ -21,9 +20,7 @@ export function Tariff() {
       />
 
       <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-16">
-        {loading ? (
-          <p className="text-center text-ink-faint">Loading the rate card…</p>
-        ) : empty ? (
+        {empty ? (
           <BrandPanel title="Ask us for a quote">
             Our rate card is not published here yet. Tell us the car you want
             and your dates, and we will give you the figure.
@@ -53,14 +50,16 @@ export function Tariff() {
                     </th>
                     <td className="px-5 py-4 font-semibold text-navy">{dailyRate(car)}</td>
                     <td className="px-5 py-4 text-ink-dim">
-                      {car.rateWeekly ? inr(car.rateWeekly) : '—'}
+                      {orDash(car.rateWeekly)}
                     </td>
                     <td className="px-5 py-4 text-ink-dim">
-                      {car.rateMonthly ? inr(car.rateMonthly) : '—'}
+                      {orDash(car.rateMonthly)}
                     </td>
-                    <td className="px-5 py-4 text-ink-dim">{car.kmLimitPerDay} km</td>
-                    <td className="px-5 py-4 text-ink-dim">{inr(car.extraKmRate)}</td>
-                    <td className="px-5 py-4 text-ink-dim">{inr(car.deposit)}</td>
+                    <td className="px-5 py-4 text-ink-dim">
+                      {car.kmLimitPerDay > 0 ? `${car.kmLimitPerDay} km` : '—'}
+                    </td>
+                    <td className="px-5 py-4 text-ink-dim">{orDash(car.extraKmRate)}</td>
+                    <td className="px-5 py-4 text-ink-dim">{orDash(car.deposit)}</td>
                   </tr>
                 ))}
               </tbody>
