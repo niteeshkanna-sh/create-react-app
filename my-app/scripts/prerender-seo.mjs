@@ -788,6 +788,91 @@ function publisherFor(route) {
   ];
 }
 
+/**
+ * The chunk each route's page compiles to, so the prerendered HTML can ask
+ * for it up front.
+ *
+ * Pages are lazy(), which is right -- the entry bundle should not carry
+ * eighteen pages. But it means hydration reaches a route whose chunk has not
+ * arrived, suspends, and replaces the prerendered markup with the Suspense
+ * fallback until it does. The page that was already on screen collapses to a
+ * navy band and comes back a third of a second later: 0.19 CLS on every inner
+ * page, and the whole point of prerendering undone at the last step.
+ *
+ * A modulepreload alongside the entry script means the chunk is in the module
+ * map before React looks for it, so there is nothing to wait for.
+ *
+ * The map is by hand because the routes come from five different files and
+ * the chunk names come from Vite. It is checked below rather than trusted: a
+ * route missing from it only loses its preload, which is the behaviour this
+ * replaced, so drift costs speed and never correctness.
+ */
+const PAGE_MODULE = new Map([
+  ['/', 'src/pages/Home.tsx'],
+  ['/about', 'src/pages/About.tsx'],
+  ['/cars', 'src/pages/Cars.tsx'],
+  ['/bikes', 'src/pages/Bikes.tsx'],
+  ['/wedding-cars', 'src/pages/WeddingCars.tsx'],
+  ['/tourist-vehicles', 'src/pages/TouristVehicles.tsx'],
+  ['/monthly', 'src/pages/Monthly.tsx'],
+  ['/nri', 'src/pages/Nri.tsx'],
+  ['/tariff', 'src/pages/Tariff.tsx'],
+  ['/blog', 'src/pages/Blog.tsx'],
+  ['/contact', 'src/pages/Contact.tsx'],
+  ['/places', 'src/pages/Places.tsx'],
+  ['/services', 'src/pages/Services.tsx'],
+  [TOWN_BASE, 'src/pages/CarRentalAreas.tsx'],
+]);
+
+/** The generated families, matched by prefix after the fixed paths. */
+const PAGE_MODULE_BY_PREFIX = [
+  [TOWN_BASE + '/', 'src/pages/Town.tsx'],
+  [MODEL_BASE + '/', 'src/pages/CarModel.tsx'],
+  [BLOG_BASE + '/', 'src/pages/Post.tsx'],
+];
+
+let manifest = null;
+try {
+  manifest = JSON.parse(readFileSync(join(dist, '.vite/manifest.json'), 'utf8'));
+} catch {
+  console.warn(
+    'prerender-seo: no build manifest, so no route chunks are preloaded -- ' +
+      'pages will hydrate through the Suspense fallback',
+  );
+}
+
+function moduleFor(route) {
+  const fixed = PAGE_MODULE.get(route.path);
+  if (fixed) return fixed;
+
+  const prefixed = PAGE_MODULE_BY_PREFIX.find(([prefix]) => route.path.startsWith(prefix));
+  if (prefixed) return prefixed[1];
+
+  // Everything else is a service-in-a-town page, which lives under its own
+  // service (/bikes/kanyakumari) and so cannot be matched by one prefix.
+  return serviceAreaFor(route) ? 'src/pages/ServiceArea.tsx' : null;
+}
+
+/** <link rel="modulepreload"> for this route's chunk, and its CSS if it has any. */
+function preloadFor(route) {
+  if (!manifest) return '';
+
+  const source = moduleFor(route);
+  if (!source) {
+    console.warn(`prerender-seo: ${route.path} has no page module mapped -- not preloaded`);
+    return '';
+  }
+
+  const entry = manifest[source];
+  if (!entry?.file) return '';
+
+  const links = [`\n    <link rel="modulepreload" href="/${entry.file}" />`];
+  for (const css of entry.css ?? []) {
+    links.push(`\n    <link rel="stylesheet" href="/${css}" />`);
+  }
+  return links.join('');
+}
+
 let written = 0;for (const route of routes) {
   const url = seo.site.origin + route.path;
   let html = rewrite(template, {
@@ -819,8 +904,9 @@ let written = 0;for (const route of routes) {
     .map((node) => `\n    <script type="application/ld+json">${JSON.stringify(node)}</script>`)
     .join('');
 
-  if (extra !== '') {
-    html = html.replace('</head>', () => `${extra}\n  </head>`);
+  const head = preloadFor(route) + extra;
+  if (head !== '') {
+    html = html.replace('</head>', () => `${head}\n  </head>`);
   }
 
   if (renderRoute) {
@@ -840,7 +926,14 @@ let written = 0;for (const route of routes) {
     // A function replacement, not a string: markup is full of $ sequences and
     // "$&" in a replacement string means "the whole match", which would splice
     // the div back into the middle of the page.
-    html = html.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
+    // Stamped with the route it was rendered for. The client hydrates only
+    // when the markup on the page is the markup for the page it is on --
+    // which is not true of 404.html, a copy of the home page served by the
+    // host for every address it does not have a file for.
+    html = html.replace(
+      '<div id="root"></div>',
+      () => `<div id="root" data-route="${route.path}">${body}</div>`,
+    );
   }
 
   if (route.path === '/') {

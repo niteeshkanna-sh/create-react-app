@@ -1,8 +1,17 @@
-import { dailyRate, orDash } from '../data/cars';
+import { Link } from 'react-router-dom';
+import { dailyRate, orDash, type Car } from '../data/cars';
+import modelData from '../data/models.json';
 import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
 import { BrandPanel } from '../components/BrandPanel';
 import { Faq } from '../components/Faq';
+
+/** The page written about this vehicle, if there is one. */
+function modelPath(car: Car): string | null {
+  const label = `${car.brand} ${car.name}`.toLowerCase();
+  const model = modelData.models.find((m) => label.includes(m.match.toLowerCase()));
+  return model ? `/cars/${model.slug}` : null;
+}
 
 export function Tariff() {
   const fleet = useFleet();
@@ -43,7 +52,19 @@ export function Tariff() {
                 {cars.map((car) => (
                   <tr key={car.id} className="border-b border-line/70 last:border-0">
                     <th scope="row" className="px-5 py-4 font-semibold text-navy">
-                      {car.brand} {car.name}
+                      {/* A rate table is where somebody compares, and the
+                          next question after "how much" is "what is it
+                          like" -- so the name is the way through to the
+                          page that answers it. */}
+                      {modelPath(car) ? (
+                        <Link to={modelPath(car)!} className="transition hover:text-gold-deep">
+                          {car.brand} {car.name}
+                        </Link>
+                      ) : (
+                        <>
+                          {car.brand} {car.name}
+                        </>
+                      )}
                       <span className="block text-xs font-normal text-ink-faint">
                         {car.bodyType} · {car.fuel} · {car.transmission}
                       </span>
@@ -72,6 +93,41 @@ export function Tariff() {
           those hire lengths. The deposit is refundable and returned after the
           car comes back, less any extra-KM charges or damage.
         </p>
+
+        {/* The table raises three questions and answers none of them in full.
+            This is where the reader is when they ask. */}
+        <div className="mt-8 rounded-[14px] border border-line bg-cream p-6 sm:p-7">
+          <h2 className="text-lg font-bold text-navy">Before you compare quotes</h2>
+          <p className="mt-2 leading-relaxed text-ink-dim">
+            A daily rate on its own does not tell you what a hire costs — the
+            kilometre allowance and the extra-KM rate decide as much as the
+            headline figure does.
+          </p>
+          <ul className="mt-4 space-y-3">
+            <li>
+              <Link
+                to="/blog/km-limits-and-deposits-explained"
+                className="tap-target group inline-flex items-baseline gap-2 font-semibold text-navy transition hover:text-gold-deep"
+              >
+                KM limits, extra-KM rates and deposits, explained plainly
+                <span aria-hidden="true" className="text-gold transition group-hover:translate-x-0.5">
+                  →
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/blog/documents-to-rent-a-self-drive-car"
+                className="tap-target group inline-flex items-baseline gap-2 font-semibold text-navy transition hover:text-gold-deep"
+              >
+                What documents you need to take a self-drive car
+                <span aria-hidden="true" className="text-gold transition group-hover:translate-x-0.5">
+                  →
+                </span>
+              </Link>
+            </li>
+          </ul>
+        </div>
       </section>
 
       {/* The questions the figures above raise -- the deposit, the kilometre

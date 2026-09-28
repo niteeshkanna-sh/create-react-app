@@ -33,7 +33,11 @@ export function Post() {
 
   if (!post) return <NotFound />;
 
-  const others = posts.filter((p) => p.slug !== post.slug).slice(0, 3);
+  // All of them, not the first three. With five articles a cut list is three
+  // links and two posts nothing points at -- and which two depends on the
+  // order they happen to sit in the file, which is not a decision anybody
+  // made.
+  const others = posts.filter((p) => p.slug !== post.slug);
 
   return (
     <>

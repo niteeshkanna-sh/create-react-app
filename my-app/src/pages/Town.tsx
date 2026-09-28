@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import seo from '../data/seo.json';
 import townData from '../data/towns.json';
+import serviceAreaData from '../data/service-areas.json';
+import modelData from '../data/models.json';
 import { readablePhone } from '../lib/phone';
 import { Reveal } from '../components/Reveal';
 import { PageHeader } from './PageHeader';
@@ -36,6 +38,12 @@ export function Town() {
 
   const others = towns.filter((t) => t.slug !== town.slug);
   const enquire = `/contact?town=${encodeURIComponent(town.name)}`;
+
+  // Where a service has a page written for this particular town, the list
+  // below points at that rather than at the general one -- which is the more
+  // useful link for the reader and the one that gets those pages crawled.
+  const areas = serviceAreaData.pages.filter((page) => page.slug === town.slug);
+  const areaFor = (base: string) => areas.find((page) => page.base === base);
 
   return (
     <>
@@ -128,7 +136,12 @@ export function Town() {
                     { to: '/wedding-cars', label: 'Wedding cars', note: 'Decorated, for the season' },
                     { to: '/tourist-vehicles', label: 'Tourist vehicles', note: 'With a driver, for groups' },
                     { to: '/monthly', label: 'Monthly hire', note: 'Cheaper the longer you keep it' },
-                  ].map((item) => (
+                  ].map((base) => {
+                    const local = areaFor(base.to);
+                    return local
+                      ? { ...base, to: `${local.base}/${local.slug}`, note: `Written for ${town.name}` }
+                      : base;
+                  }).map((item) => (
                     <li key={item.to}>
                       <Link
                         to={item.to}
@@ -167,6 +180,44 @@ export function Town() {
             </Reveal>
           </div>
         </div>
+
+        {/* The vehicles by name, from every town page. Somebody who has
+            landed on "car rental in Marthandam" and decided we deliver there
+            wants to know what we would be delivering, and this is the shortest
+            route from the town to the car. */}
+        <Reveal delay={60}>
+          <h2 className="mt-16 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
+            What we would bring to {town.name}
+          </h2>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {modelData.models.map((model) => (
+              <li key={model.slug}>
+                <Link
+                  to={`/cars/${model.slug}`}
+                  className="card-lift group flex h-full flex-col rounded-[14px] border border-line bg-white p-5 transition hover:border-gold/60"
+                >
+                  <span className="font-bold text-navy">{model.name}</span>
+                  <span className="mt-1 text-sm text-ink-dim">
+                    {model.seats} seats &middot; {model.fuel} &middot; {model.transmission}
+                  </span>
+                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-deep">
+                    See the {model.short}
+                    <span aria-hidden="true" className="transition group-hover:translate-x-1">
+                      →
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 text-ink-dim">
+            Rates for all of them are on the{' '}
+            <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
+              tariff page
+            </Link>
+            , and they come down on a longer hire.
+          </p>
+        </Reveal>
 
         {/* The other towns, from every town page. Twelve pages that each link
             to the other eleven is how a crawler finds all of them from any one

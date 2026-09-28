@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import seo from '../data/seo.json';
+import serviceAreaData from '../data/service-areas.json';
 import { PageHeader } from './PageHeader';
 import { AreasServed } from '../components/AreasServed';
 import { Reveal } from '../components/Reveal';
@@ -34,6 +35,14 @@ interface ServicePageProps {
  * looking to hire a scooter, and a page can only rank for what it is about.
  */
 export function ServicePage({ title, intro, sections, points, cta, photo, scene, imageAlt }: ServicePageProps) {
+  // The towns this particular service has a page of its own for. Only a few
+  // do, on purpose -- see service-areas.json -- so this is usually one or two
+  // links rather than a list of twelve, and it is empty on the services that
+  // have none.
+  const { pathname } = useLocation();
+  const base = pathname.replace(/\/+$/, '') || '/';
+  const areas = serviceAreaData.pages.filter((page) => page.base === base);
+
   return (
     <>
       <PageHeader title={title} intro={intro} photo={photo} scene={scene} imageAlt={imageAlt} />
@@ -57,6 +66,34 @@ export function ServicePage({ title, intro, sections, points, cta, photo, scene,
               </li>
             ))}
           </ul>
+        ) : null}
+
+        {areas.length > 0 ? (
+          <Reveal className="mt-10 block rounded-[14px] border border-line bg-cream p-6 sm:p-7">
+            <h2 className="text-lg font-bold text-navy">Town by town</h2>
+            <p className="mt-2 text-ink-dim">
+              Where this works differently depending on where you are, we have
+              written it up separately.
+            </p>
+            <ul className="mt-4 space-y-3">
+              {areas.map((area) => (
+                <li key={area.slug}>
+                  <Link
+                    to={`${area.base}/${area.slug}`}
+                    className="tap-target group flex items-baseline gap-2 font-semibold text-navy transition hover:text-gold-deep"
+                  >
+                    {area.service} in {area.town}
+                    <span
+                      aria-hidden="true"
+                      className="text-gold transition group-hover:translate-x-0.5"
+                    >
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
         ) : null}
 
         <Reveal className="mt-10 block rounded-[14px] border border-line bg-white p-6 text-center shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
