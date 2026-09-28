@@ -2,11 +2,9 @@ import { Link } from 'react-router-dom';
 import { useHome } from '../content';
 import { Hero } from '../components/Hero';
 import { HowItWorks } from '../components/HowItWorks';
-import { OpenRoad } from '../components/OpenRoad';
 import { AreasServed } from '../components/AreasServed';
 import { PlacesTeaser } from '../components/PlacesTeaser';
 import { Services } from '../components/Services';
-import { Highlights } from '../components/Highlights';
 import { WhyUs } from '../components/WhyUs';
 import { Faq } from '../components/Faq';
 
@@ -18,10 +16,8 @@ export function Home() {
     <>
       <Hero />
       <Services />
-      <Highlights />
       <WhyUs />
       <HowItWorks />
-      <OpenRoad />
       <AreasServed />
       <PlacesTeaser />
       <Faq />

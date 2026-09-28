@@ -91,30 +91,6 @@
         }
       ]
     },
-    "highlights": {
-      "eyebrow": "Also worth asking about",
-      "heading": "Longer hires, visits home, and weddings",
-      "items": [
-        {
-          "to": "/monthly",
-          "title": "By the month",
-          "body": "Hatchbacks to 7 seaters for weeks or months, with the daily rate falling the longer you keep it.",
-          "cta": "Monthly rates"
-        },
-        {
-          "to": "/nri",
-          "title": "Coming home from abroad",
-          "body": "Book from the Gulf, Singapore or Malaysia and the vehicle is waiting when you land.",
-          "cta": "For NRI visitors"
-        },
-        {
-          "to": "/wedding-cars",
-          "title": "Wedding cars",
-          "body": "A decorated car for the couple and vehicles for the family. Muhurtham dates go months ahead.",
-          "cta": "See wedding cars"
-        }
-      ]
-    },
     "whyUs": {
       "badge": "Why hire from us",
       "heading": "Straight answers, and a vehicle that turns up",
@@ -160,16 +136,6 @@
       ],
       "noteLead": "Deposits are refundable.",
       "noteBody": "It is returned after the car comes back, less any extra-KM charges or damage. KM limits and extra-KM rates are listed on every car above, so there is nothing to discover later."
-    },
-    "openRoad": {
-      "eyebrow": "Self drive",
-      "headingLead": "No driver. No timetable.",
-      "headingAccent": "Just the road ahead.",
-      "body": "That is the whole point of self drive. You take the keys, you set the route, and the day belongs to you — a sunrise run down to Kanyakumari, the coast road to Colachel, or a long weekend with no fixed plan at all. Rates and limits are agreed before you leave, so nothing changes on the way back.",
-      "primaryLabel": "Browse the fleet",
-      "primaryHref": "/cars",
-      "secondaryLabel": "Check availability",
-      "secondaryHref": "/contact"
     },
     "areasServed": {
       "heading": "Where we hire across Kanyakumari district",

@@ -42,7 +42,6 @@ const SITE_IMAGE_SLOTS = [
     'home-hero'     => 'Home page background',
     'why-us-1'      => 'Why hire from us — large photo',
     'why-us-2'      => 'Why hire from us — small photo',
-    'open-road'     => 'Open road band',
 
     // The panel on the home page listing the towns served.
     'coast'         => 'Areas we serve panel',
@@ -101,7 +100,6 @@ const SITE_IMAGE_SHAPES = [
 
     // Full-bleed sections, which are seen at whatever the window is.
     'home-hero' => [16, 9, 1600, 900],
-    'open-road' => [16, 9, 1600, 900],
 
     // The photographs beside "Why hire from us" are laid out 4:3.
     'why-us-1' => [4, 3, 1200, 900],
@@ -147,7 +145,6 @@ const SITE_IMAGE_KEYWORDS = [
     'home-hero' => 'self drive car and bike rental Kanyakumari district',
     'why-us-1'  => 'why hire from NiteSha Cars Nagercoil',
     'why-us-2'  => 'self drive car handover Nagercoil',
-    'open-road' => 'self drive road trip Kanyakumari',
     'coast'     => 'car rental delivery areas Kanyakumari district',
 
     'cars'             => 'self drive cars for rent Nagercoil',
