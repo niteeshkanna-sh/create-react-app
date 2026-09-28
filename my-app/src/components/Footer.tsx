@@ -78,9 +78,12 @@ export function Footer() {
           in the brand rather than in a flat block of navy. */}
       <div aria-hidden="true" className="footer-glow absolute inset-0 -z-10" />
 
-      <div className="mx-auto grid max-w-[86rem] gap-10 px-5 py-14 sm:grid-cols-2 sm:px-8 sm:py-16 lg:grid-cols-12 lg:gap-8 lg:px-12">
+      {/* Two columns on a phone as well, not one. Stacked, the five blocks
+          were a screen and a half of scrolling to reach a phone number --
+          the two lists of links sit side by side now, which halves it. */}
+      <div className="mx-auto grid max-w-[86rem] grid-cols-2 gap-x-6 gap-y-9 px-5 py-14 sm:gap-x-8 sm:px-8 sm:py-16 lg:grid-cols-12 lg:gap-8 lg:px-12">
         {/* Who */}
-        <div className="lg:col-span-3">
+        <div className="col-span-2 lg:col-span-3">
           {/* The name set in type, not the lockup: the header already carries
               the artwork, and words stay crisp at any size. */}
           <p className="text-lg font-bold tracking-tight text-white">{seo.site.name}</p>
@@ -89,7 +92,7 @@ export function Footer() {
         </div>
 
         {/* Where to go */}
-        <nav aria-label="Quick links" className="lg:col-span-2">
+        <nav aria-label="Quick links" className="col-span-1 lg:col-span-2">
           <ColumnHeading>Quick links</ColumnHeading>
           <ul className="tap-list mt-4 space-y-2.5 text-sm">
             {quickLinks.map((l) => (
@@ -102,7 +105,7 @@ export function Footer() {
           </ul>
         </nav>
 
-        <nav aria-label="Company" className="lg:col-span-2">
+        <nav aria-label="Company" className="col-span-1 lg:col-span-2">
           <ColumnHeading>Company</ColumnHeading>
           <ul className="tap-list mt-4 space-y-2.5 text-sm">
             {company.map((l) => (
@@ -116,7 +119,7 @@ export function Footer() {
         </nav>
 
         {/* How to reach us */}
-        <div className="lg:col-span-3">
+        <div className="col-span-2 sm:col-span-1 lg:col-span-3">
           <ColumnHeading>Contact us</ColumnHeading>
 
           <ul className="tap-list mt-4 space-y-3 text-sm">
@@ -172,7 +175,7 @@ export function Footer() {
 
         {/* Who to follow, and the map under it: both are "where to find us"
             by another route, and the column has the room a map needs. */}
-        <div className="lg:col-span-2">
+        <div className="col-span-2 sm:col-span-1 lg:col-span-2">
           {/* Only when there is something to follow. A heading with nothing
               under it is what this column had while the panel's social boxes
               were empty. */}

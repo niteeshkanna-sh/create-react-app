@@ -1131,6 +1131,123 @@ body {
     );
 }
 
+/* ---- A rail of cards ---------------------------------------------------
+ *
+ * Native horizontal scrolling with snap points, which is what makes a flick
+ * land on a card rather than between two, plus smooth scrolling for the
+ * arrow buttons. The scrollbar is hidden because the rail already says it
+ * scrolls -- there is a card half off the right edge.
+ */
+.rail {
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  /* The page's own gutter, told to the snapping as well as to the layout.
+     Without it a snap point lands the first card against the window edge and
+     the rail sits 48 pixels scrolled before anybody has touched it -- which
+     also means the "back" arrow starts live with nothing behind it. */
+  scroll-padding-left: 1.25rem;
+  /* Room for the lift on hover and for a focus ring, which a plain
+     overflow-x would otherwise clip. */
+  padding-top: 4px;
+  overscroll-behavior-x: contain;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* The rail takes focus, because a scroller a keyboard cannot reach is a
+   scroller a keyboard user cannot read. The browser's own ring around a
+   full-width strip is a black box; this is the ring everything else here
+   uses. */
+.rail:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+  border-radius: 18px;
+}
+
+/* Each card is a fixed width, so the rail is a rail rather than six cards
+   squeezed into the width of one screen. */
+.rail-item {
+  flex: 0 0 auto;
+  width: 17rem;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .rail {
+    scroll-padding-left: 2rem;
+  }
+
+  .rail-item {
+    width: 19rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rail {
+    scroll-padding-left: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .rail-item {
+    width: 20.5rem;
+  }
+}
+
+.rail-item > * {
+  height: 100%;
+}
+
+/* The arrows. They are scrollBy() and nothing else, so with no script to run
+   them they are two buttons that do nothing -- hidden until the page says it
+   has one, the same way the reveals are. Touch, trackpad and the keyboard
+   scroll the rail without them. */
+.rail-btn {
+  display: none;
+}
+
+:root[data-js] .rail-btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  color: var(--color-navy);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rail-btn:hover:not(:disabled) {
+  background: var(--color-navy);
+  border-color: var(--color-navy);
+  color: var(--color-gold-light);
+  transform: translateY(-2px);
+}
+
+.rail-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail {
+    scroll-behavior: auto;
+  }
+
+  .rail-btn,
+  .rail-btn:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+}
+
 /* The services page.
 
    Six blocks down one page, alternating white and cream so each one is a
