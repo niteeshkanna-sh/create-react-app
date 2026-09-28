@@ -1133,19 +1133,21 @@ body {
 
 /* ---- A rail of cards ---------------------------------------------------
  *
- * Native horizontal scrolling with snap points, which is what makes a flick
- * land on a card rather than between two, plus smooth scrolling for the
- * arrow buttons. The scrollbar is hidden because the rail already says it
- * scrolls -- there is a card half off the right edge.
+ * Native horizontal scrolling that also moves on its own: the crawl lives in
+ * Services.tsx and only ever sets scrollLeft, so a flick, a trackpad,
+ * shift-wheel, the arrows and the keyboard all keep working while it runs.
+ *
+ * No scroll snapping. Snap and a crawl are two things deciding where the rail
+ * should be, and mandatory snapping wins every frame -- the rail would inch
+ * forward and be yanked back to the nearest card, which reads as a fault.
  */
 .rail {
-  scroll-behavior: smooth;
+  /* Not scroll-behavior: smooth. With it, every assignment to scrollLeft is
+     animated -- including the crawl's own fraction of a pixel per frame,
+     which is then still easing when the next frame overwrites it, so the rail
+     never actually moves. The arrows ask for smooth scrolling themselves,
+     which is the one place it is wanted. */
   scrollbar-width: none;
-  /* The page's own gutter, told to the snapping as well as to the layout.
-     Without it a snap point lands the first card against the window edge and
-     the rail sits 48 pixels scrolled before anybody has touched it -- which
-     also means the "back" arrow starts live with nothing behind it. */
-  scroll-padding-left: 1.25rem;
   /* Room for the lift on hover and for a focus ring, which a plain
      overflow-x would otherwise clip. */
   padding-top: 4px;
@@ -1166,27 +1168,24 @@ body {
   border-radius: 18px;
 }
 
+/* The cards fade out at both ends rather than being chopped, so the rail
+   reads as something passing through the column rather than as a grid that
+   overflowed it. */
+.rail-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 3.5%, #000 96.5%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 3.5%, #000 96.5%, transparent 100%);
+}
+
 /* Each card is a fixed width, so the rail is a rail rather than six cards
    squeezed into the width of one screen. */
 .rail-item {
   flex: 0 0 auto;
   width: 17rem;
-  scroll-snap-align: start;
 }
 
 @media (min-width: 640px) {
-  .rail {
-    scroll-padding-left: 2rem;
-  }
-
   .rail-item {
     width: 19rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .rail {
-    scroll-padding-left: 3rem;
   }
 }
 
@@ -1224,25 +1223,16 @@ body {
     transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.rail-btn:hover:not(:disabled) {
+.rail-btn:hover {
   background: var(--color-navy);
   border-color: var(--color-navy);
   color: var(--color-gold-light);
   transform: translateY(-2px);
 }
 
-.rail-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .rail {
-    scroll-behavior: auto;
-  }
-
   .rail-btn,
-  .rail-btn:hover:not(:disabled) {
+  .rail-btn:hover {
     transition: none;
     transform: none;
   }
