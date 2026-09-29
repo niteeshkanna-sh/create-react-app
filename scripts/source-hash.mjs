@@ -64,9 +64,16 @@ export const SOURCE_PATHS = [
 /**
  * The hash, or null outside a git checkout.
  *
- * Tracked files only, listed by git rather than walked: node_modules, dist and
- * everything else ignored is ignored here for free, and by the same rules the
- * repository already uses rather than by a second list that would drift.
+ * Listed by git rather than walked: node_modules, dist and everything else
+ * ignored is ignored here for free, and by the same rules the repository
+ * already uses rather than by a second list that would drift.
+ *
+ * Tracked files AND files that are not ignored but not yet added -- which is
+ * exactly the set `git add -A` would commit. Tracked alone was wrong in a way
+ * that took a red check to find: publishing happens before committing, so a
+ * change that introduces a new file hashed everything except that file, and
+ * the hash then changed the moment it was committed. Every commit that added
+ * a source file would have failed this check.
  *
  * Contents from disk rather than from the index, so publishing hashes what is
  * about to be committed rather than what was committed last time.
@@ -74,11 +81,11 @@ export const SOURCE_PATHS = [
 export function sourceHash(root) {
   let files;
   try {
-    files = execFileSync('git', ['ls-files', '-z', '--', ...SOURCE_PATHS], {
-      cwd: root,
-      encoding: 'utf8',
-      maxBuffer: 32 * 1024 * 1024,
-    })
+    files = execFileSync(
+      'git',
+      ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', ...SOURCE_PATHS],
+      { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+    )
       .split('\0')
       .filter(Boolean)
       .sort();
@@ -90,18 +97,22 @@ export function sourceHash(root) {
 
   const hash = createHash('sha256');
   for (const file of files) {
+    let contents;
+    try {
+      contents = readFileSync(join(root, file));
+    } catch {
+      // Tracked but no longer on disk: a deletion that has not been committed
+      // yet. Skipped entirely rather than hashed as a placeholder, so that the
+      // file counts the same before the commit and after it -- the same trap
+      // that --others above exists to avoid, in the other direction.
+      continue;
+    }
+
     // The name as well as the contents: moving a file changes the build even
     // when every byte in it stays the same.
     hash.update(file);
     hash.update('\0');
-    try {
-      hash.update(readFileSync(join(root, file)));
-    } catch {
-      // Listed by git but not on disk -- a deletion that is staged but whose
-      // working tree is gone. It still counts as a change, and the name above
-      // has already gone into the hash.
-      hash.update('<missing>');
-    }
+    hash.update(contents);
     hash.update('\0');
   }
 
