@@ -92,15 +92,23 @@ ErrorDocument 404 /404.html
 # Images and fonts are left alone deliberately. WebP, AVIF, JPEG and WOFF2 are
 # already compressed; running them through again spends CPU on every request to
 # make the file very slightly larger.
+#
+# Both spellings of JavaScript are listed, and that is not belt and braces.
+# IANA reregistered .js as text/javascript and Apache's mime.types followed,
+# so a host on a recent build serves the bundle as text/javascript -- which
+# was not on this list, so the largest file on the site went over the wire
+# uncompressed. Measured on a throttled phone: 350 KB rather than 109 KB, and
+# the page finished loading in 3.3 seconds rather than 1.9. Older hosts still
+# say application/javascript, so both stay.
 <IfModule mod_brotli.c>
   AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
-  AddOutputFilterByType BROTLI_COMPRESS application/javascript application/json
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript text/javascript application/json
   AddOutputFilterByType BROTLI_COMPRESS image/svg+xml application/xml
 </IfModule>
 
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
-  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/javascript text/javascript application/json
   AddOutputFilterByType DEFLATE image/svg+xml application/xml
   # Proxies must not hand a compressed copy to a client that cannot read it.
   <IfModule mod_headers.c>

@@ -39,9 +39,15 @@ export function Logo({ onClick }: { onClick?: () => void }) {
   // Only for the committed file, as with the banner: a logo uploaded in the
   // panel is served by the panel, and inventing -400w addresses for it would
   // be inventing files that 404.
+  //
+  // 240 is here for the phone. The header draws the lockup 83 points wide
+  // below the sm breakpoint, so a two-times screen wants about 166 pixels and
+  // was being sent the 400-wide file: 27 KB for a picture it renders at a
+  // fifth of that. At 240 it is 17 KB and still over the density it needs.
   const sources = uploaded
     ? undefined
     : [
+        `${LOGO_FALLBACK.replace('.webp', '-240w.webp')} 240w`,
         `${LOGO_FALLBACK.replace('.webp', '-400w.webp')} 400w`,
         `${LOGO_FALLBACK.replace('.webp', '-800w.webp')} 800w`,
         `${LOGO_FALLBACK} 1209w`,
