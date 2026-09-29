@@ -23,6 +23,7 @@ import { execFileSync } from 'node:child_process';
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { sourceHash } from './source-hash.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(root, 'my-app', 'dist');
@@ -80,6 +81,10 @@ const buildInfo = {
   publishedAt: new Date().toISOString(),
   commit: gitOutput(['rev-parse', '--short', 'HEAD']),
   commitAt: gitOutput(['log', '-1', '--format=%cI']),
+  // A fingerprint of the source this was built from, which is what the "Site
+  // is current" workflow compares against. See scripts/source-hash.mjs for
+  // why it is this rather than a rebuild.
+  sourceHash: sourceHash(root),
   // The hashed bundle names. Two servers disagreeing about these is the whole
   // of a stale deploy, in a form that can be compared at a glance.
   assets: (await readdir(join(dist, 'assets')).catch(() => [])).sort(),
