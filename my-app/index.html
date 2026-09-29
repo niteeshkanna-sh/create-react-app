@@ -91,11 +91,19 @@
     <!-- Poppins is served from this site now (the @font-face rules are in
          index.css), so there is no third-party stylesheet to wait on and no
          preconnect to make. These two weights are on every page above the
-         fold -- body copy and headings -- and a preload starts them with the
-         stylesheet rather than after the browser has parsed it, which is the
-         difference between the text swapping in during the first paint and a
-         moment after it. The rest of the weights are discovered normally. -->
+         fold -- body copy, semibold labels and headings -- and a preload
+         starts them with the stylesheet rather than after the browser has
+         parsed it, which is the difference between the text swapping in
+         during the first paint and a moment after it.
+
+         600 is here because it was being fetched on every page anyway, just
+         late: it is what Tailwind's font-semibold asks for, and that is on
+         every card title, every button and every nav link. Discovering it
+         from the stylesheet meant a third swap after the other two had
+         settled. The remaining weights are genuinely occasional and are
+         discovered normally. -->
     <link rel="preload" href="/fonts/poppins-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/poppins-latin-600.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/poppins-latin-700.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Says that there is a script running, before anything is painted.
