@@ -1282,56 +1282,72 @@ body {
 }
 
 /* Safari still draws its own triangle for a summary unless told twice. */
-.faq-card summary::-webkit-details-marker {
+.faq-panel summary::-webkit-details-marker {
   display: none;
 }
 
-.faq-card {
+/* A panel of the band's own navy, lit from within, rather than a cream card.
+   Ten pale blocks on a dark photograph read as a stack of paper dropped on
+   the page: the section fought the banner behind it and won, which is not
+   what a photograph is for.
+
+   The alphas are chosen against the worst case the scrim allows -- the
+   photograph at its brightest under 80% navy -- so white at 75% stays above
+   4.5:1 whatever picture ends up behind it. */
+.faq-panel {
+  background: color-mix(in srgb, var(--color-navy-deep) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold) 18%, transparent);
+  backdrop-filter: blur(6px);
   transition:
-    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.faq-card:hover {
+.faq-panel:hover {
+  border-color: color-mix(in srgb, var(--color-gold) 42%, transparent);
   transform: translate3d(0, -2px, 0);
 }
 
-.faq-card[open] {
-  background: #fffdf8;
-  box-shadow: 0 18px 44px rgb(6 12 28 / 0.36);
+/* The open one is the one being read, so it is the one lit. */
+.faq-panel[open] {
+  background: color-mix(in srgb, var(--color-navy-deep) 82%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+  box-shadow: 0 18px 44px rgb(3 6 16 / 0.45);
 }
 
-.faq-plus {
+.faq-chevron {
   transition:
     transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.2s ease,
+    border-color 0.2s ease,
     color 0.2s ease;
 }
 
-.faq-card[open] .faq-plus {
-  transform: rotate(45deg);
+.faq-panel[open] .faq-chevron {
+  transform: rotate(180deg);
   background: var(--color-gold);
+  border-color: var(--color-gold);
   color: var(--color-navy);
 }
 
 /* The answer arrives rather than appears. Only one can be open, so this is
-   also what tells the eye which card just took over. */
-.faq-card[open] .faq-answer {
+   also what tells the eye which panel just took over. */
+.faq-panel[open] .faq-answer {
   animation: fade-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .faq-card,
-  .faq-plus {
+  .faq-panel,
+  .faq-chevron {
     transition: none;
   }
 
-  .faq-card:hover {
+  .faq-panel:hover {
     transform: none;
   }
 
-  .faq-card[open] .faq-answer {
+  .faq-panel[open] .faq-answer {
     animation: none;
   }
 }

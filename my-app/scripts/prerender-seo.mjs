@@ -24,6 +24,7 @@ import { allTownRoutes, TOWN_BASE } from '../src/data/town-routes.mjs';
 import { modelRoutes, MODEL_BASE } from '../src/data/model-routes.mjs';
 import { serviceAreaRoutes, serviceAreaPath } from '../src/data/service-area-routes.mjs';
 import { postRoutes, BLOG_BASE } from '../src/data/post-routes.mjs';
+import { HOME_FAQ_SHOWN } from '../src/data/faq-shown.mjs';
 
 const root = join(import.meta.dirname, '..');
 
@@ -633,8 +634,15 @@ function faqFor(route) {
 
   if (!FAQ_ROUTES.has(route.path)) return null;
 
-  const items = (live?.home?.faq?.items ?? [])
+  const usable = (live?.home?.faq?.items ?? [])
     .filter((item) => String(item?.question ?? '').trim() && String(item?.answer ?? '').trim());
+
+  // The home page shows six of them and the tariff page shows all of them,
+  // so this says six on one and all on the other. Google asks that FAQPage
+  // data match what the page displays, and claiming ten answers on a page
+  // that shows six is the kind of mismatch that gets a site's rich results
+  // turned off rather than improved.
+  const items = route.path === '/' ? usable.slice(0, HOME_FAQ_SHOWN) : usable;
   if (items.length === 0) return null;
 
   return {
