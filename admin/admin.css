@@ -317,6 +317,14 @@ button { font-family: inherit; }
 
 .ns-content { flex: 1; width: 100%; max-width: 1180px; padding: 24px; }
 
+/* Except on a list. 1180px is a reading measure -- the width at which a
+   paragraph or a form stays comfortable -- and a records table is neither. At
+   that width the eight columns of the bookings list had nowhere to go but
+   downwards, which is what put every booking on three lines. On a screen
+   showing a list the column opens out to the window; on every other screen,
+   and on any screen too narrow to use it, nothing changes. */
+.ns-content:has(.admin-panel:not([hidden]) .rec-tablewrap:not([hidden] *)) { max-width: 1520px; }
+
 /* The scrim only exists while the drawer is open, and only on a phone. */
 .ns-scrim { display: none; }
 
@@ -1358,7 +1366,7 @@ label.finance-toggle {
 }
 .rec-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
 .rec-table th {
-  text-align: left; padding: 13px 16px; white-space: nowrap;
+  text-align: left; padding: 13px 12px; white-space: nowrap;
   font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
   color: var(--ink-faint); border-bottom: 1px solid var(--border); background: var(--surface);
 }
@@ -1366,7 +1374,7 @@ label.finance-toggle {
 .rec-table th.is-sortable:hover { color: var(--ink); }
 .rec-table th .ord { opacity: 0.4; margin-left: 4px; font-size: 0.8em; }
 .rec-table th.is-sorted .ord { opacity: 1; color: var(--accent-deep); }
-.rec-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.rec-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .rec-table tbody tr { cursor: pointer; }
 .rec-table tbody tr:hover { background: var(--bg); }
 .rec-table tbody tr:last-child td { border-bottom: 0; }
@@ -1375,6 +1383,42 @@ label.finance-toggle {
 .rec-table .rec-who { font-weight: 700; color: var(--ink); }
 .rec-table .rec-sub { color: var(--ink-dim); font-size: 0.82rem; }
 .rec-table .rec-money { font-weight: 700; white-space: nowrap; }
+
+/* A cell laid out across instead of down.
+
+   It wraps rather than forcing the table sideways. Nowrap on the whole line
+   would have made the column's minimum width its full length, and eight such
+   columns come to about 1390 pixels -- fine on a desk, a horizontal scrollbar
+   on a 1280 laptop. Wrapping means the line is one line wherever it fits and
+   quietly becomes two where it does not, which is what the old stacked layout
+   was doing everywhere.
+
+   The parts themselves never break: half a phone number on each of two lines
+   is worse than either. */
+.rec-table .rec-line {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  column-gap: 7px; row-gap: 1px; min-width: 0;
+}
+.rec-table .rec-line > * { flex: none; white-space: nowrap; }
+
+/* One part may give, and it is the name: a name is still recognisable from
+   its first eighteen characters (the whole of it is on the title attribute),
+   and without a ceiling one long one widens the column for every row. */
+.rec-table .rec-line > .rec-clip {
+  flex: 0 1 auto; min-width: 0; max-width: 18ch; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Its own element rather than a ::before on the detail, for two reasons: the
+   name's overflow:hidden would have clipped a pseudo-element off the end of a
+   truncated name, and on the rare line that wraps a separator left behind at
+   the end of the first line reads as "continues below", where one leading the
+   second line just reads as a mistake. */
+.rec-table .rec-dot { color: var(--ink-faint); }
+.rec-table .rec-note { color: var(--ink-dim); font-size: 0.82rem; }
+
+/* Two pills read as one unit, and sit centred on each other rather than on a
+   baseline their padding has already moved. */
+.rec-table .rec-line-chips { align-items: center; column-gap: 6px; row-gap: 5px; }
 .rec-table .rec-act { width: 1%; white-space: nowrap; }
 .rec-unread td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 .rec-unread .rec-who::after {
@@ -1505,6 +1549,18 @@ label.finance-toggle {
   .rec-hide-sm, .rec-table .rec-sno { display: none; }
   .rec-only-sm { display: block; font-size: 0.76rem; }
   .rec-table th, .rec-table td { padding: 12px 10px; }
+
+  /* Three columns of about 110 pixels. Nothing sits beside anything at that
+     width, so the line stacks outright rather than wrapping item by item --
+     the same shape it had before, and the same width, which is the width that
+     fits a phone. */
+  .rec-table .rec-line { flex-direction: column; align-items: flex-start; row-gap: 2px; }
+  /* And a long name breaks across lines here rather than setting the column's
+     width, which is the one thing that would push the table wider than the
+     phone it is on. */
+  .rec-table .rec-line > * { white-space: normal; }
+  .rec-table .rec-line > .rec-clip { max-width: none; }
+  .rec-table .rec-dot { display: none; }
 }
 
 /* ---- Are you sure? ------------------------------------------------------ */

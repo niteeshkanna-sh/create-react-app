@@ -64,9 +64,18 @@ function bookingScheduleState(booking, now = new Date()) {
  * Returns an empty string when there is nothing useful to say — a completed
  * or cancelled booking has no live schedule position.
  */
-function scheduleChipHTML(booking) {
+function scheduleChipHTML(booking, { quiet = false } = {}) {
   const state = bookingScheduleState(booking);
-  return state
-    ? `<span class="sched-chip sched-${state.tone}" title="Derived from the booking dates">${state.label}</span>`
-    : '';
+  if (!state) return '';
+
+  // quiet drops the one state that says nothing. The chip is here to show a
+  // booking whose real position has drifted from its recorded status --
+  // overdue, due back, not collected. "Upcoming" is the absence of drift, and
+  // beside a Confirmed booking it is the same fact twice. The list asks for
+  // quiet because there it costs a column ninety pixels, which is the
+  // difference between a booking on one line and a booking on two; the record
+  // and the dashboard card have the room and still show it.
+  if (quiet && state.key === 'upcoming') return '';
+
+  return `<span class="sched-chip sched-${state.tone}" title="Derived from the booking dates">${state.label}</span>`;
 }
