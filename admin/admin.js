@@ -1275,6 +1275,50 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+/**
+ * A date range written the way somebody says it out loud.
+ *
+ * "14 Oct 2026 → 16 Oct 2026" says the month twice and the year twice, and
+ * those twelve repeated characters were enough to wrap the Dates column onto
+ * a second line. What repeats is said once: 14–16 Oct 2026 for a trip inside
+ * one month, 29 Sep → 29 Oct 2026 across two, and both years in full only
+ * when the hire actually crosses one.
+ */
+function formatDateRange(from, to) {
+  const start = parseWhen(from);
+  const end = parseWhen(to);
+  if (!start || !end) return `${formatDate(from)} → ${formatDate(to)}`;
+
+  const day = (d) => String(d.getDate()).padStart(2, '0');
+  const month = (d) => d.toLocaleDateString('en-IN', { month: 'short' });
+
+  // A hire over New Year is the one case where both years have to be said.
+  // Two digits each: "29 Dec 26 → 03 Jan 27" is the same fact as the long form
+  // and forty pixels narrower, and no one is booking a car in 1926.
+  if (start.getFullYear() !== end.getFullYear()) {
+    const yy = (d) => String(d.getFullYear()).slice(-2);
+    return `${day(start)} ${month(start)} ${yy(start)} → ${day(end)} ${month(end)} ${yy(end)}`;
+  }
+  // This year is the year almost every booking on the screen is in, and a year
+  // that never changes is a year nobody reads. It comes back the moment the
+  // hire is in a different one, which is the only time it tells you anything.
+  const year = start.getFullYear() === new Date().getFullYear() ? '' : ` ${start.getFullYear()}`;
+
+  if (start.getMonth() === end.getMonth()) {
+    return day(start) === day(end)
+      ? `${day(start)} ${month(start)}${year}`
+      : `${day(start)}–${day(end)} ${month(end)}${year}`;
+  }
+  return `${day(start)} ${month(start)} → ${day(end)} ${month(end)}${year}`;
+}
+
+/** A MySQL datetime as a Date, or null. The T is for Safari, which needs it. */
+function parseWhen(value) {
+  if (!value) return null;
+  const when = new Date(String(value).replace(' ', 'T'));
+  return Number.isNaN(when.getTime()) ? null : when;
+}
+
 function formatDateTime(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString('en-IN', {
@@ -1695,19 +1739,37 @@ async function renderBookingList() {
     columns: [
       { key: 'booking_number', label: 'Booking No.', hide: true, sort: (b) => b.booking_number,
         cell: (b) => `<span class="rec-id">${escapeHTML(b.booking_number)}</span>` },
+      // Each cell reads across rather than down. Stacked, every booking stood
+      // three lines tall: four of them filled the screen, and the eye had to
+      // work out for itself that the number under a name was that customer's
+      // phone. Side by side with a middot between, a row is one sentence --
+      // who, what, when -- and twice as many fit above the fold.
       { key: 'customer_name', label: 'Customer', sort: (b) => b.customer_name.toLowerCase(),
-        cell: (b) => `<span class="rec-who">${escapeHTML(b.customer_name)}</span>
-                      <div class="rec-sub">${escapeHTML(b.customer_phone || '')}</div>
+        cell: (b) => `<span class="rec-line">
+                        <span class="rec-who rec-clip" title="${escapeHTML(b.customer_name)}"
+                          >${escapeHTML(b.customer_name)}</span>
+                        ${b.customer_phone ? `<span class="rec-dot" aria-hidden="true">·</span>
+                        <span class="rec-note">${escapeHTML(b.customer_phone)}</span>` : ''}
+                      </span>
                       <div class="rec-sub rec-id rec-only-sm">${escapeHTML(b.booking_number)}</div>` },
       { key: 'vehicle_name', label: 'Vehicle', hide: true, sort: (b) => (b.vehicle_name || '').toLowerCase(),
-        cell: (b) => `${escapeHTML(b.vehicle_name || '—')}
-                      <div class="rec-sub">${escapeHTML(b.vehicle_reg || '')}</div>` },
+        cell: (b) => `<span class="rec-line">
+                        <span class="rec-clip">${escapeHTML(b.vehicle_name || '—')}</span>
+                        ${b.vehicle_reg ? `<span class="rec-dot" aria-hidden="true">·</span>
+                        <span class="rec-note">${escapeHTML(b.vehicle_reg)}</span>` : ''}
+                      </span>` },
       { key: 'start_at', label: 'Dates', hide: true, sort: (b) => b.start_at,
-        cell: (b) => `${formatDate(b.start_at)} → ${formatDate(b.return_at)}
-                      <div class="rec-sub">${b.duration_days} day(s)</div>` },
+        cell: (b) => `<span class="rec-line">
+                        <span>${formatDateRange(b.start_at, b.return_at)}</span>
+                        <span class="rec-dot" aria-hidden="true">·</span>
+                        <span class="rec-note"
+                          >${b.duration_days} day${Number(b.duration_days) === 1 ? '' : 's'}</span>
+                      </span>` },
       { key: 'status', label: 'Status', sort: (b) => b.status,
-        cell: (b) => `<span class="status-badge status-badge-${b.status}">${b.status}</span>
-                      ${scheduleChipHTML(b)}` },
+        cell: (b) => `<span class="rec-line rec-line-chips">
+                        <span class="status-badge status-badge-${b.status}">${b.status}</span>
+                        ${scheduleChipHTML(b, { quiet: true })}
+                      </span>` },
       { key: 'balance', label: 'Balance', sort: (b) => Number(b.balance), cls: 'rec-money',
         cell: (b) => formatBalance(b.balance) },
       { key: 'action', label: 'Action', cls: 'rec-act', hide: true, sort: (b) => b.id,
