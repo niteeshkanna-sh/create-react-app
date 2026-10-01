@@ -1427,49 +1427,29 @@ label.finance-toggle {
    cost the row a line for nothing. */
 .rec-table .rec-when { white-space: nowrap; }
 
-/* A cell laid out across instead of down, and kept that way.
+/* Every cell is one line. Each fact has its own column now, so there is
+   nothing left in a cell to fold against -- and the box above scrolls, which
+   is what pays for the width. */
+.rec-table td { white-space: nowrap; }
 
-   It used to wrap when the panel ran out of room, which kept the table inside
-   the window at the cost of the thing the layout was for: at 1440 the rows
-   folded back to two lines and no two rows folded in the same place, so the
-   columns stopped lining up. The box above scrolls instead. A row is one line
-   at every width now, every row the same height, and the eye can run down a
-   column.
-
-   Nothing inside breaks either: half a phone number on each of two lines is
-   worse than either half. */
-.rec-table .rec-line {
-  display: flex; align-items: baseline;
-  gap: 7px; min-width: 0; white-space: nowrap;
-}
-.rec-table .rec-line > * { flex: none; white-space: nowrap; }
-
-/* One part may give, and it is the name: a name is still recognisable from
-   its first eighteen characters (the whole of it is on the title attribute),
-   and without a ceiling one long one widens the column for every row. */
-.rec-table .rec-line > .rec-clip {
-  flex: 0 1 auto; min-width: 0; max-width: 18ch; overflow: hidden; text-overflow: ellipsis;
+/* One part may give, and it is a name: a name is still recognisable from its
+   first twenty characters (the whole of it is on the title attribute), and
+   without a ceiling one long one widens the column for every row. A block
+   rather than inline so the ellipsis has a box to happen in. */
+.rec-table .rec-clip {
+  display: block; max-width: 20ch; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Its own element rather than a ::before on the detail, for two reasons: the
-   name's overflow:hidden would have clipped a pseudo-element off the end of a
-   truncated name, and on the rare line that wraps a separator left behind at
-   the end of the first line reads as "continues below", where one leading the
-   second line just reads as a mistake. */
-.rec-table .rec-dot { color: var(--ink-faint); }
-.rec-table .rec-note { color: var(--ink-dim); font-size: 0.82rem; }
+/* Something the enquiry did not say -- no car named, no dates given -- is
+   greyer than something it did. The words stay, because a dash does not tell
+   a new reader whether the question was asked. */
+.rec-table .rec-none { color: var(--ink-faint); }
 
-/* Two pills read as one unit, and sit centred on each other rather than on a
-   baseline their padding has already moved. */
-.rec-table .rec-line-chips { align-items: center; gap: 6px; }
-/* The actions stay against the right edge while the rest of the row slides
-   under them. They are the reason most people are looking at the list at all,
-   and hunting for them by scrolling is a strange thing to ask.
+/* The only cell still holding two things, because they are one thing: the
+   recorded status and the position the dates put it in. Centred on each other
+   rather than on a baseline their padding has already moved. */
+.rec-table .rec-line-chips { display: flex; align-items: center; gap: 6px; }
 
-   Opaque, because the row passes behind it -- including on hover, which the
-   row's own background change would otherwise leave stranded here. The rule
-   down its left edge is what says the column is pinned rather than merely
-   last. */
 .rec-table .rec-act {
   width: 1%; white-space: nowrap;
   position: sticky; right: 0; z-index: 1;
@@ -1487,13 +1467,14 @@ label.finance-toggle {
 /* The corner: pinned both ways, so it must sit above both. */
 .rec-table thead .rec-act { z-index: 3; }
 .rec-unread td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
-/* On the last part of the name line rather than on the name itself. The name
-   clips with an ellipsis now, so a marker inside it would vanish exactly when
-   the name is long -- at random, from the reader's side. Hung off the last
-   part instead (the phone number, in practice) it travels with that part when
-   the line wraps, rather than dropping to a line of its own as a stray bullet,
-   which is what a flex item of its own did. */
-.rec-unread .rec-line-name > :last-child::after {
+/* On the enquiry number rather than on the name. The name clips with an
+   ellipsis, so a marker inside it would vanish exactly when the name is long
+   -- at random, from the reader's side. The number never clips.
+   
+   It reads once at either width without a second rule: on a desk the number
+   has its own column, and on a phone that column is hidden and the only
+   .rec-id on the row is the copy printed under the name. */
+.rec-unread .rec-id::after {
   content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   background: var(--accent); margin-left: 7px; vertical-align: middle;
 }
@@ -1622,17 +1603,12 @@ label.finance-toggle {
   .rec-only-sm { display: block; font-size: 0.76rem; }
   .rec-table th, .rec-table td { padding: 12px 10px; }
 
-  /* Three columns of about 110 pixels. Nothing sits beside anything at that
-     width, so the line stacks outright rather than wrapping item by item --
-     the same shape it had before, and the same width, which is the width that
-     fits a phone. */
-  .rec-table .rec-line { flex-direction: column; align-items: flex-start; row-gap: 2px; }
-  /* And a long name breaks across lines here rather than setting the column's
-     width, which is the one thing that would push the table wider than the
-     phone it is on. */
-  .rec-table .rec-line > * { white-space: normal; }
-  .rec-table .rec-line > .rec-clip { max-width: none; }
-  .rec-table .rec-dot { display: none; }
+  /* Three columns of about 110 pixels each. A long name breaks across lines
+     here rather than setting the column's width, which is the one thing that
+     would push the table wider than the phone it is on. */
+  .rec-table td { white-space: normal; }
+  .rec-table .rec-clip { max-width: none; }
+  .rec-table .rec-line-chips { flex-wrap: wrap; }
 }
 
 /* ---- Are you sure? ------------------------------------------------------ */

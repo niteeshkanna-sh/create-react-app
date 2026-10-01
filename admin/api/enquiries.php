@@ -321,6 +321,49 @@ function enquiry_or_404(int $id): array
     return $row;
 }
 
+/**
+ * The opening of the line lib/enquiry.ts writes into the free-text
+ * requirements when a visitor picks a car.
+ */
+const VEHICLE_ASKED_PREFIX = 'Vehicle of interest:';
+
+/**
+ * The car the visitor actually chose.
+ *
+ * vehicle_id is set only when the website had the real fleet from the panel
+ * and that vehicle still exists. On this site it usually is not: the ids in
+ * the committed fallback fleet are placeholders, and enquiry-submit.php drops
+ * an id it cannot find rather than refusing the enquiry over it.
+ *
+ * The name always travels, though. lib/enquiry.ts writes it into the
+ * requirements as "Vehicle of interest: <name>" for exactly this reason -- so
+ * the enquiry stays answerable when the id does not survive, and still reads
+ * correctly years later when that vehicle has been sold.
+ *
+ * So: the join first, the visitor's own words second. The list was showing
+ * "Not specified" over enquiries that had named a car perfectly clearly.
+ */
+function enquiry_vehicle_asked(array $row): ?string
+{
+    $joined = $row['vehicle_name'] ?? null;
+    if ($joined !== null && $joined !== '') {
+        return (string) $joined;
+    }
+
+    foreach (preg_split('/\r\n|\r|\n/', (string) ($row['requirements'] ?? '')) as $line) {
+        $line = trim($line);
+        if (stripos($line, VEHICLE_ASKED_PREFIX) !== 0) {
+            continue;
+        }
+        $name = trim(substr($line, strlen(VEHICLE_ASKED_PREFIX)));
+        if ($name !== '') {
+            return $name;
+        }
+    }
+
+    return null;
+}
+
 function present_enquiry(array $row, bool $detailed = false): array
 {
     $out = [
@@ -331,6 +374,9 @@ function present_enquiry(array $row, bool $detailed = false): array
         'email'           => $row['email'],
         'vehicle_id'      => $row['vehicle_id'] === null ? null : (int) $row['vehicle_id'],
         'vehicle_name'    => $row['vehicle_name'],
+        // What to show in the Car column: the real vehicle when the enquiry is
+        // tied to one, otherwise the name the visitor picked on the website.
+        'vehicle_asked'   => enquiry_vehicle_asked($row),
         'start_date'      => $row['start_date'],
         'return_date'     => $row['return_date'],
         'pickup_location' => $row['pickup_location'],
