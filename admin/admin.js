@@ -637,33 +637,42 @@ async function renderInquiries() {
     columns: [
       { key: 'enquiry_number', label: 'Inquiry No.', hide: true, sort: (e) => e.enquiry_number,
         cell: (e) => `<span class="rec-id">${escapeHTML(e.enquiry_number)}</span>` },
-      // Across rather than down, the same as the bookings list. See the note
-      // there; the two screens are read the same way and should look it.
+      // One heading per thing. The name used to carry the phone number under
+      // it and "Asked for" carried the hire dates, which left two of the
+      // enquiry's six facts with no heading at all and put the hire dates
+      // close enough to Received to be read as the same date. Separate
+      // columns, and the box scrolls.
       { key: 'name', label: 'Name', sort: (e) => e.name.toLowerCase(),
-        cell: (e) => `<span class="rec-line rec-line-name">
-                        <span class="rec-who rec-clip" title="${escapeHTML(e.name)}"
-                          >${escapeHTML(e.name)}</span>
-                        ${e.phone ? `<span class="rec-dot" aria-hidden="true">·</span>
-                        <span class="rec-note">${escapeHTML(e.phone)}</span>` : ''}
-                      </span>
+        cell: (e) => `<span class="rec-who rec-clip" title="${escapeHTML(e.name)}"
+                        >${escapeHTML(e.name)}</span>
                       <div class="rec-sub rec-id rec-only-sm">${escapeHTML(e.enquiry_number)}</div>` },
-      { key: 'vehicle_name', label: 'Asked for', hide: true, sort: (e) => (e.vehicle_name || '').toLowerCase(),
-        cell: (e) => `<span class="rec-line">
-                        <span class="rec-clip">${escapeHTML(e.vehicle_name || 'Not specified')}</span>
-                        <span class="rec-dot" aria-hidden="true">·</span>
-                        <span class="rec-note">${e.start_date
-                          ? (e.return_date
-                              ? formatDateRange(e.start_date, e.return_date)
-                              : formatDate(e.start_date))
-                          : 'No dates given'}</span>
-                      </span>` },
+      { key: 'phone', label: 'Contact', hide: true, sort: (e) => e.phone || '',
+        // Not a tel: link: the whole row opens the enquiry, and a link inside
+        // it would fire both. The dialling is on the handset button at the end
+        // of the row, where it cannot be hit by accident.
+        cell: (e) => escapeHTML(e.phone || '—') },
+      // The car the visitor chose, which the list could not see until the API
+      // started sending it. See enquiry_vehicle_asked() for why the vehicle
+      // join is usually empty and where the name really lives.
+      { key: 'vehicle_asked', label: 'Car', hide: true,
+        sort: (e) => (e.vehicle_asked || '').toLowerCase(),
+        cell: (e) => (e.vehicle_asked
+          ? `<span class="rec-clip" title="${escapeHTML(e.vehicle_asked)}"
+               >${escapeHTML(e.vehicle_asked)}</span>`
+          : '<span class="rec-none">Not specified</span>') },
+      { key: 'start_date', label: 'Hire dates', hide: true, sort: (e) => e.start_date || '',
+        cell: (e) => (e.start_date
+          ? (e.return_date
+              ? formatDateRange(e.start_date, e.return_date)
+              : formatDate(e.start_date))
+          : '<span class="rec-none">Not given</span>') },
       { key: 'status', label: 'Status', sort: (e) => e.status,
-        cell: (e) => `<span class="rec-line rec-line-chips">
-                        <span class="status-badge status-badge-${e.status}">${e.status}</span>
-                        ${e.booking_number
-                          ? `<span class="rec-note">${escapeHTML(e.booking_number)}</span>` : ''}
-                      </span>` },
-      { key: 'created_at', label: 'Received', cls: 'rec-when', sort: (e) => e.created_at,
+        cell: (e) => `<span class="status-badge status-badge-${e.status}">${e.status}</span>` },
+      { key: 'booking_number', label: 'Booking', hide: true, sort: (e) => e.booking_number || '',
+        cell: (e) => (e.booking_number
+          ? `<span class="rec-id">${escapeHTML(e.booking_number)}</span>`
+          : '<span class="rec-none">—</span>') },
+      { key: 'created_at', label: 'Enquired on', cls: 'rec-when', sort: (e) => e.created_at,
         cell: (e) => formatDate(e.created_at) },
       { key: 'action', label: 'Action', cls: 'rec-act', hide: true, sort: (e) => e.id,
         cell: (e) => `<span class="rec-acts">
@@ -1769,34 +1778,29 @@ async function renderBookingList() {
     columns: [
       { key: 'booking_number', label: 'Booking No.', hide: true, sort: (b) => b.booking_number,
         cell: (b) => `<span class="rec-id">${escapeHTML(b.booking_number)}</span>` },
-      // Each cell reads across rather than down. Stacked, every booking stood
-      // three lines tall: four of them filled the screen, and the eye had to
-      // work out for itself that the number under a name was that customer's
-      // phone. Side by side with a middot between, a row is one sentence --
-      // who, what, when -- and twice as many fit above the fold.
+      // One heading per thing, the same as the enquiries list. Customer used
+      // to carry the phone, Vehicle the registration and Dates the duration,
+      // which left three of the booking's facts with no heading over them.
+      // The box scrolls, so they can each have a column.
       { key: 'customer_name', label: 'Customer', sort: (b) => b.customer_name.toLowerCase(),
-        cell: (b) => `<span class="rec-line">
-                        <span class="rec-who rec-clip" title="${escapeHTML(b.customer_name)}"
-                          >${escapeHTML(b.customer_name)}</span>
-                        ${b.customer_phone ? `<span class="rec-dot" aria-hidden="true">·</span>
-                        <span class="rec-note">${escapeHTML(b.customer_phone)}</span>` : ''}
-                      </span>
+        cell: (b) => `<span class="rec-who rec-clip" title="${escapeHTML(b.customer_name)}"
+                        >${escapeHTML(b.customer_name)}</span>
                       <div class="rec-sub rec-id rec-only-sm">${escapeHTML(b.booking_number)}</div>` },
+      { key: 'customer_phone', label: 'Contact', hide: true, sort: (b) => b.customer_phone || '',
+        cell: (b) => escapeHTML(b.customer_phone || '—') },
       { key: 'vehicle_name', label: 'Vehicle', hide: true, sort: (b) => (b.vehicle_name || '').toLowerCase(),
-        cell: (b) => `<span class="rec-line">
-                        <span class="rec-clip">${escapeHTML(b.vehicle_name || '—')}</span>
-                        ${b.vehicle_reg ? `<span class="rec-dot" aria-hidden="true">·</span>
-                        <span class="rec-note">${escapeHTML(b.vehicle_reg)}</span>` : ''}
-                      </span>` },
-      { key: 'start_at', label: 'Dates', hide: true, sort: (b) => b.start_at,
-        cell: (b) => `<span class="rec-line">
-                        <span>${formatDateRange(b.start_at, b.return_at)}</span>
-                        <span class="rec-dot" aria-hidden="true">·</span>
-                        <span class="rec-note"
-                          >${b.duration_days} day${Number(b.duration_days) === 1 ? '' : 's'}</span>
-                      </span>` },
+        cell: (b) => (b.vehicle_name
+          ? `<span class="rec-clip" title="${escapeHTML(b.vehicle_name)}"
+               >${escapeHTML(b.vehicle_name)}</span>`
+          : '<span class="rec-none">—</span>') },
+      { key: 'vehicle_reg', label: 'Reg. no.', hide: true, sort: (b) => (b.vehicle_reg || '').toLowerCase(),
+        cell: (b) => escapeHTML(b.vehicle_reg || '—') },
+      { key: 'start_at', label: 'Hire dates', hide: true, sort: (b) => b.start_at,
+        cell: (b) => formatDateRange(b.start_at, b.return_at) },
+      { key: 'duration_days', label: 'Days', hide: true, sort: (b) => Number(b.duration_days),
+        cell: (b) => `${b.duration_days} day${Number(b.duration_days) === 1 ? '' : 's'}` },
       { key: 'status', label: 'Status', sort: (b) => b.status,
-        cell: (b) => `<span class="rec-line rec-line-chips">
+        cell: (b) => `<span class="rec-line-chips">
                         <span class="status-badge status-badge-${b.status}">${b.status}</span>
                         ${scheduleChipHTML(b, { quiet: true })}
                       </span>` },
