@@ -951,8 +951,29 @@ label.finance-toggle {
   display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.72rem;
   font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
 }
+/* The seven a booking can be, in the order it passes through them.
+
+   The colour says the state of play rather than the stage, which is the
+   question somebody scanning the list is actually asking:
+
+     blue        a conversation, nothing committed
+     gold        agreed
+     deep amber  your move -- hand the keys over, or close the hire off
+     green       live, out with the customer
+     neutral     done
+     red         dead
+
+   Ready and Returned share the amber on purpose. They sit at opposite ends of
+   the hire but they mean the same thing to the person reading the screen:
+   this one is waiting on you today. One colour to look for beats two.
+
+   Enquiry, Ready and Returned had no rule at all until now, so three of the
+   seven rendered as bare text in a column of pills. */
+.status-badge-Enquiry { background: #EAF0F8; color: #3A5A8A; }
 .status-badge-Confirmed { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-Ready { background: #FDF0D5; color: #8A5A00; }
 .status-badge-Active { background: #E8F4EC; color: #2F6B4F; }
+.status-badge-Returned { background: #FDF0D5; color: #8A5A00; }
 .status-badge-Completed { background: #F1EDE6; color: var(--ink-dim); }
 .status-badge-Cancelled { background: #FBECEA; color: var(--danger); }
 .status-badge-Available { background: #E8F4EC; color: #2F6B4F; }
