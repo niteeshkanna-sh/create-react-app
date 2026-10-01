@@ -637,19 +637,33 @@ async function renderInquiries() {
     columns: [
       { key: 'enquiry_number', label: 'Inquiry No.', hide: true, sort: (e) => e.enquiry_number,
         cell: (e) => `<span class="rec-id">${escapeHTML(e.enquiry_number)}</span>` },
+      // Across rather than down, the same as the bookings list. See the note
+      // there; the two screens are read the same way and should look it.
       { key: 'name', label: 'Name', sort: (e) => e.name.toLowerCase(),
-        cell: (e) => `<span class="rec-who">${escapeHTML(e.name)}</span>
-                      <div class="rec-sub">${escapeHTML(e.phone)}</div>
+        cell: (e) => `<span class="rec-line rec-line-name">
+                        <span class="rec-who rec-clip" title="${escapeHTML(e.name)}"
+                          >${escapeHTML(e.name)}</span>
+                        ${e.phone ? `<span class="rec-dot" aria-hidden="true">·</span>
+                        <span class="rec-note">${escapeHTML(e.phone)}</span>` : ''}
+                      </span>
                       <div class="rec-sub rec-id rec-only-sm">${escapeHTML(e.enquiry_number)}</div>` },
       { key: 'vehicle_name', label: 'Asked for', hide: true, sort: (e) => (e.vehicle_name || '').toLowerCase(),
-        cell: (e) => `${escapeHTML(e.vehicle_name || 'Not specified')}
-                      <div class="rec-sub">${e.start_date
-                        ? formatDate(e.start_date) + (e.return_date ? ' → ' + formatDate(e.return_date) : '')
-                        : 'No dates given'}</div>` },
+        cell: (e) => `<span class="rec-line">
+                        <span class="rec-clip">${escapeHTML(e.vehicle_name || 'Not specified')}</span>
+                        <span class="rec-dot" aria-hidden="true">·</span>
+                        <span class="rec-note">${e.start_date
+                          ? (e.return_date
+                              ? formatDateRange(e.start_date, e.return_date)
+                              : formatDate(e.start_date))
+                          : 'No dates given'}</span>
+                      </span>` },
       { key: 'status', label: 'Status', sort: (e) => e.status,
-        cell: (e) => `<span class="status-badge status-badge-${e.status}">${e.status}</span>
-                      ${e.booking_number ? `<div class="rec-sub">${escapeHTML(e.booking_number)}</div>` : ''}` },
-      { key: 'created_at', label: 'Received', sort: (e) => e.created_at,
+        cell: (e) => `<span class="rec-line rec-line-chips">
+                        <span class="status-badge status-badge-${e.status}">${e.status}</span>
+                        ${e.booking_number
+                          ? `<span class="rec-note">${escapeHTML(e.booking_number)}</span>` : ''}
+                      </span>` },
+      { key: 'created_at', label: 'Received', cls: 'rec-when', sort: (e) => e.created_at,
         cell: (e) => formatDate(e.created_at) },
       { key: 'action', label: 'Action', cls: 'rec-act', hide: true, sort: (e) => e.id,
         cell: (e) => `<span class="rec-acts">
