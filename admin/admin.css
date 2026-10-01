@@ -970,17 +970,27 @@ label.finance-toggle {
    Enquiry, Ready and Returned had no rule at all until now, so three of the
    seven rendered as bare text in a column of pills. */
 .status-badge-Enquiry { background: #EAF0F8; color: #3A5A8A; }
-.status-badge-Confirmed { background: #FFF3DC; color: var(--accent-deep); }
+/* Not --accent-deep. That token is #B36B00, tuned to stay legible as text on
+   white, where it reaches 4.6:1 -- but a pill is not white. On the gold wash
+   behind it the same ink falls to 3.8:1, under the 4.5:1 that text this small
+   needs. Four per cent darker clears it at 4.6:1 and is, side by side,
+   indistinguishable. The token itself is left alone: it is right for what it
+   was chosen for. */
+.status-badge-Confirmed { background: #FFF3DC; color: #A05F00; }
 .status-badge-Ready { background: #FDF0D5; color: #8A5A00; }
 .status-badge-Active { background: #E8F4EC; color: #2F6B4F; }
 .status-badge-Returned { background: #FDF0D5; color: #8A5A00; }
 .status-badge-Completed { background: #F1EDE6; color: var(--ink-dim); }
 .status-badge-Cancelled { background: #FBECEA; color: var(--danger); }
 .status-badge-Available { background: #E8F4EC; color: #2F6B4F; }
-.status-badge-Booked { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-Booked { background: #FFF3DC; color: #A05F00; }
 .status-badge-OnRental { background: #FDF0D5; color: #8A5A00; }
 .status-badge-Maintenance { background: #FBECEA; color: var(--danger); }
-.status-badge-Inactive { background: #F1EDE6; color: var(--ink-faint); }
+/* --ink-faint on this wash was 2.9:1, which is not a colour, it is a rumour.
+   This is dark enough to read at 4.6:1 and still lighter than the --ink-dim
+   that Completed uses at 6.5:1, so an inactive vehicle still recedes next to a
+   finished booking -- which is the whole point of the grey. */
+.status-badge-Inactive { background: #F1EDE6; color: #71695F; }
 
 /* Schedule chip — derived from the booking dates, shown under the recorded
    status so a booking that is past its start time stops looking dormant. */
@@ -1108,7 +1118,7 @@ label.finance-toggle {
 /* ---------- Enquiries ---------- */
 /* The list itself is the shared records table further down; what is left here
    is the enquiry's own notes and the row of actions on the record. */
-.status-badge-New       { background: #FFF3DC; color: var(--accent-deep); }
+.status-badge-New       { background: #FFF3DC; color: #A05F00; }  /* see Confirmed */
 .status-badge-Contacted { background: #EAF0F8; color: #3A5A8A; }
 .status-badge-Pending   { background: #FDF0D5; color: #8A5A00; }
 .status-badge-Accepted  { background: #E8F4EC; color: #2F6B4F; }
