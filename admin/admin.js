@@ -1582,7 +1582,12 @@ function renderRecTable(opts) {
             <th class="rec-sno">S. No</th>
             ${columns.map((c) => `
               <th class="is-sortable${c.key === view.sort ? ' is-sorted' : ''}${
-                  c.hide ? ' rec-hide-sm' : ''}" data-sort="${c.key}"
+                  c.hide ? ' rec-hide-sm' : ''}${
+                  // The column's own class on the heading as well as the cells.
+                  // Width, alignment and -- the reason it was added -- being
+                  // pinned to an edge are properties of the column, and a
+                  // heading that does not share them slides off on its own.
+                  c.cls ? ` ${c.cls}` : ''}" data-sort="${c.key}"
                   aria-sort="${c.key === view.sort ? (view.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">
                 ${escapeHTML(c.label)}<span class="ord">${
                   c.key === view.sort ? (view.dir === 'asc' ? '▲' : '▼') : '⇅'}</span>
@@ -1599,6 +1604,17 @@ function renderRecTable(opts) {
         </tbody>
       </table>
     </div>`;
+
+  // Whether the pinned Action column has anything sliding under it. CSS
+  // cannot ask that question, and the answer changes with the window, with
+  // the sidebar, and with the longest name in the current page of rows.
+  const box = wrap.querySelector('.rec-tablewrap');
+  const table = box.querySelector('.rec-table');
+  const markOverflow = () => {
+    box.classList.toggle('has-overflow-x', table.scrollWidth > box.clientWidth + 1);
+  };
+  markOverflow();
+  new ResizeObserver(markOverflow).observe(box);
 
   wrap.querySelectorAll('th[data-sort]').forEach((th) => {
     th.addEventListener('click', () => {
