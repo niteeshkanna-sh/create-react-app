@@ -16,6 +16,20 @@ require_once __DIR__ . '/../src/enquiry.php';
 
 const ENQUIRY_STATUSES = ['New', 'Contacted', 'Pending', 'Accepted', 'Rejected', 'Cancelled', 'Converted'];
 
+/**
+ * The opening of the line lib/enquiry.ts writes into the free-text
+ * requirements when a visitor picks a car. Read by enquiry_vehicle_asked()
+ * at the foot of this file.
+ *
+ * It lives up here, above the switch, because it has to. PHP hoists a
+ * function declaration to the top of the file but runs a top-level const
+ * where it is written -- and every branch of that switch ends in json_out(),
+ * which exits. Declared below the switch, this constant was never reached
+ * before the function that reads it ran, and the whole enquiries API answered
+ * "Undefined constant" instead of JSON.
+ */
+const VEHICLE_ASKED_PREFIX = 'Vehicle of interest:';
+
 $action = $_GET['action'] ?? 'list';
 
 switch ($action) {
@@ -320,12 +334,6 @@ function enquiry_or_404(int $id): array
     }
     return $row;
 }
-
-/**
- * The opening of the line lib/enquiry.ts writes into the free-text
- * requirements when a visitor picks a car.
- */
-const VEHICLE_ASKED_PREFIX = 'Vehicle of interest:';
 
 /**
  * The car the visitor actually chose.
