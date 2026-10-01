@@ -1383,6 +1383,9 @@ label.finance-toggle {
 .rec-table .rec-who { font-weight: 700; color: var(--ink); }
 .rec-table .rec-sub { color: var(--ink-dim); font-size: 0.82rem; }
 .rec-table .rec-money { font-weight: 700; white-space: nowrap; }
+/* A date is one thing. Left to wrap it became "28 Sept" over "2026", which
+   cost the row a line for nothing. */
+.rec-table .rec-when { white-space: nowrap; }
 
 /* A cell laid out across instead of down.
 
@@ -1421,7 +1424,13 @@ label.finance-toggle {
 .rec-table .rec-line-chips { align-items: center; column-gap: 6px; row-gap: 5px; }
 .rec-table .rec-act { width: 1%; white-space: nowrap; }
 .rec-unread td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
-.rec-unread .rec-who::after {
+/* On the last part of the name line rather than on the name itself. The name
+   clips with an ellipsis now, so a marker inside it would vanish exactly when
+   the name is long -- at random, from the reader's side. Hung off the last
+   part instead (the phone number, in practice) it travels with that part when
+   the line wraps, rather than dropping to a line of its own as a stray bullet,
+   which is what a flex item of its own did. */
+.rec-unread .rec-line-name > :last-child::after {
   content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   background: var(--accent); margin-left: 7px; vertical-align: middle;
 }
