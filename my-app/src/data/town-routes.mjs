@@ -16,7 +16,7 @@ export const TOWN_BASE = '/car-rental';
 export function townHubRoute(site) {
   return {
     path: TOWN_BASE,
-    title: `Car & Bike Rental Across ${site.district} District`,
+    title: `Self Drive Car & Bike Rental Across ${site.district} District`,
     // Kept under the length a search result shows. The old wording ran to
     // 176 characters, and the last two towns in it were never read by anyone.
     description:

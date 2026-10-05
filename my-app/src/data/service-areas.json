@@ -4,9 +4,9 @@
     {
       "slug": "nagercoil",
       "base": "/bikes",
-      "service": "Bike and scooter rental",
+      "service": "Self drive bike and scooter rental",
       "town": "Nagercoil",
-      "title": "Bike & Scooty Rental in Nagercoil — By Hour, Day or Week",
+      "title": "Self Drive Bike & Scooty Rental in Nagercoil — By the Hour",
       "description": "Rent a scooter or bike in Nagercoil by the hour, day or week. Helmets included, delivered anywhere in town. Licence and ID needed. Call +91 63749 42976.",
       "intro": "A two-wheeler is the quickest way to get around Nagercoil, and for a lot of what people need a vehicle for here — a day of errands, a run to the junction, getting to work while your own bike is in the shop — it is the sensible choice rather than the cheap one.",
       "sections": [
@@ -52,9 +52,9 @@
     {
       "slug": "kanyakumari",
       "base": "/bikes",
-      "service": "Bike and scooter rental",
+      "service": "Self drive bike and scooter rental",
       "town": "Kanyakumari",
-      "title": "Bike & Scooty Rental in Kanyakumari for the Coast Road",
+      "title": "Self Drive Bike & Scooty Rental in Kanyakumari",
       "description": "Hire a scooter or bike in Kanyakumari for sunrise at the point, Vattakottai and the coast road. Helmets included, delivered to your hotel. Hourly and daily.",
       "intro": "Kanyakumari is a town people explore rather than commute across, and a scooter is the best way to do it. The sights are spread along a few kilometres of coast, parking at each of them is easier on two wheels, and you can leave for sunrise without waiting for anybody.",
       "sections": [
@@ -196,9 +196,9 @@
     {
       "slug": "nagercoil",
       "base": "/monthly",
-      "service": "Monthly car rental",
+      "service": "Monthly self drive car rental",
       "town": "Nagercoil",
-      "title": "Monthly Car Rental in Nagercoil — Long Term Self Drive",
+      "title": "Monthly Self Drive Car Rental in Nagercoil — Long Term",
       "description": "Rent a car by the month in Nagercoil. Falling daily rate, no down payment, no loan. For work postings, long visits home and anyone between vehicles.",
       "intro": "Hiring by the month is a different transaction from hiring for a weekend, and Nagercoil is where nearly all of it happens — it is the district headquarters, which is where the postings, the offices and the long stays are.",
       "sections": [

@@ -1133,6 +1133,23 @@ body {
   color: var(--color-ink-faint);
 }
 
+/* The sentence under a group's chips. It carries the phrases people actually
+   type -- "self drive car at Nagercoil Railway Station" -- as prose, because
+   putting them in the chips would be the same four words ten times in one
+   glance, which reads as a page written for a search engine rather than for
+   the person who is about to hire a car. */
+.route-line {
+  margin-top: 0.7rem;
+  max-width: 38rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-ink-faint);
+}
+
+.deliver-band .route-line {
+  color: color-mix(in srgb, #fff 56%, transparent);
+}
+
 .route-chips {
   display: flex;
   flex-wrap: wrap;

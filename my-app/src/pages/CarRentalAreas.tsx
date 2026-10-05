@@ -22,7 +22,7 @@ export function CarRentalAreas() {
       <PageHeader
         photo="coast"
         scene="coast"
-        title={`Where we deliver across ${seo.site.district} district`}
+        title={`Self drive car rental across ${seo.site.district} district`}
         imageAlt={`The towns of ${seo.site.district} district where we deliver vehicles`}
         intro={`We bring the vehicle to you rather than asking you to come and fetch it. Twelve towns with a page of their own below, and everywhere in between them on request — tell us the address and we will say yes or tell you what it costs.`}
       />

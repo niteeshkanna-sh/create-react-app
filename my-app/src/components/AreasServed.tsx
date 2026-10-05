@@ -180,6 +180,10 @@ export function AreasServed() {
                     );
                   })}
                 </ul>
+
+                {'line' in group && group.line ? (
+                  <p className="route-line">{group.line as string}</p>
+                ) : null}
               </Reveal>
             ))}
           </div>
