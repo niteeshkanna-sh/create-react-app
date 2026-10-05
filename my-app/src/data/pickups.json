@@ -1,0 +1,34 @@
+{
+  "groups": [
+    {
+      "town": "Nagercoil",
+      "slug": "nagercoil",
+      "note": "Where the vehicles are kept — often within the hour",
+      "points": [
+        { "name": "Nagercoil", "kind": "town" },
+        { "name": "Nagercoil Railway Station", "kind": "rail" },
+        { "name": "Nagercoil Town Railway Station", "kind": "rail" },
+        { "name": "Vadasery Bus Stand", "kind": "bus" }
+      ]
+    },
+    {
+      "town": "Kanyakumari",
+      "slug": "kanyakumari",
+      "note": "To your hotel, the station or the ferry road",
+      "points": [
+        { "name": "Kanyakumari", "kind": "town" },
+        { "name": "Kanyakumari Railway Station", "kind": "rail" }
+      ]
+    },
+    {
+      "town": "Across the district",
+      "note": "Delivered the same way, a little further out",
+      "points": [
+        { "name": "Parvathipuram", "kind": "town", "tag": "cars & bikes" },
+        { "name": "Marthandam", "kind": "town", "slug": "marthandam" },
+        { "name": "Muttom", "kind": "town" },
+        { "name": "Thuckalay", "kind": "town", "slug": "thuckalay" }
+      ]
+    }
+  ]
+}

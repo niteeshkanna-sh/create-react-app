@@ -1061,6 +1061,528 @@ body {
     );
 }
 
+/* ---- Where we deliver: the route ----------------------------------------
+ *
+ * The pickup points as stops on a line that draws itself downward as the
+ * section is scrolled to. A list of places is a list; a line through them is
+ * a route, which is what a delivery actually is -- and it gives the eye an
+ * order to read the ten in rather than ten things competing at once.
+ *
+ * The line is built per stop rather than as one long rule behind them all:
+ * each segment then belongs to the stop above it and is released by that
+ * stop's own reveal, so the route draws in step with the reading rather than
+ * all at once on first sight. One observer each, none added.
+ *
+ * Everything that moves here moves on transform and opacity. A segment that
+ * animated its height would relayout the whole column on every frame.
+ */
+
+.route-stop {
+  position: relative;
+  padding-left: 1.85rem;
+  padding-bottom: 1.6rem;
+}
+
+.route-stop:last-child {
+  padding-bottom: 0;
+}
+
+/* The stop itself. A ring of its own colour under it, so it reads as a point
+   on a line rather than a bullet. */
+.route-dot {
+  position: absolute;
+  left: 0;
+  top: 0.34rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  background: var(--color-gold);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold) 22%, transparent);
+}
+
+/* The segment down to the next stop. */
+.route-stop:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 0.3rem;
+  top: 1.3rem;
+  /* Past this stop's own box, so it meets the next dot rather than stopping
+     short of it. A route with gaps in it reads as a route that is not
+     finished. */
+  bottom: -0.36rem;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-gold) 0%,
+    color-mix(in srgb, var(--color-gold) 35%, var(--color-line)) 100%
+  );
+  transform-origin: top center;
+}
+
+.route-town {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-navy);
+}
+
+.route-note {
+  font-size: 0.78rem;
+  color: var(--color-ink-faint);
+}
+
+.route-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
+}
+
+.route-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-cream);
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-dim);
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+}
+
+.route-chip:hover,
+.route-chip:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--color-gold);
+  color: var(--color-navy);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-gold) 26%, transparent);
+}
+
+.route-ico {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--color-gold-deep);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.route-chip:hover .route-ico {
+  transform: scale(1.14);
+}
+
+.route-tag {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-gold) 20%, transparent);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-gold-deep);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hidden only where a script exists to release them, the same bargain the
+     reveal rule at the top of this file makes. */
+  :root[data-js] [data-reveal].route-stop:not(:last-child)::after {
+    transform: scaleY(0);
+  }
+
+  /* The list item, not the chip inside it. An entrance animation with
+     fill-mode: both keeps owning every property it names for good, so a
+     transform animated here would quietly beat the hover lift below and the
+     chip would never move under the pointer. One element each: the li
+     arrives, the chip responds. */
+  :root[data-js] [data-reveal] .route-chips > li {
+    opacity: 0;
+  }
+
+  :root[data-js] [data-reveal] .route-ico > * {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  /* The line reaches the next stop just after the chips of this one have
+     landed, so the eye is carried down rather than racing ahead of itself. */
+  [data-reveal].route-stop.is-visible:not(:last-child)::after {
+    animation: route-draw 0.75s cubic-bezier(0.65, 0, 0.35, 1) both;
+    animation-delay: calc(var(--reveal-delay, 0ms) + 260ms);
+  }
+
+  [data-reveal].route-stop.is-visible .route-dot {
+    animation: route-arrive 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* One ring outward as the stop lands. A pulse that repeated would be three
+     things blinking on a page somebody is trying to read an address off. */
+  [data-reveal].route-stop.is-visible .route-dot::after {
+    content: '';
+    position: absolute;
+    inset: -0.3rem;
+    border-radius: 50%;
+    border: 2px solid var(--color-gold);
+    animation: route-ping 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--reveal-delay, 0ms) + 120ms);
+  }
+
+  [data-reveal].route-stop.is-visible .route-chips > li {
+    animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--reveal-delay, 0ms) + 180ms + var(--chip-delay, 0ms));
+  }
+
+  [data-reveal].route-stop.is-visible .route-ico > * {
+    animation: benefit-draw 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
+    animation-delay: calc(var(--reveal-delay, 0ms) + 320ms + var(--chip-delay, 0ms));
+  }
+
+  @keyframes route-draw {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
+  @keyframes route-arrive {
+    from { opacity: 0; transform: scale3d(0.2, 0.2, 1); }
+    to { opacity: 1; transform: scale3d(1, 1, 1); }
+  }
+
+  @keyframes route-ping {
+    from { opacity: 0.75; transform: scale3d(0.5, 0.5, 1); }
+    to { opacity: 0; transform: scale3d(1.9, 1.9, 1); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-chip,
+  .route-ico {
+    transition: none;
+  }
+}
+
+/* ---- The delivery band -------------------------------------------------
+ *
+ * The section goes dark so the photograph behind it can be a photograph. On
+ * white, a coast at sunrise has to be faded to about a fifth before type sits
+ * on it, by which point it is a grey smear that cost 60KB. On navy it can run
+ * at full strength on the side with no words over it, and the gradient does
+ * the separating.
+ *
+ * It has to read with no photograph at all, because a panel slot is empty
+ * until somebody fills it: the dark is the brand's own navy with a gold glow
+ * in it, and the picture is an improvement on that rather than a requirement.
+ */
+
+.deliver-band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 4.5rem 0;
+  background:
+    radial-gradient(
+      38rem 26rem at 78% 18%,
+      color-mix(in srgb, var(--color-gold) 22%, transparent) 0%,
+      transparent 65%
+    ),
+    linear-gradient(160deg, var(--color-navy) 0%, var(--color-navy-deep) 100%);
+}
+
+.deliver-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 40%;
+}
+
+/* Dark where the words are, clear where the picture is. Two stops rather than
+   a flat tint: a uniform scrim over a photograph dims the part worth seeing
+   as much as the part being written on. */
+.deliver-veil {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      100deg,
+      var(--color-navy-deep) 0%,
+      color-mix(in srgb, var(--color-navy) 92%, transparent) 38%,
+      color-mix(in srgb, var(--color-navy) 55%, transparent) 62%,
+      color-mix(in srgb, var(--color-navy) 18%, transparent) 100%
+    );
+}
+
+/* Below the breakpoint the two columns stack, so the picture is behind
+   everything rather than beside it and needs covering throughout. */
+@media (max-width: 1023px) {
+  .deliver-veil {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-navy-deep) 94%, transparent) 0%,
+      color-mix(in srgb, var(--color-navy) 88%, transparent) 100%
+    );
+  }
+}
+
+.deliver-inner {
+  position: relative;
+}
+
+.deliver-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.deliver-eyebrow svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.deliver-heading {
+  margin-top: 0.6rem;
+  font-size: clamp(1.75rem, 1.1rem + 2.4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.deliver-heading-mark {
+  display: block;
+  color: var(--color-gold);
+}
+
+.deliver-intro {
+  margin-top: 0.9rem;
+  max-width: 34rem;
+  line-height: 1.65;
+  color: color-mix(in srgb, #fff 78%, transparent);
+}
+
+.deliver-rest {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: color-mix(in srgb, #fff 55%, transparent);
+}
+
+.deliver-rest a,
+.deliver-foot a {
+  font-weight: 600;
+  color: color-mix(in srgb, #fff 88%, transparent);
+  text-underline-offset: 2px;
+}
+
+.deliver-rest a:hover,
+.deliver-foot a:hover {
+  color: var(--color-gold);
+  text-decoration: underline;
+}
+
+.deliver-foot {
+  margin-top: 1.1rem;
+  color: color-mix(in srgb, #fff 72%, transparent);
+}
+
+/* The route, on dark. The shapes are shared with the light version; only the
+   colours change, so the two cannot drift apart in spacing or timing. */
+.deliver-band .route-town {
+  color: #fff;
+}
+
+.deliver-band .route-note {
+  color: color-mix(in srgb, #fff 52%, transparent);
+}
+
+.deliver-band .route-stop:not(:last-child)::after {
+  background: linear-gradient(
+    180deg,
+    var(--color-gold) 0%,
+    color-mix(in srgb, var(--color-gold) 30%, transparent) 100%
+  );
+}
+
+.deliver-band .route-chip {
+  border-color: color-mix(in srgb, #fff 18%, transparent);
+  background: color-mix(in srgb, #fff 10%, transparent);
+  color: color-mix(in srgb, #fff 92%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.deliver-band .route-chip:hover,
+.deliver-band .route-chip:focus-visible {
+  border-color: var(--color-gold);
+  background: color-mix(in srgb, #fff 18%, transparent);
+  color: #fff;
+}
+
+.deliver-band .route-ico {
+  color: var(--color-gold);
+}
+
+.deliver-band .route-tag {
+  background: var(--color-gold);
+  color: var(--color-navy-deep);
+}
+
+/* ---- The flourish and the map ----------------------------------------- */
+
+.deliver-map-wrap {
+  position: relative;
+}
+
+.deliver-script {
+  position: relative;
+  margin: 0 0 0.25rem auto;
+  width: fit-content;
+  text-align: center;
+  color: var(--color-gold-light);
+  font-style: italic;
+  line-height: 1.12;
+  transform: rotate(-4deg);
+  transform-origin: right bottom;
+}
+
+.deliver-script-1,
+.deliver-script-2 {
+  display: block;
+  font-size: clamp(1.1rem, 0.8rem + 1vw, 1.45rem);
+  font-weight: 400;
+}
+
+.deliver-script-2 strong {
+  font-weight: 700;
+  color: #fff;
+}
+
+.deliver-swoosh {
+  display: block;
+  width: 9rem;
+  height: 0.9rem;
+  margin: 0.15rem 0 0 auto;
+  color: var(--color-gold);
+}
+
+.deliver-map {
+  display: block;
+  width: 100%;
+  max-width: 33rem;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.map-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  paint-order: stroke;
+  stroke: #fffdf8;
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-js] [data-reveal] .deliver-swoosh path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  [data-reveal].deliver-map-wrap.is-visible .deliver-swoosh path {
+    animation: route-draw-line 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
+    animation-delay: 420ms;
+  }
+
+  @keyframes route-draw-line {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* The land, then the road, then the towns, then the car: the order somebody
+     would draw it in, which is why it reads as being drawn rather than as
+     four things arriving late. */
+  :root[data-js] [data-reveal] .map-land {
+    opacity: 0;
+  }
+
+  [data-reveal].deliver-map-wrap.is-visible .map-land {
+    animation: scale-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  :root[data-js] [data-reveal] .map-route {
+    stroke-dashoffset: 300;
+  }
+
+  [data-reveal].deliver-map-wrap.is-visible .map-route {
+    /* Dashed and drawn at once: the offset animates from a length longer than
+       the path, so the dashes march into place rather than fading in. */
+    animation: map-road 1.5s linear both;
+    animation-delay: 420ms;
+  }
+
+  @keyframes map-road {
+    from { stroke-dashoffset: 300; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  :root[data-js] [data-reveal] .map-pin {
+    opacity: 0;
+  }
+
+  [data-reveal].deliver-map-wrap.is-visible .map-pin {
+    animation: map-drop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(760ms + var(--pin-delay, 0ms));
+  }
+
+  @keyframes map-drop {
+    from { opacity: 0; transform: translateY(-14px) scale(0.6); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .map-pin {
+    transform-box: fill-box;
+    transform-origin: bottom center;
+  }
+
+  /* The car runs the same path the road is drawn from, handed over as a
+     custom property by the component that works it out. Hidden unless the
+     browser can actually follow a path -- a car parked at the origin of the
+     viewBox is worse than no car. */
+  .map-car {
+    opacity: 0;
+  }
+
+  @supports (offset-path: path('M0 0L1 1')) {
+    [data-reveal].deliver-map-wrap.is-visible .map-car {
+      offset-path: var(--route-d);
+      offset-rotate: auto;
+      animation: map-drive 9s 1.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+    }
+
+    @keyframes map-drive {
+      0% { offset-distance: 0%; opacity: 0; }
+      6% { opacity: 1; }
+      55% { offset-distance: 100%; opacity: 1; }
+      62% { offset-distance: 100%; opacity: 0; }
+      100% { offset-distance: 0%; opacity: 0; }
+    }
+  }
+}
+
 /* ---- A rail of cards ---------------------------------------------------
  *
  * Native horizontal scrolling that also moves on its own: the crawl lives in
