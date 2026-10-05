@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- For everything that does not read SVG, and for Google, which asks that
+         a raster favicon be a square whose side is a multiple of 48. The ICO is
+         here because /favicon.ico is requested whether a page names it or not,
+         and it was answering with the 404 page. -->
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="icon" sizes="48x48" href="/favicon.ico" />
     <!-- iOS ignores an SVG icon, and a phone that keeps this site on its home
          screen would draw a screenshot of the page instead. Full-bleed gold,
          because iOS rounds the corners itself. -->

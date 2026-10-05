@@ -120,6 +120,92 @@ for (const picture of PICTURES) {
   }
 }
 
+/**
+ * The icons a search engine looks for.
+ *
+ * The site declared an SVG favicon and a 180px apple-touch icon, and nothing
+ * else -- so /favicon.ico, which Google's favicon crawler and most other tools
+ * request whether a page names it or not, answered with the 404 page.
+ *
+ * Google asks that a raster favicon be a square whose side is a multiple of
+ * 48. 64 (the SVG's box) and 180 (the Apple icon) are neither, so even when it
+ * found one it had nothing of the size it wants. These are 48, 96, 144 and 192
+ * -- one, two, three and four times 48 -- rendered from the same artwork.
+ *
+ * The SVG stays and stays first: a browser that reads it gets a mark that is
+ * sharp at any size. These are for everything else.
+ */
+const ICON_SOURCE = 'favicon.svg';
+const ICON_SIZES = [48, 96, 144, 192];
+
+async function writeIcons() {
+  const source = join(publicDir, ICON_SOURCE);
+  let artwork;
+  try {
+    artwork = await readFile(source);
+  } catch {
+    console.log(`image-variants: no ${ICON_SOURCE}, so no raster icons.`);
+    return;
+  }
+
+  const sourceTime = (await stat(source)).mtimeMs;
+
+  for (const size of ICON_SIZES) {
+    const name = `favicon-${size}.png`;
+    const target = join(publicDir, name);
+    const targetTime = await stat(target).then((t) => t.mtimeMs).catch(() => 0);
+    if (targetTime > sourceTime) { kept.push(name); continue; }
+
+    const out = await sharp(artwork, { density: 384 })
+      .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+    await writeFile(target, out);
+    written.push({ name, bytes: out.byteLength, of: out.byteLength });
+  }
+
+  // favicon.ico, from the 48px rendering. One size inside it rather than the
+  // usual three: every browser that still asks for this file reads a 48, and a
+  // 16 and a 32 beside it are two more things to regenerate for nobody.
+  const icoTarget = join(publicDir, 'favicon.ico');
+  const icoTime = await stat(icoTarget).then((t) => t.mtimeMs).catch(() => 0);
+  if (icoTime > sourceTime) {
+    kept.push('favicon.ico');
+  } else {
+    const png = await sharp(artwork, { density: 384 })
+      .resize(48, 48, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+    await writeFile(icoTarget, icoFrom(png, 48));
+    written.push({ name: 'favicon.ico', bytes: png.byteLength + 22, of: png.byteLength + 22 });
+  }
+}
+
+/**
+ * A one-image .ico wrapping a PNG.
+ *
+ * The format allows a PNG payload rather than a bitmap, which every browser
+ * that matters has read since IE11, and it saves pulling in a library to write
+ * 22 bytes of header.
+ */
+function icoFrom(png, size) {
+  const header = Buffer.alloc(22);
+  header.writeUInt16LE(0, 0);          // reserved
+  header.writeUInt16LE(1, 2);          // type: icon
+  header.writeUInt16LE(1, 4);          // one image
+  header.writeUInt8(size >= 256 ? 0 : size, 6);
+  header.writeUInt8(size >= 256 ? 0 : size, 7);
+  header.writeUInt8(0, 8);             // palette: not used
+  header.writeUInt8(0, 9);             // reserved
+  header.writeUInt16LE(1, 10);         // colour planes
+  header.writeUInt16LE(32, 12);        // bits per pixel
+  header.writeUInt32LE(png.byteLength, 14);
+  header.writeUInt32LE(22, 18);        // the payload starts after this header
+  return Buffer.concat([header, png]);
+}
+
+await writeIcons();
+
 if (written.length === 0) {
   console.log(`image-variants: ${kept.length} copies already current, nothing to write.`);
 } else {

@@ -108,7 +108,14 @@ let template = readFileSync(join(dist, 'index.html'), 'utf8');
 //
 // Stamped with the file's own hash, a changed icon is a changed address, so
 // nothing cached can match it and nobody has to know to clear anything.
-for (const icon of ['favicon.svg', 'apple-touch-icon.png']) {
+for (const icon of [
+  'favicon.svg',
+  'favicon.ico',
+  'favicon-48.png',
+  'favicon-96.png',
+  'favicon-192.png',
+  'apple-touch-icon.png',
+]) {
   const stamp = createHash('sha1')
     .update(readFileSync(join(dist, icon)))
     .digest('hex')
@@ -168,6 +175,17 @@ function shareImageFor(route) {
  * share card, and without this the page would show a photograph while the
  * sitemap listed none for it.
  */
+/**
+ * The logo, when the panel has none.
+ *
+ * pictureFor('logo') answers only for a logo the owner uploaded, and the owner
+ * has not uploaded one -- the site uses the committed lockup. So the structured
+ * data carried no logo at all, which is the field Google reads to put a mark
+ * beside a result and in the knowledge panel. Same file the header draws, same
+ * address, so there is nothing to keep in step.
+ */
+const COMMITTED_LOGO = '/nitesha-cars-and-bikes-logo-nagercoil-v2.webp';
+
 function pictureFor(slot, fallback) {
   // Uploaded URLs are already absolute; committed ones are site-relative.
   if (slot && typeof uploaded[slot] === 'string') return uploaded[slot];
@@ -388,7 +406,7 @@ function enrichJsonLd(html) {
   const images = [...new Set([...existing, ...banners])];
 
   if (images.length > 0) data.image = images.length === 1 ? images[0] : images;
-  const logo = pictureFor('logo');
+  const logo = pictureFor('logo', COMMITTED_LOGO);
   if (logo) data.logo = logo;
 
   return html.replace(
@@ -780,7 +798,7 @@ function publisherFor(route) {
     },
   };
 
-  const logo = pictureFor('logo');
+  const logo = pictureFor('logo', COMMITTED_LOGO);
   if (logo) org.logo = { '@type': 'ImageObject', url: logo };
 
   const profiles = [social.facebook, social.instagram, social.youtube, social.linkedin]
