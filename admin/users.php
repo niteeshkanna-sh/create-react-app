@@ -5,6 +5,7 @@ require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/migrate.php';
 require_once __DIR__ . '/src/auth.php';
+require_once __DIR__ . '/src/abilities.php';
 require_once __DIR__ . '/src/audit.php';
 require_once __DIR__ . '/src/shell.php';
 
@@ -24,6 +25,15 @@ require_once __DIR__ . '/src/shell.php';
  *
  * A page rather than a dashboard tab, like Website content and Places: it is
  * opened when somebody joins or leaves, not while running the day.
+ *
+ * A role is chosen first and then adjusted. Five roles covered the business
+ * while everybody fitted one of them, and stopped the moment somebody nearly
+ * did: the person on the counter who is also trusted with the cash, the
+ * relative who should see the expenses and touch nothing. Both were a choice
+ * between a role that does too little and one that does far too much. So the
+ * role sets the ticks, and the ticks can then be changed one at a time --
+ * stored as differences from the role, never as a snapshot of it, so that
+ * "Staff, and may also take payments" stays true when Staff changes meaning.
  */
 
 $me = require_can('user.manage');
@@ -39,6 +49,85 @@ $error  = null;
 
 $roles = fetch_all('SELECT slug, name, description FROM roles ORDER BY id');
 $roleSlugs = array_column($roles, 'slug');
+
+/**
+ * The ticked permissions a form posted, or null to mean "whatever the role
+ * says".
+ *
+ * The hidden abilities_for field names the role the ticks were rendered for.
+ * If it does not match the role being saved, the ticks describe a different
+ * role's standard and are ignored -- which is what happens with JavaScript
+ * off, where changing the role cannot re-tick the boxes. Ignoring them falls
+ * back to the role's own standard, the safe reading of the two: the
+ * alternative is saving Staff's ticks against Accounts and recording nine
+ * removals nobody asked for.
+ *
+ * @return list<string>|null
+ */
+function posted_abilities(string $role): ?array
+{
+    if ((string) ($_POST['abilities_for'] ?? '') !== $role) {
+        return null;
+    }
+    $ticked = $_POST['abilities'] ?? [];
+    if (!is_array($ticked)) {
+        return null;
+    }
+    return array_values(array_intersect(
+        array_filter($ticked, 'is_string'),
+        all_abilities()
+    ));
+}
+
+/**
+ * The permission grid for a form, ticked as $effective says.
+ *
+ * One function for both forms on this page -- the one that creates an account
+ * and the one that adjusts an existing one -- so the two cannot drift into
+ * offering different permissions, which is the failure src/vocab.php exists
+ * to remember.
+ */
+function ability_grid(array $effective): string
+{
+    $html = '<div class="u-perm-grid">';
+    foreach (ABILITY_GROUPS as $group => $abilities) {
+        $html .= '<fieldset class="u-perm-group"><legend>' . e($group) . '</legend>';
+        foreach ($abilities as $ability => $label) {
+            $weighty = in_array($ability, ABILITY_WEIGHTY, true);
+            $html .= '<label class="u-perm' . ($weighty ? ' is-weighty' : '') . '">'
+                   . '<input type="checkbox" name="abilities[]" value="' . e($ability) . '"'
+                   . (!empty($effective[$ability]) ? ' checked' : '') . '>'
+                   . '<span>' . e($label) . '</span>'
+                   . '</label>';
+        }
+        $html .= '</fieldset>';
+    }
+    return $html . '</div>';
+}
+
+/** "Accounts" rather than "accounts", for a sentence somebody reads. */
+function role_name_of(array $roles, string $slug): string
+{
+    foreach ($roles as $r) {
+        if ($r['slug'] === $slug) {
+            return (string) $r['name'];
+        }
+    }
+    return $slug;
+}
+
+/** "2 added, 1 removed", or '' when the account is exactly its role. */
+function ability_summary(array $counts): string
+{
+    $parts = [];
+    if ($counts['extra'] > 0) {
+        $parts[] = $counts['extra'] . ' added';
+    }
+    if ($counts['removed'] > 0) {
+        $parts[] = $counts['removed'] . ' removed';
+    }
+    return implode(', ', $parts);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
@@ -83,10 +172,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // hashing. Called rather than reimplemented, so the rule lives in
             // one place and the CLI tool and this screen cannot disagree.
             $newId = create_user($name, $email, $password, $role);
+
+            // The ticks, if this form was able to offer them for this role.
+            // A Super Admin is full access by definition and has no ticks to
+            // save -- set_user_abilities would write a row for every
+            // permission the role grants and the screen does not show.
+            $delta = ['extra' => [], 'removed' => []];
+            $wanted = $role === 'super_admin' ? null : posted_abilities($role);
+            if ($wanted !== null) {
+                $delta = set_user_abilities($newId, $role, $wanted);
+            }
+
             audit_log('user_created', 'auth', 'user', $newId, null,
-                ['name' => $name, 'email' => $email, 'role' => $role],
+                ['name' => $name, 'email' => $email, 'role' => $role,
+                 'added' => $delta['extra'], 'removed' => $delta['removed']],
                 'Created from the Users screen', (int) $me['id'], (string) $me['name']);
-            $notice = $name . ' can now sign in.';
+
+            $tally = ability_summary(['extra' => count($delta['extra']), 'removed' => count($delta['removed'])]);
+            $notice = $name . ' can now sign in as ' . role_name_of($roles, $role)
+                . ($tally === '' ? '.' : ', with ' . $tally . ' against that role.');
 
         } elseif ($action === 'role') {
             $role = (string) ($_POST['role'] ?? '');
@@ -101,12 +205,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($before === null) {
                 throw new InvalidArgumentException('That account no longer exists.');
             }
+            $hadExceptions = user_ability_counts($id, (string) $before['role']);
             query('UPDATE users SET role_id = (SELECT id FROM roles WHERE slug = ?) WHERE id = ?',
                 [$role, $id]);
+
+            // Changing the role resets the exceptions with it. They are stored
+            // as differences from a role, so keeping them across a change
+            // would mean reading yesterday's differences against today's
+            // baseline -- "two added" against Staff can be "one removed"
+            // against Accounts, which is not a thing anybody chose. The screen
+            // says so above the list, and the permissions are two clicks away.
+            clear_user_abilities($id);
+
             audit_log('user_role_changed', 'auth', 'user', $id,
-                ['role' => $before['role']], ['role' => $role], null,
+                ['role' => $before['role'],
+                 'added' => $hadExceptions['extra'], 'removed' => $hadExceptions['removed']],
+                ['role' => $role, 'added' => 0, 'removed' => 0], null,
                 (int) $me['id'], (string) $me['name']);
-            $notice = $before['name'] . ' is now ' . $role . '.';
+
+            $had = ability_summary($hadExceptions);
+            $notice = $before['name'] . ' is now ' . role_name_of($roles, $role) . '.'
+                . ($had === '' ? '' : ' The ' . $had . ' permission(s) set against the old role'
+                    . ' went with it — set them again if they still apply.');
+
+        } elseif ($action === 'abilities') {
+            if ($isSelf) {
+                throw new InvalidArgumentException('You cannot change your own permissions.');
+            }
+            $row = fetch_one('SELECT u.name, r.slug AS role FROM users u
+                                JOIN roles r ON r.id = u.role_id WHERE u.id = ?', [$id]);
+            if ($row === null) {
+                throw new InvalidArgumentException('That account no longer exists.');
+            }
+            // A Super Admin is full access, and a Super Admin with pieces
+            // missing is a contradiction rather than a configuration. Change
+            // the role first if the access is meant to be narrower.
+            if ($row['role'] === 'super_admin') {
+                throw new InvalidArgumentException(
+                    'A Super Admin has full access. Give them a narrower role first, then set permissions.');
+            }
+
+            $before = user_ability_overrides($id);
+
+            if (isset($_POST['reset'])) {
+                clear_user_abilities($id);
+                audit_log('user_abilities_reset', 'auth', 'user', $id,
+                    ['overrides' => $before], ['overrides' => []], null,
+                    (int) $me['id'], (string) $me['name']);
+                $notice = $row['name'] . ' is back to exactly what '
+                    . role_name_of($roles, (string) $row['role']) . ' allows.';
+            } else {
+                $wanted = posted_abilities((string) $row['role']);
+                if ($wanted === null) {
+                    throw new InvalidArgumentException(
+                        'That form was for a different role — reload the page and try again.');
+                }
+                $delta = set_user_abilities($id, (string) $row['role'], $wanted);
+                audit_log('user_abilities_changed', 'auth', 'user', $id,
+                    ['overrides' => $before],
+                    ['added' => $delta['extra'], 'removed' => $delta['removed']], null,
+                    (int) $me['id'], (string) $me['name']);
+                $tally = ability_summary(['extra' => count($delta['extra']), 'removed' => count($delta['removed'])]);
+                $roleName = role_name_of($roles, (string) $row['role']);
+                $notice = $tally === ''
+                    ? $row['name'] . ' is now exactly what ' . $roleName . ' allows.'
+                    : 'Permissions saved for ' . $row['name'] . ' — ' . $tally . ' against ' . $roleName . '.';
+            }
 
         } elseif ($action === 'active') {
             $on = (string) ($_POST['active'] ?? '') === '1';
@@ -238,6 +402,10 @@ admin_shell_open($me, 'users.php', 'Who can sign in', false, $migrationError);
                     </select>
                   </form>
                 <?php endif; ?>
+                <?php $tally = ability_summary(user_ability_counts((int) $u['id'], (string) $u['role_slug'])); ?>
+                <?php if ($tally !== ''): ?>
+                  <span class="field-hint u-perm-tally"><?= e($tally) ?></span>
+                <?php endif; ?>
               </td>
               <td class="rec-hide-sm rec-when"><?= e($fmt($u['last_login_at'])) ?></td>
               <td>
@@ -282,6 +450,71 @@ admin_shell_open($me, 'users.php', 'Who can sign in', false, $migrationError);
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section class="admin-panel">
+    <div class="panel-header">
+      <div>
+        <h2>What each of them may do</h2>
+        <p>The role sets these. Change any one of them and what gets saved is the
+          difference &mdash; so an account reads as &ldquo;Accounts, and may also cancel a
+          booking&rdquo;, and stays that way when the role itself is adjusted later.
+          Changing somebody&rsquo;s role clears whatever was set here, because a difference
+          only means something against the role it was set against.</p>
+        <p class="field-hint">A dot marks the ones that remove something, or change a figure
+          that has already been counted. They are not harder to use &mdash; they are harder to
+          undo.</p>
+      </div>
+    </div>
+
+    <?php foreach ($users as $u): ?>
+      <?php
+        $self  = (int) $u['id'] === (int) $me['id'];
+        $full  = $u['role_slug'] === 'super_admin';
+        $tally = ability_summary(user_ability_counts((int) $u['id'], (string) $u['role_slug']));
+      ?>
+      <details class="u-perm-person"<?= $tally !== '' ? ' open' : '' ?>>
+        <summary>
+          <span class="u-perm-name"><?= e($u['name']) ?></span>
+          <span class="u-perm-role"><?= e($u['role_name']) ?></span>
+          <?php if ($tally !== ''): ?>
+            <span class="status-badge status-badge-Pending"><?= e($tally) ?></span>
+          <?php elseif (!$full): ?>
+            <span class="field-hint">exactly the role</span>
+          <?php endif; ?>
+          <?php if ((int) $u['is_active'] !== 1): ?>
+            <span class="status-badge status-badge-Inactive">Off</span>
+          <?php endif; ?>
+        </summary>
+
+        <?php if ($full): ?>
+          <p class="c-note">A <strong>Super Admin</strong> can do everything in the panel,
+            including this page. There is nothing to choose, and nothing is stored &mdash;
+            give a narrower role first if the access should be narrower.</p>
+        <?php elseif ($self): ?>
+          <p class="c-note">Your own permissions, which this page will not change. Another
+            Super Admin can, or you can at the command line &mdash; the same rule as your role
+            and your password above, and for the same reason.</p>
+          <?= ability_grid(user_abilities((int) $u['id'], (string) $u['role_slug'])) ?>
+        <?php else: ?>
+          <form method="post" class="u-perm-form">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="abilities">
+            <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
+            <input type="hidden" name="abilities_for" value="<?= e($u['role_slug']) ?>">
+            <?= ability_grid(user_abilities((int) $u['id'], (string) $u['role_slug'])) ?>
+            <div class="u-perm-save">
+              <button class="btn btn-primary btn-sm" type="submit">Save permissions</button>
+              <?php if ($tally !== ''): ?>
+                <button class="btn btn-ghost btn-sm" type="submit" name="reset" value="1">
+                  Back to what <?= e($u['role_name']) ?> allows
+                </button>
+              <?php endif; ?>
+            </div>
+          </form>
+        <?php endif; ?>
+      </details>
+    <?php endforeach; ?>
   </section>
 
   <section class="admin-panel">
@@ -332,8 +565,37 @@ admin_shell_open($me, 'users.php', 'Who can sign in', false, $migrationError);
           a role can be raised in a second from the table above, and an account that could
           never do the damage is the one that never does.</p>
       </div>
+
+      <div class="field-group u-perm-block">
+        <label>And exactly what they may do</label>
+        <input type="hidden" name="abilities_for" id="uAbilitiesFor" value="staff">
+        <p class="field-hint" id="uPermNote">
+          Ticked is the standard for <strong>Staff</strong>. Change any of them &mdash; what is
+          saved is the difference, so this account stays &ldquo;Staff, with changes&rdquo; rather
+          than becoming a copy of today&rsquo;s Staff that never moves again. A dot marks what is hard to undo.
+        </p>
+        <?= ability_grid(role_abilities('staff')) ?>
+      </div>
+
       <button class="btn btn-primary" type="submit">Create the account</button>
     </form>
   </section>
+
+<?php
+/**
+ * What each role ticks, so changing the role above re-ticks the boxes without
+ * a round trip. A data block rather than generated JavaScript: the page has
+ * nothing executable written into it, and the list comes from the same
+ * role_abilities() the server will check against.
+ */
+$roleStandards = [];
+foreach ($roleSlugs as $slug) {
+    $roleStandards[$slug] = array_keys(array_filter(role_abilities($slug)));
+}
+?>
+  <script type="application/json" id="nsRoleStandards"><?= json_encode(
+      $roleStandards, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES
+  ) ?></script>
+  <script src="<?= asset('users.js') ?>"></script>
 
 <?php admin_shell_close(); ?>

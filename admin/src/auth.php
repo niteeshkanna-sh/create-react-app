@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/audit.php';
+require_once __DIR__ . '/abilities.php';
 
 /**
  * Authentication and role checks.
@@ -190,56 +191,23 @@ function require_login(): array
 }
 
 /**
- * What each role may do. Checked on the server for every action — a
- * client-side check only hides buttons, it does not stop requests.
+ * Who may do what is in src/abilities.php now -- role_can() and the map it
+ * reads moved there to sit beside the catalogue of permissions and the
+ * per-person exceptions, which are the other two thirds of the same answer.
+ * This file is about proving who somebody is; that one is about what follows
+ * from it.
  */
-function role_can(string $role, string $ability): bool
-{
-    $abilities = [
-        'super_admin' => ['*'],
-        'admin'       => ['booking.*', 'vehicle.*', 'enquiry.*', 'customer.*', 'km.*',
-                          'reminder.*',
-                          'payment.view', 'deposit.view', 'expense.view', 'report.view'],
-        'accounts'    => ['payment.*', 'deposit.*', 'refund.*', 'expense.*',
-                          'reminder.*',
-                          'booking.view', 'vehicle.view', 'customer.view', 'report.view'],
-        'auditor'     => ['*.view', 'report.view', 'audit.view'],
-        // Anybody who runs the day can keep a note of what is coming. Deleting
-        // one is not theirs: a reminder somebody else set and relied on should
-        // not disappear, and ticking it off says the same thing reversibly.
-        'staff'       => ['booking.view', 'booking.create', 'vehicle.view',
-                          'enquiry.view', 'enquiry.create', 'km.create',
-                          'reminder.view', 'reminder.create', 'reminder.edit'],
-    ];
-
-    foreach ($abilities[$role] ?? [] as $granted) {
-        if ($granted === '*' || $granted === $ability) {
-            return true;
-        }
-        // 'booking.*' grants every booking ability; '*.view' grants viewing
-        // of everything.
-        if (str_ends_with($granted, '.*')
-            && str_starts_with($ability, substr($granted, 0, -1))) {
-            return true;
-        }
-        if (str_starts_with($granted, '*.')
-            && str_ends_with($ability, substr($granted, 1))) {
-            return true;
-        }
-    }
-    return false;
-}
 
 function user_can(string $ability): bool
 {
     $user = current_user();
-    return $user !== null && role_can((string) $user['role_slug'], $ability);
+    return $user !== null && user_allows($user, $ability);
 }
 
 function require_can(string $ability): array
 {
     $user = require_login();
-    if (!role_can((string) $user['role_slug'], $ability)) {
+    if (!user_allows($user, $ability)) {
         audit_log('permission_denied', 'auth', null, null, null, null, $ability,
             (int) $user['id'], $user['email']);
         http_response_code(403);

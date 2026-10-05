@@ -165,7 +165,7 @@ function api_guard(string $ability, bool $writes = false): array
     // it, whatever that action is.
     migrate_if_needed();
 
-    if (!role_can((string) $user['role_slug'], $ability)) {
+    if (!user_allows($user, $ability)) {
         audit_log('permission_denied', 'api', null, null, null, null, $ability,
             (int) $user['id'], $user['name']);
         json_error('You do not have permission to do that.', 403);
