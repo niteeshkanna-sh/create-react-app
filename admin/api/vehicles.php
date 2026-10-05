@@ -5,6 +5,7 @@ require_once __DIR__ . '/../src/http.php';
 require_once __DIR__ . '/../src/vocab.php';
 require_once __DIR__ . '/../src/vehicle-photos.php';
 require_once __DIR__ . '/../src/fleet-upkeep.php';
+require_once __DIR__ . '/../src/loans.php';
 
 /**
  * Vehicles.
@@ -193,8 +194,19 @@ switch ($action) {
             : ', ' . implode(', ', array_map(static fn(string $c): string => "{$c} = ?", array_keys($optional)));
         $ownerValues = array_values($optional);
 
+        // Read here rather than inside the closure, so the transaction is given
+        // its inputs rather than reaching out for them.
+        $loanInput = [
+            'amount'       => $input['emi_amount'] ?? null,
+            'due_day'      => $input['emi_day'] ?? null,
+            'instalments'  => $input['emi_count'] ?? null,
+            'first_due_on' => $input['emi_first_due'] ?? null,
+            'lender'       => $input['emi_lender'] ?? null,
+            'ended_on'     => $input['emi_ended_on'] ?? null,
+        ];
+
         $savedId = transaction(function () use (
-            $id, $data, $reg, $before, $user,
+            $id, $data, $reg, $before, $user, $loanInput,
             $ownerCols, $ownerPlaceholders, $ownerSets, $ownerValues
         ) {
             if ($id === null) {
@@ -305,6 +317,14 @@ switch ($action) {
                     $incoming, null, (int) $user['id'], $user['name'], null, null, $vehicleId);
             }
 
+            // The loan, which only has somewhere to live once the vehicle has
+            // an id. One open loan per car: the form describes the car's
+            // finance, not a history of it, and a car with two live loans is
+            // not a thing this business has.
+            if (table_exists('vehicle_loans')) {
+                save_vehicle_loan($vehicleId, $loanInput, (int) $user['id']);
+            }
+
             return $vehicleId;
         });
 
@@ -319,6 +339,13 @@ switch ($action) {
               WHERE v.id = ?",
             [$savedId]
         );
+
+        // Posted straight away rather than on the next dashboard load, so a
+        // loan entered with a first instalment months ago shows its back
+        // instalments while the person who typed it is still looking.
+        if (table_exists('vehicle_loans')) {
+            loans_post_due();
+        }
 
         json_out(['vehicle' => present_vehicle($row ?? [])]);
     }
@@ -365,7 +392,20 @@ function present_vehicle(array $row): array
     if ($row === []) {
         return [];
     }
+
+    // The loan, so the form can show what is already there rather than an
+    // empty set of boxes over a car that is on finance.
+    $loan = vehicle_open_loan((int) $row['id']);
+
     return [
+        'emi' => $loan === null ? null : [
+            'amount'       => $loan['amount'],
+            'due_day'      => (int) $loan['due_day'],
+            'first_due_on' => $loan['first_due_on'],
+            'instalments'  => (int) $loan['instalments'],
+            'lender'       => $loan['lender'],
+            'ended_on'     => $loan['ended_on'],
+        ],
         'id'               => (int) $row['id'],
         'name'             => $row['name'],
         'brand'            => $row['brand'],

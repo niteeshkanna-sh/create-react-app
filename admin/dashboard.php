@@ -8,6 +8,7 @@ require_once __DIR__ . '/src/assets.php';
 require_once __DIR__ . '/src/vocab.php';
 require_once __DIR__ . '/src/booking.php';
 require_once __DIR__ . '/src/migrate.php';
+require_once __DIR__ . '/src/loans.php';
 require_once __DIR__ . '/src/shell.php';
 
 // Anyone reaching this page must already be signed in; require_login sends
@@ -20,6 +21,14 @@ $me = require_login();
 // current whatever route was taken. Here as well because this is the page that
 // can show a failure, rather than turning it into a failed API call.
 $migrationError = migrate_if_needed();
+
+// Any car-loan instalment that has fallen due since somebody last looked, as
+// an expense dated the day it fell. Once a day per session and after the
+// migration, so the first load on a fresh database finds the table it needs.
+// There is no cron on this host the business controls, so the dashboard being
+// opened is what drives it -- and nothing is lost by not opening it, because
+// the dates are worked out from the loan rather than from today.
+loans_post_due_once();
 
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
@@ -490,6 +499,45 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
             </label>
             <p class="field-hint">Ticked, it shows as temporary in the fleet so it can
               be found and retired once the hire is over.</p>
+          </div>
+        </div>
+
+        <p class="modal-section-label">Loan / EMI</p>
+        <p class="field-hint">For a car bought on finance. Describe the loan once and the
+          instalments are written into Expenses on the day each one falls &mdash; nothing to
+          remember and nothing to type each month. Leave the amount empty if there is no loan.</p>
+        <div class="modal-row modal-row-3">
+          <div class="field-group">
+            <label for="carEmiAmount">Monthly instalment (&#8377;)</label>
+            <input type="number" id="carEmiAmount" min="0" step="1" placeholder="e.g. 18500" />
+          </div>
+          <div class="field-group">
+            <label for="carEmiDay">Falls on day</label>
+            <input type="number" id="carEmiDay" min="1" max="31" placeholder="e.g. 5" />
+            <p class="field-hint">31 means the end of the month, as a bank means it:
+              a short month takes its last day.</p>
+          </div>
+          <div class="field-group">
+            <label for="carEmiCount">How many instalments</label>
+            <input type="number" id="carEmiCount" min="1" max="600" placeholder="e.g. 36" />
+            <p class="field-hint">It stops on its own after the last one.</p>
+          </div>
+        </div>
+        <div class="modal-row modal-row-3">
+          <div class="field-group">
+            <label for="carEmiFirstDue">First instalment paid on</label>
+            <input type="date" id="carEmiFirstDue" />
+            <p class="field-hint">Anything already due is written at once, dated correctly.</p>
+          </div>
+          <div class="field-group">
+            <label for="carEmiLender">Lender</label>
+            <input type="text" id="carEmiLender" maxlength="120" placeholder="e.g. HDFC Bank" />
+          </div>
+          <div class="field-group">
+            <label for="carEmiEnded">Loan closed on</label>
+            <input type="date" id="carEmiEnded" />
+            <p class="field-hint">Set it if the loan is settled or the car is sold. Instalments
+              already written stay &mdash; they were really paid.</p>
           </div>
         </div>
 
