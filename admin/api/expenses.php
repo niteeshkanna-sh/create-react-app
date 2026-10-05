@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/booking.php';
+require_once __DIR__ . '/../src/vocab.php';
 
 /**
  * Expenses, and the finance summary the Finance tab is built from.
@@ -19,9 +20,10 @@ require_once __DIR__ . '/../src/booking.php';
  * being held, not the business's money earned.
  */
 
-const EXPENSE_CATEGORIES = ['Fuel', 'Maintenance', 'Repairs', 'Cleaning', 'Insurance',
-                            'Service', 'Advertising', 'Office', 'Other'];
-const EXPENSE_METHODS    = ['Cash', 'UPI', 'Card', 'Bank Transfer', 'Other'];
+// The categories and methods live in src/vocab.php, which the form renders
+// from and this validates against -- so a category the owner can choose is a
+// category that saves. They used to be declared here as well, and the two
+// lists had drifted by six.
 
 $action = $_GET['action'] ?? 'list';
 
