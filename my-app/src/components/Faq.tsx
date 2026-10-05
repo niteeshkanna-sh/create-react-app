@@ -110,7 +110,15 @@ export function Faq({
   // questions sat over the home page's photograph. home-hero is still the
   // fallback, so a site that has only ever set that one looks exactly as it
   // did.
-  const chosen = useSiteImage('faq') ?? useSiteImage('home-hero');
+  //
+  // Both read unconditionally, and chosen between afterwards. Written as
+  // `useSiteImage('faq') ?? useSiteImage('home-hero')` the ?? short-circuits,
+  // so the second hook stops being called the moment the first returns
+  // something -- the hook order changes between renders and React breaks, on
+  // the render after somebody uploads a picture here.
+  const uploadedFaq = useSiteImage('faq');
+  const uploadedHero = useSiteImage('home-hero');
+  const chosen = uploadedFaq ?? uploadedHero;
   const photo = chosen ?? BAKED;
 
   // Only the committed file gets narrower copies: a photograph uploaded in the

@@ -10,8 +10,8 @@
     "file": "assets/SectionArt-CRGDPXOj.js",
     "name": "SectionArt"
   },
-  "_ServicePage-CkNkZMz-.js": {
-    "file": "assets/ServicePage-CkNkZMz-.js",
+  "_ServicePage-IN6GPTDs.js": {
+    "file": "assets/ServicePage-IN6GPTDs.js",
     "name": "ServicePage",
     "imports": [
       "_SectionArt-CRGDPXOj.js",
@@ -20,7 +20,7 @@
     ]
   },
   "index.html": {
-    "file": "assets/index-T6bmogha.js",
+    "file": "assets/index-DqzNw5CG.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -52,7 +52,7 @@
     ]
   },
   "src/pages/About.tsx": {
-    "file": "assets/About-DktJNDOc.js",
+    "file": "assets/About-BiQBytBo.js",
     "name": "About",
     "src": "src/pages/About.tsx",
     "isDynamicEntry": true,
@@ -63,17 +63,17 @@
     ]
   },
   "src/pages/Bikes.tsx": {
-    "file": "assets/Bikes-DafPHR67.js",
+    "file": "assets/Bikes-BmUE2d0I.js",
     "name": "Bikes",
     "src": "src/pages/Bikes.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_SectionArt-CRGDPXOj.js",
-      "_ServicePage-CkNkZMz-.js"
+      "_ServicePage-IN6GPTDs.js"
     ]
   },
   "src/pages/Blog.tsx": {
-    "file": "assets/Blog-elzLKYHQ.js",
+    "file": "assets/Blog-CNiSuIBx.js",
     "name": "Blog",
     "src": "src/pages/Blog.tsx",
     "isDynamicEntry": true,
@@ -84,7 +84,7 @@
     ]
   },
   "src/pages/CarModel.tsx": {
-    "file": "assets/CarModel-B_K4vc1L.js",
+    "file": "assets/CarModel-C_aAltiP.js",
     "name": "CarModel",
     "src": "src/pages/CarModel.tsx",
     "isDynamicEntry": true,
@@ -96,7 +96,7 @@
     ]
   },
   "src/pages/CarRentalAreas.tsx": {
-    "file": "assets/CarRentalAreas-AAQ3DKVe.js",
+    "file": "assets/CarRentalAreas-DLU_2fA1.js",
     "name": "CarRentalAreas",
     "src": "src/pages/CarRentalAreas.tsx",
     "isDynamicEntry": true,
@@ -107,7 +107,7 @@
     ]
   },
   "src/pages/Cars.tsx": {
-    "file": "assets/Cars-DCjeVCrJ.js",
+    "file": "assets/Cars-CYTv70Ou.js",
     "name": "Cars",
     "src": "src/pages/Cars.tsx",
     "isDynamicEntry": true,
@@ -118,7 +118,7 @@
     ]
   },
   "src/pages/Contact.tsx": {
-    "file": "assets/Contact-BSVmp3ci.js",
+    "file": "assets/Contact-D9t2f9hS.js",
     "name": "Contact",
     "src": "src/pages/Contact.tsx",
     "isDynamicEntry": true,
@@ -129,7 +129,7 @@
     ]
   },
   "src/pages/Monthly.tsx": {
-    "file": "assets/Monthly-BM4wbPOq.js",
+    "file": "assets/Monthly-BxXbD-al.js",
     "name": "Monthly",
     "src": "src/pages/Monthly.tsx",
     "isDynamicEntry": true,
@@ -150,7 +150,7 @@
     ]
   },
   "src/pages/Nri.tsx": {
-    "file": "assets/Nri-CDG4zNWm.js",
+    "file": "assets/Nri-CCmuc3SM.js",
     "name": "Nri",
     "src": "src/pages/Nri.tsx",
     "isDynamicEntry": true,
@@ -161,7 +161,7 @@
     ]
   },
   "src/pages/Places.tsx": {
-    "file": "assets/Places-C-OzqYwM.js",
+    "file": "assets/Places-Bs_UuUxy.js",
     "name": "Places",
     "src": "src/pages/Places.tsx",
     "isDynamicEntry": true,
@@ -172,7 +172,7 @@
     ]
   },
   "src/pages/Post.tsx": {
-    "file": "assets/Post-BHWF8NP4.js",
+    "file": "assets/Post-sAeFnnLy.js",
     "name": "Post",
     "src": "src/pages/Post.tsx",
     "isDynamicEntry": true,
@@ -184,7 +184,7 @@
     ]
   },
   "src/pages/ServiceArea.tsx": {
-    "file": "assets/ServiceArea-C0TcFIPF.js",
+    "file": "assets/ServiceArea-CzAeCrKY.js",
     "name": "ServiceArea",
     "src": "src/pages/ServiceArea.tsx",
     "isDynamicEntry": true,
@@ -196,7 +196,7 @@
     ]
   },
   "src/pages/Services.tsx": {
-    "file": "assets/Services-Dg-ASWGT.js",
+    "file": "assets/Services-CK9OJFqr.js",
     "name": "Services",
     "src": "src/pages/Services.tsx",
     "isDynamicEntry": true,
@@ -207,7 +207,7 @@
     ]
   },
   "src/pages/Tariff.tsx": {
-    "file": "assets/Tariff-fPaUOroq.js",
+    "file": "assets/Tariff-KEgOvUOL.js",
     "name": "Tariff",
     "src": "src/pages/Tariff.tsx",
     "isDynamicEntry": true,
@@ -218,17 +218,17 @@
     ]
   },
   "src/pages/TouristVehicles.tsx": {
-    "file": "assets/TouristVehicles-CHRWu7rp.js",
+    "file": "assets/TouristVehicles-BvbFSutW.js",
     "name": "TouristVehicles",
     "src": "src/pages/TouristVehicles.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_SectionArt-CRGDPXOj.js",
-      "_ServicePage-CkNkZMz-.js"
+      "_ServicePage-IN6GPTDs.js"
     ]
   },
   "src/pages/Town.tsx": {
-    "file": "assets/Town-DMBDoQXk.js",
+    "file": "assets/Town-c4TK8EjD.js",
     "name": "Town",
     "src": "src/pages/Town.tsx",
     "isDynamicEntry": true,
@@ -240,13 +240,13 @@
     ]
   },
   "src/pages/WeddingCars.tsx": {
-    "file": "assets/WeddingCars-BuKBmk26.js",
+    "file": "assets/WeddingCars-BwOV96rj.js",
     "name": "WeddingCars",
     "src": "src/pages/WeddingCars.tsx",
     "isDynamicEntry": true,
     "imports": [
       "_SectionArt-CRGDPXOj.js",
-      "_ServicePage-CkNkZMz-.js"
+      "_ServicePage-IN6GPTDs.js"
     ]
   }
 }
