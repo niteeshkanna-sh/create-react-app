@@ -51,7 +51,7 @@ function admin_nav_groups(): array
     // roles are not shown a door that will not open for them.
     if (user_can('user.manage')) {
         $groups['The panel'] = [
-            ['page' => 'users.php', 'label' => 'Who can sign in', 'icon' => 'user'],
+            ['page' => 'users.php', 'label' => 'Users', 'icon' => 'user'],
         ];
     }
 
