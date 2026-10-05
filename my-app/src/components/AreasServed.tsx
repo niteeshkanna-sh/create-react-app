@@ -45,7 +45,7 @@ export function AreasServed() {
               <Reveal key={town.slug} as="li" delay={i * 35}>
                 <Link
                   to={`/car-rental/${town.slug}`}
-                  className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-cream px-4 py-1.5 text-sm font-medium text-ink-dim transition hover:border-gold hover:text-navy"
+                  className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-cream px-4 py-1.5 text-sm font-semibold text-ink-dim transition hover:border-gold hover:text-navy"
                 >
                   <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
                   {town.name}
@@ -57,11 +57,11 @@ export function AreasServed() {
           <Reveal delay={120}>
             <p className="mt-7 text-ink-dim">
               {footnoteLead}{' '}
-              <Link to="/contact" className="font-medium text-navy hover:text-gold-deep">
+              <Link to="/contact" className="font-semibold text-navy hover:text-gold-deep">
                 {footnoteLinkLabel}
               </Link>{' '}
               {footnoteTail}{' '}
-              <Link to="/car-rental" className="font-medium text-navy hover:text-gold-deep">
+              <Link to="/car-rental" className="font-semibold text-navy hover:text-gold-deep">
                 See every town we deliver to
               </Link>
               .

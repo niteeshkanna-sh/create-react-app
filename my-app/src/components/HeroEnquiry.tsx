@@ -107,7 +107,7 @@ export function HeroEnquiry({ title, note }: { title: string; note: string }) {
         <button
           type="button"
           onClick={() => setStatus({ kind: 'idle' })}
-          className="mt-5 rounded-xl border border-line px-4 py-2 text-sm font-medium text-ink-dim transition hover:border-navy/40 hover:text-navy"
+          className="mt-5 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-ink-dim transition hover:border-navy/40 hover:text-navy"
         >
           Send another
         </button>

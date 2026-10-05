@@ -32,19 +32,19 @@ export function About() {
           <p>
             We are based in {seo.site.city} and work across the whole of{' '}
             {seo.site.district} district. Four things, under one roof:{' '}
-            <Link to="/cars" className="font-medium text-navy hover:text-gold-deep">
+            <Link to="/cars" className="font-semibold text-navy hover:text-gold-deep">
               self drive cars
             </Link>{' '}
             for people who would rather drive themselves,{' '}
-            <Link to="/bikes" className="font-medium text-navy hover:text-gold-deep">
+            <Link to="/bikes" className="font-semibold text-navy hover:text-gold-deep">
               bikes
             </Link>{' '}
             for getting around town,{' '}
-            <Link to="/wedding-cars" className="font-medium text-navy hover:text-gold-deep">
+            <Link to="/wedding-cars" className="font-semibold text-navy hover:text-gold-deep">
               wedding cars
             </Link>{' '}
             for the day it matters, and{' '}
-            <Link to="/tourist-vehicles" className="font-medium text-navy hover:text-gold-deep">
+            <Link to="/tourist-vehicles" className="font-semibold text-navy hover:text-gold-deep">
               tourist vehicles with a driver
             </Link>{' '}
             for sightseeing.
@@ -104,7 +104,7 @@ export function About() {
             <li key={town.slug}>
               <Link
                 to={`/car-rental/${town.slug}`}
-                className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-medium text-ink-dim transition hover:border-gold hover:text-navy"
+                className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-semibold text-ink-dim transition hover:border-gold hover:text-navy"
               >
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
                 {town.name}
@@ -117,11 +117,11 @@ export function About() {
           <h2 className="text-lg font-semibold text-navy">Questions before you book?</h2>
           <p className="mt-2 text-ink-dim">
             Call{' '}
-            <a href="tel:+916374942976" className="font-medium text-navy hover:text-gold-deep">
+            <a href="tel:+916374942976" className="font-semibold text-navy hover:text-gold-deep">
               +91 63749 42976
             </a>{' '}
             or{' '}
-            <Link to="/contact" className="font-medium text-navy hover:text-gold-deep">
+            <Link to="/contact" className="font-semibold text-navy hover:text-gold-deep">
               send an enquiry
             </Link>
             .

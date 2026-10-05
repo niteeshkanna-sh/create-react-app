@@ -45,7 +45,7 @@ export function CarRentalAreas() {
                 className="card-lift group flex h-full flex-col rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(16,24,40,0.06)]"
               >
                 <h2 className="text-lg font-bold text-navy">{town.name}</h2>
-                <p className="mt-1 text-sm font-medium text-gold-deep">
+                <p className="mt-1 text-sm font-semibold text-gold-deep">
                   {town.distanceKm === 0
                     ? 'Where the vehicles are kept'
                     : `About ${town.distanceKm} km away`}

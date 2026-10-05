@@ -57,7 +57,7 @@ export function Fleet() {
                 type="button"
                 onClick={() => setFilter(f)}
                 aria-pressed={active}
-                className={`rounded-full border px-4 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold ${
+                className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold ${
                   active
                     ? 'border-navy bg-navy text-white'
                     : 'border-line bg-white text-ink-dim hover:border-navy/40 hover:text-navy'
@@ -113,7 +113,7 @@ export function Fleet() {
               </div>
 
               <div className="flex flex-1 flex-col p-5">
-                <p className="text-xs font-medium tracking-wide text-ink-faint uppercase">
+                <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">
                   {car.brand}
                 </p>
                 <h3 className="mt-0.5 text-lg font-semibold text-navy">

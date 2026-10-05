@@ -111,7 +111,7 @@ export function Town() {
                 {town.trips.map((trip) => (
                   <li key={trip.to} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3">
                     <span className="font-semibold text-navy">{trip.to}</span>
-                    <span className="text-sm font-medium text-gold-deep">
+                    <span className="text-sm font-semibold text-gold-deep">
                       about {trip.km} km
                     </span>
                     <span className="w-full text-sm text-ink-dim sm:w-auto sm:flex-1">
@@ -229,7 +229,7 @@ export function Town() {
               <li key={other.slug}>
                 <Link
                   to={`/car-rental/${other.slug}`}
-                  className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-medium text-ink-dim transition hover:border-gold hover:text-navy"
+                  className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-semibold text-ink-dim transition hover:border-gold hover:text-navy"
                 >
                   <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
                   {other.name}

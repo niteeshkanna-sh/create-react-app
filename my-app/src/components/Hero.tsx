@@ -107,7 +107,7 @@ export function Hero() {
               <span className="block text-gold">{h.headingAccent}</span>
             </h1>
 
-            <p data-hero-item="" style={{ ['--hero-delay' as string]: '200ms' }} className="mt-4 text-base font-medium text-white sm:text-lg">
+            <p data-hero-item="" style={{ ['--hero-delay' as string]: '200ms' }} className="mt-4 text-base font-semibold text-white sm:text-lg">
               {h.tagline}
             </p>
 

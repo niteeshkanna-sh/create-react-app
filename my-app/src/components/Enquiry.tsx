@@ -13,7 +13,7 @@ type Status =
 
 const field =
   'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-ink outline-none transition placeholder:text-ink-faint focus:border-navy focus:ring-2 focus:ring-navy/15';
-const label = 'block text-sm font-medium text-ink-dim';
+const label = 'block text-sm font-semibold text-ink-dim';
 
 export function Enquiry() {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
@@ -87,7 +87,7 @@ export function Enquiry() {
         <button
           type="button"
           onClick={() => setStatus({ kind: 'idle' })}
-          className="mt-6 rounded-xl border border-line px-5 py-2.5 font-medium text-ink-dim transition hover:border-navy/40 hover:text-navy"
+          className="mt-6 rounded-xl border border-line px-5 py-2.5 font-semibold text-ink-dim transition hover:border-navy/40 hover:text-navy"
         >
           Send another enquiry
         </button>
