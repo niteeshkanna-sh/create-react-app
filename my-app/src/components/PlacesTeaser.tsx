@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { usePlaces } from '../lib/usePlaces';
-import { useRailCrawl } from '../lib/useRailCrawl';
+import { RAIL_REPEAT, useRailCrawl } from '../lib/useRailCrawl';
 import { PlaceCard } from './PlaceCard';
 import { Reveal } from './Reveal';
 
@@ -19,11 +19,11 @@ import { Reveal } from './Reveal';
  * each one wider than it had anything to fill with.
  *
  * The crawl, and everything it does about hover, focus, touch and reduced
- * motion, is lib/useRailCrawl, shared with the services rail. The list is
- * rendered twice so the loop has somewhere to wrap; the second copy is
- * scenery -- out of the tab order, out of the accessibility tree, and with
- * its pictures unnamed, so a screen reader is read one set of places rather
- * than the same set twice.
+ * motion, is lib/useRailCrawl, shared with the services rail. The first few
+ * places are rendered again after the list so the loop has somewhere to wrap;
+ * that repeat is scenery -- out of the tab order, out of the accessibility
+ * tree, and with its pictures unnamed, so a screen reader is read one set of
+ * places rather than the same set twice.
  *
  * Renders nothing at all when the list is empty, rather than an empty
  * heading. A section that says "places to visit" above white space is worse
@@ -98,8 +98,13 @@ export function PlacesTeaser() {
                 <PlaceCard place={place} />
               </div>
             ))}
-            {places.map((place) => (
-              <div key={`again-${place.id}`} className="rail-item" aria-hidden="true">
+            {places.slice(0, RAIL_REPEAT).map((place, i) => (
+              <div
+                key={`again-${place.id}`}
+                className="rail-item"
+                aria-hidden="true"
+                {...(i === 0 ? { 'data-rail-repeat': '' } : {})}
+              >
                 <PlaceCard place={place} decorative />
               </div>
             ))}
