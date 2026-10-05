@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useRailCrawl } from '../lib/useRailCrawl';
+import { RAIL_REPEAT, useRailCrawl } from '../lib/useRailCrawl';
 import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
@@ -14,8 +14,8 @@ import { hasScene } from './art/scenes';
  * all go past on their own, and a card leaving the frame is what says there
  * is more of it.
  *
- * The list is rendered twice and the crawl wraps at the halfway mark, so the
- * loop is seamless. How that works, and everything else the rail does about
+ * The first few cards are rendered again after the list and the crawl wraps
+ * where that repeat begins, so the loop is seamless. How that works, and everything else the rail does about
  * hover, focus, touch and reduced motion, is in lib/useRailCrawl -- shared
  * with the places rail on the home page rather than written twice.
  *
@@ -36,8 +36,12 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
 
   const { rail, page } = useRailCrawl(items.length);
 
-  const card = (s: (typeof items)[number], copy: boolean) => (
-    <div key={`${copy ? 'again-' : ''}${s.to}`} className="rail-item">
+  const card = (s: (typeof items)[number], copy: boolean, first = false) => (
+    <div
+      key={`${copy ? 'again-' : ''}${s.to}`}
+      className="rail-item"
+      {...(first ? { 'data-rail-repeat': '' } : {})}
+    >
       <Link
         data-rail-card=""
         to={s.to}
@@ -126,7 +130,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
             className="rail flex gap-5 overflow-x-auto pb-4"
           >
             {items.map((s) => card(s, false))}
-            {items.map((s) => card(s, true))}
+            {items.slice(0, RAIL_REPEAT).map((s, i) => card(s, true, i === 0))}
           </div>
         </div>
       </div>

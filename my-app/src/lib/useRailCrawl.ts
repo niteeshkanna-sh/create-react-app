@@ -8,12 +8,17 @@ import { useEffect, useRef } from 'react';
  * and a hundred lines of scroll arithmetic copied into a second file is a
  * hundred lines that will be fixed in one of them.
  *
- * The caller renders its list twice and the crawl wraps at the halfway mark,
- * which is what makes the loop seamless: at the wrap, the copy under the
- * frame is pixel for pixel what was there a moment before, so there is
- * nothing to see. The second copy belongs out of the tab order and out of the
- * accessibility tree -- one set of links is the page's content, the other is
- * scenery.
+ * The caller renders its list, then enough of the front of it again to cover
+ * one screen, and the crawl wraps where the repeat begins: at the wrap, the
+ * cards under the frame are pixel for pixel what was there a moment before,
+ * so there is nothing to see. The repeat belongs out of the tab order and out
+ * of the accessibility tree -- one set of links is the page's content, the
+ * other is scenery.
+ *
+ * Enough rather than all of it, because every card is laid out and styled
+ * whether anybody sees it or not. A full second copy of twelve places is
+ * twelve cards of work for a loop that only ever needs the four or five that
+ * fit on the screen at the moment it wraps. RAIL_REPEAT is that number.
  *
  * Native scrolling underneath, so a flick, a trackpad, shift-wheel, the
  * arrows and the keyboard all work while it moves. The crawl gets out of the
@@ -34,6 +39,15 @@ const SPEED = 26;
 
 /** How long the crawl keeps out of the way after somebody scrolls it. */
 const IDLE_MS = 2500;
+
+/**
+ * How many cards to repeat after the list, to cover the screen at the wrap.
+ *
+ * The widest the rail ever gets is the page column, and the narrowest a card
+ * ever gets is about a quarter of it, so five is one more than can be on
+ * screen at once. Fewer and the wrap would show a gap where the list ran out.
+ */
+export const RAIL_REPEAT = 5;
 
 export function useRailCrawl(itemCount: number) {
   const rail = useRef<HTMLDivElement>(null);
@@ -75,11 +89,15 @@ export function useRailCrawl(itemCount: number) {
         return;
       }
 
-      const half = el.scrollWidth / 2;
-      if (half <= 0) return;
+      // Where the repeat begins, which is the length of the list itself. Read
+      // each frame rather than cached: it changes with the width of the
+      // window, and a stale one wraps in the wrong place.
+      const repeat = el.querySelector<HTMLElement>('[data-rail-repeat]');
+      const loop = repeat ? repeat.offsetLeft - el.offsetLeft : el.scrollWidth / 2;
+      if (loop <= 0) return;
 
       at += (SPEED * elapsed) / 1000;
-      if (at >= half) at -= half;
+      if (at >= loop) at -= loop;
       el.scrollLeft = at;
     };
 
