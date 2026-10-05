@@ -6,6 +6,13 @@ import type { Place } from '../lib/places';
  * Shared between the home page's rail and the full page, so the two cannot
  * drift into looking like different features.
  *
+ * The picture is a fixed height rather than an aspect ratio, and the name is
+ * held to two lines. Both are about the row rather than the card: a card is
+ * read beside three others, and a name that runs to two lines where its
+ * neighbour's runs to one puts every line below it out of step with the card
+ * next to it. Fixed, every heading in a row starts on the same line and every
+ * Directions button ends on one.
+ *
  * `decorative` is for the duplicate set the rail loops through. That copy is
  * already out of the tab order and hidden from the accessibility tree; this
  * takes the name off its picture and the link out of its Directions button,
@@ -15,7 +22,7 @@ import type { Place } from '../lib/places';
 export function PlaceCard({ place, decorative = false }: { place: Place; decorative?: boolean }) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
-      <div className="relative aspect-[16/10] bg-cream">
+      <div className="place-media relative bg-cream">
         {place.photo ? (
           <img
             src={place.photo}
@@ -38,14 +45,14 @@ export function PlaceCard({ place, decorative = false }: { place: Place; decorat
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-4">
         {place.category ? (
           <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">
             {place.category}
           </p>
         ) : null}
-        <h3 className="mt-0.5 text-lg font-semibold text-navy">{place.name}</h3>
-        {place.blurb ? <p className="mt-2 flex-1 text-sm text-ink-dim">{place.blurb}</p> : null}
+        <h3 className="place-title mt-0.5 font-semibold text-navy">{place.name}</h3>
+        {place.blurb ? <p className="place-blurb mt-1.5 flex-1 text-ink-dim">{place.blurb}</p> : null}
 
         {place.mapUrl ? (
           <a
@@ -55,7 +62,7 @@ export function PlaceCard({ place, decorative = false }: { place: Place; decorat
             // noreferrer alongside noopener: the new tab should not be handed a
             // reference back to this one, nor told where it came from.
             rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 self-start rounded-xl border border-line px-4 py-2 text-sm font-semibold text-navy transition hover:border-navy/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            className="mt-3 inline-flex items-center gap-1.5 self-start rounded-xl border border-line px-3.5 py-1.5 text-sm font-semibold text-navy transition hover:border-navy/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
           >
             Directions
             <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" fill="none">
