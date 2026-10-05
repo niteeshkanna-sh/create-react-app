@@ -235,6 +235,9 @@ function openCarModal(car) {
   document.getElementById('carOwnerName').value = car ? (car.ownerName || '') : '';
   document.getElementById('carOwnerPhone').value = car ? (car.ownerPhone || '') : '';
   document.getElementById('carTemporary').checked = Boolean(car && car.isTemporary);
+  for (const [id, key] of EMI_FIELDS) {
+    document.getElementById(id).value = car ? (car[key] ?? '') : '';
+  }
   for (const [id, key] of UPKEEP_FIELDS) {
     document.getElementById(id).value = car ? (car[key] ?? '') : '';
   }
@@ -438,6 +441,22 @@ function closeCarModal() {
 // The papers, the service markers and the tracker. One list, because these are
 // nine plain fields that all travel the same way and nine hand-written lines
 // each way is eighteen chances to forget one.
+/**
+ * The loan boxes in the vehicle form, paired with the keys car-data.js uses.
+ *
+ * A list rather than six lines in each of two places, the same as
+ * UPKEEP_FIELDS below -- the pair that got added to one and not the other is
+ * the bug this shape prevents.
+ */
+const EMI_FIELDS = [
+  ['carEmiAmount', 'emiAmount'],
+  ['carEmiDay', 'emiDay'],
+  ['carEmiCount', 'emiCount'],
+  ['carEmiFirstDue', 'emiFirstDue'],
+  ['carEmiLender', 'emiLender'],
+  ['carEmiEnded', 'emiEndedOn'],
+];
+
 const UPKEEP_FIELDS = [
   ['carPurchaseDate', 'purchase_date'],
   ['carInsuranceExpiry', 'insurance_expiry'],
@@ -486,6 +505,7 @@ carForm.addEventListener('submit', async (e) => {
     ownerName: document.getElementById('carOwnerName').value.trim(),
     ownerPhone: document.getElementById('carOwnerPhone').value.trim(),
     isTemporary: document.getElementById('carTemporary').checked,
+    ...Object.fromEntries(EMI_FIELDS.map(([id, key]) => [key, document.getElementById(id).value.trim()])),
     ...Object.fromEntries(UPKEEP_FIELDS.map(([id, key]) => [key, document.getElementById(id).value])),
     price: Number(document.getElementById('carPrice').value),
     priceMax: document.getElementById('carPriceMax').value.trim() === ''

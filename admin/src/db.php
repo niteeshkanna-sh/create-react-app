@@ -308,6 +308,41 @@ function next_number(string $prefix, ?int $year = null): string
  * Asked once per request and remembered, so a page reading several vehicles
  * does not ask several times.
  */
+/**
+ * Whether a table is there at all.
+ *
+ * The same forward-compatibility problem table_has_column solves, one level
+ * up: a release that adds a table runs against a database that has not been
+ * migrated yet, for exactly as long as it takes somebody to open the panel.
+ * Asked the same way and cached the same way, and a failure is logged rather
+ * than turned into a confident "no" -- see the note below for why that
+ * distinction cost a round of debugging once already.
+ */
+function table_exists(string $table): bool
+{
+    static $cache = [];
+    if (array_key_exists($table, $cache)) {
+        return $cache[$table];
+    }
+
+    try {
+        $row = fetch_one(
+            'SELECT 1 AS present
+               FROM information_schema.tables
+              WHERE table_schema = DATABASE()
+                AND table_name = ?
+              LIMIT 1',
+            [$table]
+        );
+        $cache[$table] = $row !== null;
+    } catch (Throwable $e) {
+        error_log("table_exists($table) failed: " . $e->getMessage());
+        $cache[$table] = false;
+    }
+
+    return $cache[$table];
+}
+
 function table_has_column(string $table, string $column): bool
 {
     static $cache = [];
