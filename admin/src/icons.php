@@ -43,6 +43,11 @@ function admin_icon_glyphs(): array
         'rupee'     => ['green', '<path d="M7 5h10"/><path d="M7 9h10"/><path d="M14.5 5c0 3-2.2 4-5 4h-2.5l7.5 10"/>'],
         'wallet'    => ['bronze', '<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H18a2 2 0 0 1 2 2v1"/><rect x="3" y="9" width="18" height="10" rx="2.5"/><circle cx="16.5" cy="14" r="1.2"/>'],
         'scales'    => ['navy', '<path d="M12 4v16"/><path d="M6 8h12"/><path d="M4 16l2.5-6L9 16a2.6 2.6 0 0 1-5 0z"/><path d="M15 16l2.5-6L20 16a2.6 2.6 0 0 1-5 0z"/>'],
+        // Who can sign in. A head and shoulders, drawn in the same single
+        // stroke as the rest -- without it the entry renders with an empty
+        // plate beside five that have one, because an unknown name here
+        // returns nothing rather than a placeholder.
+        'user'      => ['navy', '<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>'],
     ];
 }
 

@@ -28,7 +28,7 @@ require_once __DIR__ . '/csrf.php';
  */
 function admin_nav_groups(): array
 {
-    return [
+    $groups = [
         'Running the day' => [
             ['tab' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'chart'],
             ['tab' => 'bookings',  'label' => 'Bookings',  'icon' => 'clipboard', 'count' => 'bookingCount'],
@@ -44,6 +44,18 @@ function admin_nav_groups(): array
             ['page' => 'places.php',  'label' => 'Places to visit',  'icon' => 'pin'],
         ],
     ];
+
+    // Only for an account that may actually use it. Hiding a link is not a
+    // permission -- users.php guards itself with require_can('user.manage'),
+    // and typing the address gets a 403 regardless. This is so the other four
+    // roles are not shown a door that will not open for them.
+    if (user_can('user.manage')) {
+        $groups['The panel'] = [
+            ['page' => 'users.php', 'label' => 'Who can sign in', 'icon' => 'user'],
+        ];
+    }
+
+    return $groups;
 }
 
 /** The plate beside a navigation entry. */
