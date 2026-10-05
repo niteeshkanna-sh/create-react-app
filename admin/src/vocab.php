@@ -24,6 +24,32 @@ const FUEL_TYPES       = ['Petrol', 'Diesel', 'Electric', 'CNG'];
 const TRANSMISSIONS    = ['Manual', 'Automatic'];
 const VEHICLE_STATUSES = ['Available', 'Booked', 'On Rental', 'Maintenance', 'Inactive'];
 
+/**
+ * What money goes out on.
+ *
+ * Here for the reason the comment above describes, and because it had already
+ * happened again: the form offered Tyre, Parking, Toll, GPS, Driver and
+ * Marketing, and the API refused all six. Choosing the category that described
+ * the spend was the way to hit it.
+ *
+ * Grouped rather than alphabetical -- what the car costs to run, what it costs
+ * to own, what it costs on the road, and what the business costs -- because
+ * that is how somebody with a receipt in his hand looks for the right one.
+ *
+ * EMI is what a car bought on finance costs every month. It was going in as
+ * Other, which makes the largest fixed outgoing of the business invisible in
+ * its own books.
+ */
+const EXPENSE_CATEGORIES = [
+    'Fuel', 'Service', 'Maintenance', 'Repairs', 'Tyre',
+    'Insurance', 'EMI',
+    'Cleaning', 'Parking', 'Toll', 'GPS', 'Driver',
+    'Office', 'Marketing', 'Advertising', 'Other',
+];
+
+/** How it was paid. These three copies have never disagreed; keep it that way. */
+const EXPENSE_METHODS = ['Cash', 'UPI', 'Card', 'Bank Transfer', 'Other'];
+
 /** <option> tags for a select, with one marked selected. */
 function options_for(array $values, ?string $selected = null): string
 {

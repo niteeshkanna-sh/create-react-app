@@ -346,33 +346,11 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
             <div class="modal-row">
               <div class="field-group">
                 <label for="expCategory">Category</label>
-                <select id="expCategory" required>
-                  <option>Fuel</option>
-                  <option>Service</option>
-                  <option>Maintenance</option>
-                  <option>Repairs</option>
-                  <option>Tyre</option>
-                  <option>Insurance</option>
-                  <option>Cleaning</option>
-                  <option>Parking</option>
-                  <option>Toll</option>
-                  <option>GPS</option>
-                  <option>Driver</option>
-                  <option>Office</option>
-                  <option>Marketing</option>
-                  <option>Advertising</option>
-                  <option>Other</option>
-                </select>
+                <select id="expCategory" required><?= options_for(EXPENSE_CATEGORIES) ?></select>
               </div>
               <div class="field-group">
                 <label for="expMethod">Paid by</label>
-                <select id="expMethod" required>
-                  <option>Cash</option>
-                  <option>UPI</option>
-                  <option>Card</option>
-                  <option>Bank Transfer</option>
-                  <option>Other</option>
-                </select>
+                <select id="expMethod" required><?= options_for(EXPENSE_METHODS) ?></select>
               </div>
             </div>
             <div class="modal-row">
