@@ -1591,6 +1591,52 @@ body {
   }
 }
 
+/* ---- A place, as a card ------------------------------------------------
+ *
+ * Everything here is about the row rather than the card. These sit four
+ * across, and what matters is that the four read as one row: the headings on
+ * one line, the buttons on another. A picture that sets its own height, or a
+ * name that takes two lines where its neighbour takes one, puts everything
+ * below it out of step with the card beside it.
+ *
+ * So the picture is a fixed height rather than an aspect ratio, and the name
+ * and the sentence are each held to a fixed number of lines. Shorter than
+ * they were, too: the old card was five hundred pixels tall, most of it
+ * picture, and four of them filled a laptop screen on their own.
+ */
+
+.place-media {
+  height: 9.5rem;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 1280px) {
+  .place-media {
+    height: 10.5rem;
+  }
+}
+
+/* Two lines of room whether the name needs them or not, so the sentence under
+   it starts at the same height on every card in the row. */
+.place-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  min-height: calc(2 * 1.3em);
+}
+
+.place-blurb {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 /* ---- A rail of cards ---------------------------------------------------
  *
  * Native horizontal scrolling that also moves on its own: the crawl lives in
