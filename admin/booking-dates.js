@@ -17,6 +17,33 @@
   'use strict';
 
   var DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+  /**
+   * How far back a day can still be chosen.
+   *
+   * The grid used to stop at today, which is right for a booking being taken
+   * over the phone and wrong for the other half of what this form does:
+   * writing down a hire that already happened. A car goes out, comes back, and
+   * the paperwork is caught up at the end of the week -- and the days that
+   * hire actually ran were greyed out.
+   *
+   * Nothing else was stopping it. The date boxes carry no min and the server
+   * has no rule about it, so a past date typed by hand always saved. This only
+   * ever blocked the clicking.
+   *
+   * A week rather than forever: far enough to catch up the week's paperwork,
+   * near enough that a mistyped year does not quietly land a booking in 2019.
+   * Days before it stay disabled, and the month arrows still page back as far
+   * as anyone wants to look.
+   */
+  var BACKDATE_DAYS = 7;
+
+  /** The earliest day the grid will let anyone click. */
+  function earliestSelectable() {
+    var d = new Date();
+    d.setDate(d.getDate() - BACKDATE_DAYS);
+    return iso(d);
+  }
   var ranges = {};      // vehicle id -> [[from, to], ...]
   var loaded = false;
 
@@ -72,6 +99,7 @@
   /** Draws one month into `host`, for `input`. */
   function draw(host, input, busy, month) {
     var today = iso(new Date());
+    var earliest = earliestSelectable();
     var first = new Date(month.getFullYear(), month.getMonth(), 1);
     var count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
     var lead = (first.getDay() + 6) % 7;
@@ -91,18 +119,22 @@
       var date = new Date(month.getFullYear(), month.getMonth(), d);
       var key = iso(date);
       var out = busy.has(key);
-      var past = key < today;
+      var past = key < earliest;
+      // Backdated but still selectable: shown for what it is, so nobody
+      // records last Tuesday's hire thinking they booked next Tuesday's.
+      var back = !past && key < today;
       var on = key === input.value;
       cells += '<button type="button" class="cal-day' +
-        (on ? ' is-on' : '') + (out ? ' is-busy' : '') + '"' +
+        (on ? ' is-on' : '') + (out ? ' is-busy' : '') + (back ? ' is-back' : '') + '"' +
         (out || past ? ' disabled' : '') +
         ' data-date="' + key + '"' +
         ' aria-label="' + date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' }) +
-        (out ? ' — already booked' : '') + '">' + d + '</button>';
+        (out ? ' — already booked' : '') + (back ? ' — a past date' : '') + '">' + d + '</button>';
     }
 
     host.innerHTML = head + names + '<div class="cal-grid">' + cells + '</div>' +
-      '<p class="cal-key"><span class="cal-swatch" aria-hidden="true"></span>Already booked</p>';
+      '<p class="cal-key"><span class="cal-swatch" aria-hidden="true"></span>Already booked' +
+      '<span class="cal-swatch cal-swatch-back" aria-hidden="true"></span>Past date</p>';
 
     host.querySelectorAll('.cal-nav').forEach(function (b) {
       b.addEventListener('click', function () {
