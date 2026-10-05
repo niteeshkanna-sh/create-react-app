@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import pickupData from '../data/pickups.json';
 import townData from '../data/towns.json';
-import { useHome } from '../content';
+import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
-import { SectionArt } from './art/SectionArt';
+import { DistrictMap, DISTRICT_ROUTE_D } from './art/DistrictMap';
 
 /**
- * Where a vehicle can be handed over, named on the page.
+ * Where a vehicle can be handed over, named on the page and marked on a map.
  *
  * Local search leans on what a page actually says, not only on its meta tags
  * and structured data. Someone searching "self drive car Nagercoil railway
@@ -17,16 +17,18 @@ import { SectionArt } from './art/SectionArt';
  * and overstates how far apart they are. Under a heading each, the three
  * Nagercoil spots read as what they are -- three doors into the same town.
  *
- * Drawn as stops on a route, and the route draws itself downward as the
- * section is scrolled to. A list of places is a list; a line through them is
- * what a delivery actually is, and it gives the eye an order to read ten
- * names in rather than ten things arriving at once. The motion is all in
- * index.css under "the route", including the part that turns it off for
- * anybody who has asked their system for less of it.
+ * Drawn as stops on a route that draws itself downward as the section is
+ * scrolled to, beside a sketch of the cape with the towns pinned on it from
+ * their real coordinates. A list of places is a list; a line through them is
+ * what a delivery actually is. The motion lives in index.css under "the
+ * route" and "the delivery band", including the part that turns all of it off
+ * for anybody who has asked their system for less of it.
  *
- * Each one links to the town page it sits in. A name in plain text is a weaker
- * claim to a place than a page saying what hiring there involves, and these
- * are the only links the home page has into them.
+ * The band is dark so the photograph behind it can be a photograph rather than
+ * a washed-out backdrop. It has to read with no photograph at all, which is
+ * the state a panel slot is in until somebody fills it, so the dark is a
+ * gradient of the brand's own colours and the picture is an improvement on it
+ * rather than a requirement of it.
  *
  * Two lists, and the second is not decoration. The pickup points are the ones
  * people ask for; towns.json is the service area, it feeds every town page and
@@ -88,10 +90,27 @@ function remainingTowns(named: Set<string>) {
   return townData.towns.filter((town) => !named.has(town.name.toLowerCase()));
 }
 
+/**
+ * The heading, with the district's name picked out in gold.
+ *
+ * Split here rather than stored as two fields, because the heading is edited
+ * in the panel and a second field is a second thing to keep in step. No match
+ * means no highlight and the line reads plainly, which is the right answer for
+ * a heading somebody has rewritten into something else entirely.
+ */
+function splitHeading(heading: string, mark: string): readonly [string, string] {
+  const at = heading.toLowerCase().lastIndexOf(mark.toLowerCase());
+  if (at < 0) return [heading, ''] as const;
+  return [heading.slice(0, at).trimEnd(), heading.slice(at)] as const;
+}
+
 export function AreasServed() {
   const home = useHome();
   const { heading, intro, footnoteLead, footnoteLinkLabel, footnoteTail } =
     home.areasServed;
+  const photo = useSiteImage('coast');
+
+  const [plain, marked] = splitHeading(heading, 'Kanyakumari');
 
   const named = new Set(
     pickupData.groups.flatMap((group) =>
@@ -101,15 +120,26 @@ export function AreasServed() {
   const rest = remainingTowns(named);
 
   return (
-    <section className="bg-white py-16">
-      <div className="mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 lg:px-12 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:gap-14">
+    <section className="deliver-band">
+      {photo ? (
+        <img src={photo} alt="" aria-hidden="true" className="deliver-photo" loading="lazy" />
+      ) : null}
+      <span aria-hidden="true" className="deliver-veil" />
+
+      <div className="deliver-inner mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 lg:px-12 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-14">
         <div>
           <Reveal>
-            <p className="section-eyebrow">Where we deliver</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
-              {heading}
+            <p className="deliver-eyebrow">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 22s7-6.2 7-11.7A7 7 0 1 0 5 10.3C5 15.8 12 22 12 22zm0-13.6a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2z" />
+              </svg>
+              We deliver where you need
+            </p>
+            <h2 className="deliver-heading">
+              {plain}
+              {marked ? <span className="deliver-heading-mark">{marked}</span> : null}
             </h2>
-            <p className="mt-3 max-w-2xl leading-relaxed text-ink-dim">{intro}</p>
+            <p className="deliver-intro">{intro}</p>
           </Reveal>
 
           <div className="mt-8">
@@ -156,16 +186,11 @@ export function AreasServed() {
 
           {rest.length > 0 ? (
             <Reveal delay={200}>
-              <p className="mt-6 text-sm leading-relaxed text-ink-faint">
+              <p className="deliver-rest">
                 We also deliver to{' '}
                 {rest.map((town, i) => (
                   <span key={town.slug}>
-                    <Link
-                      to={`/car-rental/${town.slug}`}
-                      className="font-semibold text-ink-dim underline-offset-2 hover:text-navy hover:underline"
-                    >
-                      {town.name}
-                    </Link>
+                    <Link to={`/car-rental/${town.slug}`}>{town.name}</Link>
                     {i < rest.length - 2 ? ', ' : i === rest.length - 2 ? ' and ' : ''}
                   </span>
                 ))}
@@ -175,28 +200,39 @@ export function AreasServed() {
           ) : null}
 
           <Reveal delay={240}>
-            <p className="mt-5 text-ink-dim">
-              {footnoteLead}{' '}
-              <Link to="/contact" className="font-semibold text-navy hover:text-gold-deep">
-                {footnoteLinkLabel}
-              </Link>{' '}
-              {footnoteTail}{' '}
-              <Link to="/car-rental" className="font-semibold text-navy hover:text-gold-deep">
-                See every town we deliver to
-              </Link>
-              .
+            <p className="deliver-foot">
+              {footnoteLead} <Link to="/contact">{footnoteLinkLabel}</Link> {footnoteTail}{' '}
+              <Link to="/car-rental">See every town we deliver to</Link>.
             </p>
           </Reveal>
         </div>
 
-        {/* The cape, drawn rather than mapped. A real map would invite someone
-            to read boundaries off it, and the service area is the list beside
-            this, not whatever a picture implies. */}
-        <Reveal delay={80}>
-          <SectionArt
-            name="coast"
-            alt={heading}
-            className="rounded-[14px] shadow-[0_10px_30px_rgba(16,24,40,0.12)]"
+        <Reveal delay={80} className="deliver-map-wrap">
+          {/* Decorative, and it says the heading again in fewer words, so it
+              stays out of the accessibility tree rather than being read twice
+              to somebody who cannot see it. */}
+          <p className="deliver-script" aria-hidden="true">
+            <span className="deliver-script-1">Explore Kanyakumari</span>
+            <span className="deliver-script-2">
+              with <strong>NiteSha</strong>
+            </span>
+            <svg className="deliver-swoosh" viewBox="0 0 170 16" fill="none">
+              <path
+                pathLength="1"
+                d="M3 11C34 15 92 13 167 4"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </p>
+
+          <DistrictMap
+            className="deliver-map"
+            // The car's path, handed to the stylesheet rather than written out
+            // there as well: one definition of the route, in the file that
+            // works it out from the coordinates.
+            style={{ '--route-d': `path('${DISTRICT_ROUTE_D}')` } as React.CSSProperties}
           />
         </Reveal>
       </div>
