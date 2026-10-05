@@ -25,7 +25,7 @@ export function Tariff() {
         imageAlt="Self-drive car rental rates in Nagercoil and Kanyakumari district"
         scene="/cars"
         title="Tariff"
-        intro="Rates are per day. Longer hires bring the daily rate down. Every figure below is what you pay — there is no separate booking fee."
+        intro="Rates are per day. Longer rentals bring the daily rate down. Every figure below is what you pay — there is no separate booking fee."
       />
 
       <section className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-16">
@@ -90,7 +90,7 @@ export function Tariff() {
 
         <p className="mt-6 text-sm leading-relaxed text-ink-faint">
           Weekly and monthly columns show the <strong>per-day</strong> rate for
-          those hire lengths. The deposit is refundable and returned after the
+          those rental lengths. The deposit is refundable and returned after the
           car comes back, less any extra-KM charges or damage.
         </p>
 
@@ -99,7 +99,7 @@ export function Tariff() {
         <div className="mt-8 rounded-[14px] border border-line bg-cream p-6 sm:p-7">
           <h2 className="text-lg font-bold text-navy">Before you compare quotes</h2>
           <p className="mt-2 leading-relaxed text-ink-dim">
-            A daily rate on its own does not tell you what a hire costs — the
+            A daily rate on its own does not tell you what a rental costs — the
             kilometre allowance and the extra-KM rate decide as much as the
             headline figure does.
           </p>

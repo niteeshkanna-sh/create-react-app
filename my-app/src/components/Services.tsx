@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useRailCrawl } from '../lib/useRailCrawl';
 import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
@@ -14,28 +14,15 @@ import { hasScene } from './art/scenes';
  * all go past on their own, and a card leaving the frame is what says there
  * is more of it.
  *
- * The list is rendered twice and the crawl wraps at the halfway mark, which
- * is what makes the loop seamless: at the wrap, the copy under the frame is
- * pixel for pixel what was there a moment before, so there is nothing to see.
- * The second copy is hidden from screen readers and from the tab order --
- * one set of six links is the page's content, the other is scenery.
- *
- * Native scrolling underneath, so a flick, a trackpad, shift-wheel, the
- * arrows and the keyboard all work while it moves. The crawl gets out of the
- * way the moment anybody touches it, and stays out for a couple of seconds
- * after; it also stops on hover, on focus, when the tab is in the background,
- * and entirely when the system asks for less motion.
+ * The list is rendered twice and the crawl wraps at the halfway mark, so the
+ * loop is seamless. How that works, and everything else the rail does about
+ * hover, focus, touch and reduced motion, is in lib/useRailCrawl -- shared
+ * with the places rail on the home page rather than written twice.
  *
  * `showHeading` is off where a page banner has just said the same words: a
  * heading repeating the title directly above it reads as a rendering fault
  * rather than as a section.
  */
-
-/** Pixels a second. Slow enough to read a card as it goes past. */
-const SPEED = 26;
-
-/** How long the crawl keeps out of the way after somebody scrolls it. */
-const IDLE_MS = 2500;
 
 export function Services({ showHeading = true }: { showHeading?: boolean }) {
   const home = useHome();
@@ -47,93 +34,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
   // reader's outline is built from.
   const CardHeading = showHeading ? 'h3' : 'h2';
 
-  const rail = useRef<HTMLDivElement>(null);
-  const hold = useRef(false);
-  const idleUntil = useRef(0);
-
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let frame = 0;
-    let last = performance.now();
-
-    // The position is kept here rather than read back from the element each
-    // frame. A browser stores the scroll offset in whole device pixels, so
-    // scrollLeft += 0.4 is read back as the same number it was: the rail
-    // would sit still at any speed under about 30 pixels a second, which is
-    // most of the speeds worth using.
-    let at = el.scrollLeft;
-
-    const tick = (now: number) => {
-      frame = requestAnimationFrame(tick);
-
-      // Capped, because a tab that has been in the background for a minute
-      // comes back with a minute's worth of elapsed time in one frame.
-      const elapsed = Math.min(now - last, 50);
-      last = now;
-
-      // Standing down: follow wherever the reader has left it, so the crawl
-      // carries on from there rather than snapping back.
-      if (still.matches || hold.current || now < idleUntil.current || document.visibilityState !== 'visible') {
-        at = el.scrollLeft;
-        return;
-      }
-
-      const half = el.scrollWidth / 2;
-      if (half <= 0) return;
-
-      at += (SPEED * elapsed) / 1000;
-      if (at >= half) at -= half;
-      el.scrollLeft = at;
-    };
-
-    frame = requestAnimationFrame(tick);
-
-    // Hover and focus stop it; a touch or a wheel stands it down for a while,
-    // because someone mid-scroll should not be fighting it back.
-    const stop = () => { hold.current = true; };
-    const start = () => { hold.current = false; last = performance.now(); };
-    const stand = () => { idleUntil.current = performance.now() + IDLE_MS; };
-
-    el.addEventListener('pointerenter', stop);
-    el.addEventListener('pointerleave', start);
-    el.addEventListener('focusin', stop);
-    el.addEventListener('focusout', start);
-    el.addEventListener('wheel', stand, { passive: true });
-    el.addEventListener('touchstart', stand, { passive: true });
-    el.addEventListener('touchmove', stand, { passive: true });
-
-    return () => {
-      cancelAnimationFrame(frame);
-      el.removeEventListener('pointerenter', stop);
-      el.removeEventListener('pointerleave', start);
-      el.removeEventListener('focusin', stop);
-      el.removeEventListener('focusout', start);
-      el.removeEventListener('wheel', stand);
-      el.removeEventListener('touchstart', stand);
-      el.removeEventListener('touchmove', stand);
-    };
-  }, [items.length]);
-
-  const page = (direction: 1 | -1) => {
-    const el = rail.current;
-    if (!el) return;
-
-    // One card and its gap, so a press lands on a card edge rather than
-    // halfway through one.
-    const card = el.querySelector('[data-rail-card]');
-    const step = card ? card.getBoundingClientRect().width + 20 : el.clientWidth * 0.8;
-
-    idleUntil.current = performance.now() + IDLE_MS;
-    el.scrollBy({
-      left: direction * step,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'auto'
-        : 'smooth',
-    });
-  };
+  const { rail, page } = useRailCrawl(items.length);
 
   const card = (s: (typeof items)[number], copy: boolean) => (
     <div key={`${copy ? 'again-' : ''}${s.to}`} className="rail-item">

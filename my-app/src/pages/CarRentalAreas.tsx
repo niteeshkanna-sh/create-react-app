@@ -22,7 +22,7 @@ export function CarRentalAreas() {
       <PageHeader
         photo="coast"
         scene="coast"
-        title={`Where we deliver across ${seo.site.district} district`}
+        title={`Self drive car rental across ${seo.site.district} district`}
         imageAlt={`The towns of ${seo.site.district} district where we deliver vehicles`}
         intro={`We bring the vehicle to you rather than asking you to come and fetch it. Twelve towns with a page of their own below, and everywhere in between them on request — tell us the address and we will say yes or tell you what it costs.`}
       />
@@ -54,7 +54,7 @@ export function CarRentalAreas() {
                   Known for {town.knownFor}.
                 </p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-navy">
-                  Hiring in {town.name}
+                  Rental cars in {town.name}
                   <span
                     aria-hidden="true"
                     className="text-gold transition group-hover:translate-x-0.5"
@@ -75,7 +75,7 @@ export function CarRentalAreas() {
             Written up town by town
           </h2>
           <p className="mt-3 text-ink-dim">
-            Some of what we hire works differently depending on where you are.
+            Some of what we rent works differently depending on where you are.
             Where it does, it has a page of its own.
           </p>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

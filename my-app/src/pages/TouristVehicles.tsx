@@ -6,7 +6,7 @@ export function TouristVehicles() {
       photo="tourist-hero"
       imageAlt="A tourist vehicle with a driver for sightseeing around Kanyakumari"
       scene="/tourist-vehicles"
-      title="Tourist vehicle hire with driver"
+      title="Tourist vehicle rental with driver"
       intro="Cars and vans with an experienced driver, for sightseeing around Kanyakumari and beyond."
       cta="Planning a trip?"
       sections={[

@@ -4,7 +4,7 @@ export function WeddingCars() {
   return (
     <ServicePage
       photo="wedding-hero"
-      imageAlt="A decorated wedding car for hire in Kanyakumari district"
+      imageAlt="A decorated wedding car for rent in Kanyakumari district"
       scene="/wedding-cars"
       title="Wedding car rental in Nagercoil & Kanyakumari"
       intro="Decorated cars and premium vehicles for marriages across Kanyakumari district."
@@ -12,7 +12,7 @@ export function WeddingCars() {
       sections={[
         {
           heading: 'Cars for the wedding day',
-          body: 'A wedding car is not an ordinary hire. We set aside the vehicle for your date, prepare it properly, and make sure it arrives on time at the mandapam, church or hall.',
+          body: 'A wedding car is not an ordinary rental. We set aside the vehicle for your date, prepare it properly, and make sure it arrives on time at the mandapam, church or hall.',
         },
         {
           heading: 'Decoration',

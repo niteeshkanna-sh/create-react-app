@@ -3,10 +3,16 @@ import type { Place } from '../lib/places';
 /**
  * One place, as a card.
  *
- * Shared between the home page's short list and the full page, so the two
- * cannot drift into looking like different features.
+ * Shared between the home page's rail and the full page, so the two cannot
+ * drift into looking like different features.
+ *
+ * `decorative` is for the duplicate set the rail loops through. That copy is
+ * already out of the tab order and hidden from the accessibility tree; this
+ * takes the name off its picture and the link out of its Directions button,
+ * so the same twelve places are not announced twice and the same twelve links
+ * are not two tab stops each.
  */
-export function PlaceCard({ place }: { place: Place }) {
+export function PlaceCard({ place, decorative = false }: { place: Place; decorative?: boolean }) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
       <div className="relative aspect-[16/10] bg-cream">
@@ -15,7 +21,7 @@ export function PlaceCard({ place }: { place: Place }) {
             src={place.photo}
             // Named, not decorative: someone searching for a photograph of
             // Vattakottai Fort should be able to find this one.
-            alt={`${place.name}, Kanyakumari district`}
+            alt={decorative ? '' : `${place.name}, Kanyakumari district`}
             loading="lazy"
             decoding="async"
             width={1200}
@@ -45,6 +51,7 @@ export function PlaceCard({ place }: { place: Place }) {
           <a
             href={place.mapUrl}
             target="_blank"
+            {...(decorative ? { tabIndex: -1, 'aria-hidden': true } : {})}
             // noreferrer alongside noopener: the new tab should not be handed a
             // reference back to this one, nor told where it came from.
             rel="noopener noreferrer"

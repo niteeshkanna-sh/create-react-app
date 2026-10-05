@@ -43,7 +43,7 @@ export function Fleet() {
           <p className="mt-2 max-w-lg text-ink-dim">
             {empty
               ? 'We are updating our vehicle listing. Call us or send an enquiry and we will tell you what is free for your dates.'
-              : 'Rates shown are per day. Longer hires bring the daily rate down.'}
+              : 'Rates shown are per day. Longer rentals bring the daily rate down.'}
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export function Fleet() {
                   </p>
                   {car.rateMonthly ? (
                     <p className="mt-1 text-sm text-gold-deep">
-                      {inr(car.rateMonthly)} on monthly hire
+                      {inr(car.rateMonthly)} on monthly rental
                     </p>
                   ) : null}
                   {/* Gold hairlines rather than interpuncts, matching the rule

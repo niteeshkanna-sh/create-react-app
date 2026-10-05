@@ -20,7 +20,7 @@ const CHOOSING = [
   {
     heading: 'Two or three of you, staying around town',
     body:
-      'A hatchback. It is the cheapest to hire and the cheapest to fuel, it parks where the bigger vehicles cannot, and for the distances inside this district there is nothing it will not do comfortably.',
+      'A hatchback. It is the cheapest to rent and the cheapest to fuel, it parks where the bigger vehicles cannot, and for the distances inside this district there is nothing it will not do comfortably.',
   },
   {
     heading: 'You would rather not use a clutch',
@@ -34,7 +34,7 @@ const CHOOSING = [
   },
 ];
 
-/** What every hire includes, whichever vehicle it is. */
+/** What every rental includes, whichever vehicle it is. */
 const INCLUDED = [
   'A daily kilometre allowance, stated before you book, with the extra-KM rate beside it',
   'A refundable deposit — the figure is told to you in advance, not at handover',
@@ -51,7 +51,7 @@ export function Cars() {
         imageAlt="Self-drive rental cars available in Nagercoil and across Kanyakumari district"
         scene="/cars"
         title="Our cars"
-        intro="Hatchbacks, sedans, SUVs and 7 seater vehicles for self-drive hire. Every car lists its KM limit, extra-KM rate and deposit, so there is nothing to discover later."
+        intro="Hatchbacks, sedans, SUVs and 7 seater vehicles for self-drive rental. Every car lists its KM limit, extra-KM rate and deposit, so there is nothing to discover later."
       />
 
       <section className="mx-auto max-w-[86rem] px-5 pt-16 sm:px-8 lg:px-12">
@@ -100,7 +100,7 @@ export function Cars() {
           <div>
             <Reveal delay={90}>
               <div className="rounded-[14px] border border-line bg-cream p-6 sm:p-7">
-                <h2 className="text-lg font-bold text-navy">What every hire includes</h2>
+                <h2 className="text-lg font-bold text-navy">What every rental includes</h2>
                 <ul className="mt-4 space-y-3">
                   {INCLUDED.map((point) => (
                     <li key={point} className="flex items-start gap-2.5 leading-relaxed text-ink-dim">

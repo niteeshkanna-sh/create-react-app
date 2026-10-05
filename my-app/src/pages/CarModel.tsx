@@ -66,8 +66,8 @@ export function CarModel() {
       <PageHeader
         photo="cars-hero"
         scene="/cars"
-        title={`${model.name} on self drive hire`}
-        imageAlt={`${model.name} for self drive hire in ${seo.site.city}, ${seo.site.district} district`}
+        title={`${model.name} on self drive rental`}
+        imageAlt={`${model.name} for self drive rental in ${seo.site.city}, ${seo.site.district} district`}
         intro={model.intro}
       />
 
@@ -168,7 +168,7 @@ export function CarModel() {
                   <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
                     full tariff
                   </Link>{' '}
-                  for how the daily figure falls on a weekly or monthly hire.
+                  for how the daily figure falls on a weekly or monthly rental.
                 </p>
               </div>
             </Reveal>

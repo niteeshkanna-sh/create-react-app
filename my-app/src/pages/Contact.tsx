@@ -179,7 +179,7 @@ export function Contact() {
             <p className="mt-4 leading-relaxed text-ink-dim">
               Nothing, to enquire — a name and a number is enough. To take a
               vehicle you will need an original driving licence for the class
-              you are hiring, one government photo ID, and the deposit.
+              you are renting, one government photo ID, and the deposit.
               Visitors from abroad should bring a passport and an international
               driving permit alongside their home licence.
             </p>

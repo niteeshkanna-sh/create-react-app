@@ -19,15 +19,15 @@ import { WhatsAppButton } from '../components/WhatsAppButton';
 const audiences = [
   {
     title: 'Families visiting from abroad',
-    body: 'Home for a month or two and need a car the whole time. Works out far cheaper than hiring by the day, and the vehicle stays yours for the stay.',
+    body: 'Home for a month or two and need a car the whole time. Works out far cheaper than renting by the day, and the vehicle stays yours for the stay.',
   },
   {
     title: 'Work postings and projects',
-    body: 'Sent to the district for a few months and would rather not ship a car down. Monthly hire covers it without a purchase or a lease.',
+    body: 'Sent to the district for a few months and would rather not ship a car down. Monthly rental covers it without a purchase or a lease.',
   },
   {
     title: 'Between vehicles',
-    body: 'Car being repaired, sold, or waiting on delivery. A month on hire fills the gap without a hurried decision.',
+    body: 'Car being repaired, sold, or waiting on delivery. A month on rental fills the gap without a hurried decision.',
   },
   {
     title: 'Extended family visits',
@@ -38,7 +38,7 @@ const audiences = [
 const rateFactors = [
   'Which vehicle — a hatchback, a sedan, an SUV or a 7 seater',
   'Manual or automatic',
-  'How long you keep it: the daily rate falls as the hire lengthens',
+  'How long you keep it: the daily rate falls as the rental lengthens',
   'Time of year — festival and wedding seasons are busier',
   'Where in the district you want it delivered and collected',
 ];
@@ -46,7 +46,7 @@ const rateFactors = [
 const practical = [
   {
     q: 'How many kilometres are included?',
-    a: 'Monthly hires carry a monthly allowance rather than a daily one, so a long drive one week and none the next evens out. Anything past the allowance is charged at the extra-KM rate, which we tell you before you take the car.',
+    a: 'Monthly rentals carry a monthly allowance rather than a daily one, so a long drive one week and none the next evens out. Anything past the allowance is charged at the extra-KM rate, which we tell you before you take the car.',
   },
   {
     q: 'Who services the car during the month?',
@@ -54,7 +54,7 @@ const practical = [
   },
   {
     q: 'What if something goes wrong?',
-    a: 'Call us. Breakdowns are ours to sort out, not yours — that is the point of hiring rather than buying. For anything major we will get you into another vehicle.',
+    a: 'Call us. Breakdowns are ours to sort out, not yours — that is the point of renting rather than buying. For anything major we will get you into another vehicle.',
   },
   {
     q: 'Can I extend if my plans change?',
@@ -62,7 +62,7 @@ const practical = [
   },
   {
     q: 'What deposit is needed?',
-    a: 'A refundable deposit, higher than a daily hire because the vehicle is with you longer. It comes back when the car does, less any extra-KM charges or damage.',
+    a: 'A refundable deposit, higher than a daily rental because the vehicle is with you longer. It comes back when the car does, less any extra-KM charges or damage.',
   },
   {
     q: 'What do I need to bring?',
@@ -81,13 +81,13 @@ export function Monthly() {
         imageAlt="A car on monthly rental parked at a home in Nagercoil"
         scene="/monthly"
         title="Monthly car rental in Nagercoil"
-        intro={`Need a car for weeks rather than days? Monthly self drive hire across ${seo.site.district} district — hatchbacks, sedans, SUVs and 7 seater vehicles.`}
+        intro={`Need a car for weeks rather than days? Monthly self drive rental across ${seo.site.district} district — hatchbacks, sedans, SUVs and 7 seater vehicles.`}
       />
 
       <section className="mx-auto max-w-3xl px-5 py-16">
         <Reveal>
           <p className="leading-relaxed text-ink-dim">
-            Hiring by the day adds up quickly. Once you need a vehicle for more
+            Renting by the day adds up quickly. Once you need a vehicle for more
             than a couple of weeks, a monthly rate is a different and much
             cheaper arrangement — and you keep the same car throughout rather
             than starting again every few days.
@@ -175,7 +175,7 @@ export function Monthly() {
               </Link>
               . Based in the district headquarters?{' '}
               <Link to="/monthly/nagercoil" className="font-semibold text-navy hover:text-gold-deep">
-                Monthly hire in Nagercoil
+                Monthly rental in Nagercoil
               </Link>{' '}
               covers how it works there.
             </p>
