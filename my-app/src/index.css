@@ -1612,6 +1612,16 @@ body {
      overflow-x would otherwise clip. */
   padding-top: 4px;
   overscroll-behavior-x: contain;
+
+  /* Saying what is already true: nothing in here paints outside it. Without
+     it Chrome counts the whole strip of cards -- several thousand pixels of
+     them -- in document.scrollWidth, which is the number every "is this page
+     wider than the screen" check reads, including Lighthouse's and our own.
+     The page could not actually be panned sideways either way, so this
+     changes no behaviour; it stops the page reporting a fault it does not
+     have. Both axes already clip here (a scroller on one axis makes the other
+     auto), so the hover lift keeps exactly the room the padding gives it. */
+  contain: paint;
 }
 
 .rail::-webkit-scrollbar {
@@ -1657,6 +1667,21 @@ body {
 
 .rail-item > * {
   height: 100%;
+}
+
+/* Four across instead of three, for the rails whose cards are a picture, a
+   category and a sentence. Worked out from the column rather than set to a
+   fixed width, so four of them and their three gaps come to exactly the
+   width the rest of the page uses -- a fixed rem width that nearly fits
+   leaves a sliver of a fifth card, which reads as the rail being broken
+   rather than as there being more.
+
+   Only once there is room for it. Below this the fixed widths above apply
+   and the rail shows two and a bit, which is what a phone has room for. */
+@media (min-width: 1024px) {
+  .rail-4 .rail-item {
+    width: calc((100% - 3 * 1.25rem) / 4);
+  }
 }
 
 /* The arrows. They are scrollBy() and nothing else, so with no script to run
