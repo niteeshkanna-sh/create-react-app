@@ -1391,21 +1391,12 @@ body {
   color: color-mix(in srgb, #fff 78%, transparent);
 }
 
-.deliver-rest {
-  margin-top: 1.5rem;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  color: color-mix(in srgb, #fff 55%, transparent);
-}
-
-.deliver-rest a,
 .deliver-foot a {
   font-weight: 600;
   color: color-mix(in srgb, #fff 88%, transparent);
   text-underline-offset: 2px;
 }
 
-.deliver-rest a:hover,
 .deliver-foot a:hover {
   color: var(--color-gold);
   text-decoration: underline;

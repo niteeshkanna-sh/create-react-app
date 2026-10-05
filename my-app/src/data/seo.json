@@ -30,7 +30,7 @@
     {
       "path": "/",
       "title": "Self Drive Car Rental in Nagercoil & Kanyakumari",
-      "description": "Self drive car hire, bike rental, wedding cars and tourist vehicles across Kanyakumari district. Daily, weekly and monthly rates. Call +91 63749 42976.",
+      "description": "Self drive car rental, bike rental, wedding cars and tourist vehicles across Kanyakumari district. Daily, weekly and monthly rates. Call +91 63749 42976.",
       "priority": "1.0",
       "imageSlot": "home-hero",
       "imageFallback": "/mountain-road-at-sunrise-self-drive-car-rental.webp",
@@ -38,7 +38,7 @@
     },
     {
       "path": "/cars",
-      "title": "Self Drive Car Hire in Nagercoil & Kanyakumari",
+      "title": "Self Drive Rental Cars in Nagercoil & Kanyakumari",
       "description": "Hatchbacks, sedans and SUVs to rent without a driver in Nagercoil and across Kanyakumari district. Clear KM limits, extra-KM rates and refundable deposits.",
       "priority": "0.9",
       "imageSlot": "cars-hero",
@@ -55,14 +55,14 @@
     {
       "path": "/wedding-cars",
       "title": "Wedding Car Rental in Nagercoil & Kanyakumari",
-      "description": "Decorated wedding cars and premium vehicles to hire for marriages across Kanyakumari district — Nagercoil, Marthandam and Colachel. Book season dates early.",
+      "description": "Decorated wedding cars and premium vehicles to rent for marriages across Kanyakumari district — Nagercoil, Marthandam and Colachel. Book season dates early.",
       "priority": "0.9",
       "imageSlot": "wedding-hero",
-      "imageAlt": "A decorated wedding car for hire in Kanyakumari district"
+      "imageAlt": "A decorated wedding car for rent in Kanyakumari district"
     },
     {
       "path": "/tourist-vehicles",
-      "title": "Tourist Vehicle Hire with Driver — Kanyakumari",
+      "title": "Tourist Vehicle Rental with Driver — Kanyakumari",
       "description": "Cars and vans with a driver for Kanyakumari sightseeing, temple tours and Trivandrum airport transfers. Per-day and per-trip rates for families and groups.",
       "priority": "0.9",
       "imageSlot": "tourist-hero",
@@ -118,16 +118,16 @@
     },
     {
       "path": "/services",
-      "title": "Our Services — Self Drive Car & Bike Hire, Kanyakumari",
-      "description": "Self drive car hire, bike and scooty rental, wedding cars, tourist vehicles with a driver and monthly rental across Kanyakumari district.",
+      "title": "Our Services — Self Drive Car & Bike Rental, Kanyakumari",
+      "description": "Self drive car rental, bike and scooty rental, wedding cars, tourist vehicles with a driver and monthly rental across Kanyakumari district.",
       "priority": "0.9",
       "imageSlot": "services-hero",
-      "imageAlt": "Self-drive cars, bikes and tourist vehicles for hire across Kanyakumari district"
+      "imageAlt": "Self-drive cars, bikes and tourist vehicles for rent across Kanyakumari district"
     },
     {
       "path": "/places",
       "title": "Places to Visit in Kanyakumari by Self Drive Car",
-      "description": "Vivekananda Rock, Vattakottai Fort, Thirparappu Falls and more — every one an easy drive from Nagercoil. Hire a self-drive car and go at your own pace.",
+      "description": "Vivekananda Rock, Vattakottai Fort, Thirparappu Falls and more — every one an easy drive from Nagercoil. Rent a self-drive car and go at your own pace.",
       "priority": "0.8",
       "imageSlot": "places-hero",
       "imageAlt": "The Kanyakumari coastline with the Vivekananda Rock Memorial offshore"

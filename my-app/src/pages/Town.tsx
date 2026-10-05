@@ -51,7 +51,7 @@ export function Town() {
         photo="cars-hero"
         scene="/cars"
         title={`Self drive car & bike rental in ${town.name}`}
-        imageAlt={`Self drive cars and bikes for hire in ${town.name}, ${seo.site.district} district`}
+        imageAlt={`Self drive cars and bikes for rent in ${town.name}, ${seo.site.district} district`}
         intro={town.intro}
       />
 
@@ -105,7 +105,7 @@ export function Town() {
                 Drives from {town.name}
               </h2>
               {/* Distances are the thing people actually want before they
-                  decide whether a day's hire is worth it, and they are
+                  decide whether a day's rental is worth it, and they are
                   approximate road distances rather than straight lines. */}
               <ul className="mt-5 divide-y divide-line border-y border-line">
                 {town.trips.map((trip) => (
@@ -127,7 +127,7 @@ export function Town() {
             <Reveal delay={60}>
               <div className="rounded-[14px] border border-line bg-cream p-6 sm:p-7">
                 <h2 className="text-lg font-bold text-navy">
-                  What we hire in {town.name}
+                  Rental cars in {town.name}
                 </h2>
                 <ul className="mt-4 space-y-3">
                   {[
@@ -135,7 +135,7 @@ export function Town() {
                     { to: '/bikes', label: 'Bikes and scooters', note: 'By the hour, day or week' },
                     { to: '/wedding-cars', label: 'Wedding cars', note: 'Decorated, for the season' },
                     { to: '/tourist-vehicles', label: 'Tourist vehicles', note: 'With a driver, for groups' },
-                    { to: '/monthly', label: 'Monthly hire', note: 'Cheaper the longer you keep it' },
+                    { to: '/monthly', label: 'Monthly rental', note: 'Cheaper the longer you keep it' },
                   ].map((base) => {
                     const local = areaFor(base.to);
                     return local
@@ -212,7 +212,7 @@ export function Town() {
             <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
               tariff page
             </Link>
-            , and they come down on a longer hire.
+            , and they come down on a longer rental.
           </p>
         </Reveal>
 

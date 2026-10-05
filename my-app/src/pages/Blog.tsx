@@ -34,7 +34,7 @@ export function Blog() {
         imageAlt="Driving routes and travel tips around Kanyakumari district"
         scene="coast"
         title="Blog"
-        intro="Answers to the things people ask before they hire a vehicle — documents, distances, what a day out really takes, and what the roads are like."
+        intro="Answers to the things people ask before they rent a vehicle — documents, distances, what a day out really takes, and what the roads are like."
       />
 
       <section className="mx-auto max-w-3xl px-5 py-16">

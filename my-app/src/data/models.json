@@ -12,7 +12,7 @@
       "transmission": "Manual",
       "luggage": "Two medium suitcases, or one large and a couple of bags",
       "title": "Swift Self Drive Car Rental in Nagercoil & Kanyakumari",
-      "description": "Hire a Maruti Swift without a driver in Nagercoil and across Kanyakumari district. Petrol, manual, 5 seats. Clear KM limit and a deposit you get back.",
+      "description": "Rent a Maruti Swift without a driver in Nagercoil and across Kanyakumari district. Petrol, manual, 5 seats. Clear KM limit and a deposit you get back.",
       "intro": "The Swift is the car most people picture when they think of a self-drive hatchback, and it is the one we hand over most often. It is short, light to steer and returns the kind of mileage that matters when a day out means two hundred kilometres of coast road.",
       "suits": "Couples, a family of three or four, and anyone who is going to be parking in Nagercoil town rather than only on the highway.",
       "drive": "The steering is light and the turning circle is small, which is what you want in the streets around the Nagaraja temple and the market, where a wider car has to be reversed out of things. The flip side is a firm ride: over the broken stretches inland towards Thiruvattar you feel more of the road than you would in a Grand i10. On the Kanyakumari highway it sits comfortably at highway speeds and is quiet enough to talk in.",
@@ -23,9 +23,18 @@
       ],
       "watch": "The ride is on the firm side, and the boot takes two medium cases rather than three. For five adults with luggage for a week, take the Rumion or the Innova instead.",
       "goesWellWith": [
-        { "to": "/car-rental/nagercoil", "label": "Nagercoil town runs" },
-        { "to": "/car-rental/kanyakumari", "label": "The sunrise drive to Kanyakumari" },
-        { "to": "/monthly", "label": "Monthly hire, if you are staying a while" }
+        {
+          "to": "/car-rental/nagercoil",
+          "label": "Nagercoil town runs"
+        },
+        {
+          "to": "/car-rental/kanyakumari",
+          "label": "The sunrise drive to Kanyakumari"
+        },
+        {
+          "to": "/monthly",
+          "label": "Monthly rental, if you are staying a while"
+        }
       ],
       "faq": [
         {
@@ -38,7 +47,7 @@
         },
         {
           "question": "What mileage does it give on a Kanyakumari trip?",
-          "answer": "On a mixed run of town and highway you can expect somewhere around 18 to 20 kilometres to the litre with a light foot. Fuel is yours on a self-drive hire, so this is a real difference between a Swift and a seven-seater over a long day."
+          "answer": "On a mixed run of town and highway you can expect somewhere around 18 to 20 kilometres to the litre with a light foot. Fuel is yours on a self-drive rental, so this is a real difference between a Swift and a seven-seater over a long day."
         }
       ]
     },
@@ -52,7 +61,7 @@
       "fuel": "Petrol",
       "transmission": "Automatic",
       "luggage": "Two medium suitcases and a soft bag",
-      "title": "Glanza Automatic Self Drive Car Hire in Nagercoil",
+      "title": "Glanza Automatic Self Drive Car Rental in Nagercoil",
       "description": "Rent a Toyota Glanza automatic without a driver in Nagercoil and Kanyakumari district. No clutch, 5 seats, petrol. Delivered to you, deposit refunded.",
       "intro": "The Glanza is our automatic. No clutch, no gear lever to think about — which sounds like a small thing until you are in the queue on the Nagercoil bypass at six in the evening, or you have spent the last ten years driving an automatic somewhere else.",
       "suits": "Anyone who has not driven a manual in years, visitors home from the Gulf, Singapore or Malaysia, and anybody who would rather spend a day of Indian traffic thinking about the road instead of the clutch.",
@@ -62,15 +71,24 @@
         "The roomiest cabin of the hatchbacks we keep",
         "Quiet at highway speed"
       ],
-      "watch": "An automatic uses a little more fuel than the same car as a manual, and fuel is yours on a self-drive hire. Over a week that is real money, so if you are happy with a clutch the Swift or the Grand i10 will cost less to run.",
+      "watch": "An automatic uses a little more fuel than the same car as a manual, and fuel is yours on a self-drive rental. Over a week that is real money, so if you are happy with a clutch the Swift or the Grand i10 will cost less to run.",
       "goesWellWith": [
-        { "to": "/nri", "label": "Booking from abroad before you land" },
-        { "to": "/car-rental/nagercoil", "label": "Nagercoil, where the traffic is" },
-        { "to": "/monthly", "label": "By the month, for a long stay" }
+        {
+          "to": "/nri",
+          "label": "Booking from abroad before you land"
+        },
+        {
+          "to": "/car-rental/nagercoil",
+          "label": "Nagercoil, where the traffic is"
+        },
+        {
+          "to": "/monthly",
+          "label": "By the month, for a long stay"
+        }
       ],
       "faq": [
         {
-          "question": "I have an overseas licence. Can I hire the automatic?",
+          "question": "I have an overseas licence. Can I rent the automatic?",
           "answer": "Yes. Bring your passport, your home licence and an international driving permit alongside it. We take copies at handover, the same as for anyone else. The automatic is usually the one visitors ask for, so it is worth booking it before you land."
         },
         {
@@ -79,7 +97,7 @@
         },
         {
           "question": "Is the Glanza the same as a Baleno?",
-          "answer": "It is the same car underneath, sold by Toyota rather than Maruti, with Toyota's badge and service. For a hire it makes no practical difference to you except the name on the front."
+          "answer": "It is the same car underneath, sold by Toyota rather than Maruti, with Toyota's badge and service. For a rental it makes no practical difference to you except the name on the front."
         }
       ]
     },
@@ -94,7 +112,7 @@
       "transmission": "Manual",
       "luggage": "Two medium suitcases",
       "title": "Hyundai Grand i10 Self Drive Rental, Kanyakumari District",
-      "description": "Self drive Hyundai Grand i10 hire in Nagercoil, Marthandam and across Kanyakumari district. Petrol, manual, 5 seats. Rates and KM limits agreed upfront.",
+      "description": "Self drive Hyundai Grand i10 rental in Nagercoil, Marthandam and across Kanyakumari district. Petrol, manual, 5 seats. Rates and KM limits agreed upfront.",
       "intro": "If the Swift is the sharp one, the Grand i10 is the comfortable one. Softer suspension, a light clutch and a cabin that feels a size bigger than the car looks — it is the hatchback we hand to somebody who has not driven for a while.",
       "suits": "First-time renters, families of four, and anyone whose route includes the inland roads where the surface is patchy.",
       "drive": "The suspension is set up for rough surfaces rather than for cornering, which is the right trade for most of this district: the road out towards Thiruvattar and Thirparappu is exactly where you notice it. Controls are light all round. It is a touch softer through fast corners than a Swift, so it rewards an unhurried pace, which is the pace these roads want anyway.",
@@ -105,13 +123,22 @@
       ],
       "watch": "The soft setup means more body roll on a fast road. It is not a car to hurry on the highway, and the boot is the same two-case story as the Swift.",
       "goesWellWith": [
-        { "to": "/car-rental/marthandam", "label": "Marthandam and the inland roads" },
-        { "to": "/car-rental/thiruvattar", "label": "Thiruvattar and Thirparappu falls" },
-        { "to": "/tariff", "label": "What it costs by the day, week or month" }
+        {
+          "to": "/car-rental/marthandam",
+          "label": "Marthandam and the inland roads"
+        },
+        {
+          "to": "/car-rental/thiruvattar",
+          "label": "Thiruvattar and Thirparappu falls"
+        },
+        {
+          "to": "/tariff",
+          "label": "What it costs by the day, week or month"
+        }
       ],
       "faq": [
         {
-          "question": "Is the Grand i10 good for a first-time self-drive hire?",
+          "question": "Is the Grand i10 good for a first-time self-drive rental?",
           "answer": "It is the one we usually suggest. The clutch is light, the visibility is good and nothing about it is sharp or sudden. If you have not driven in India before, this or the Glanza Automatic is where to start."
         },
         {
@@ -135,7 +162,7 @@
       "transmission": "Manual",
       "luggage": "Two medium suitcases, and a tall boot for awkward shapes",
       "title": "WagonR Self Drive Car Rental in Nagercoil, Kanyakumari",
-      "description": "Hire a Maruti WagonR without a driver in Nagercoil and Kanyakumari district. Tall cabin, easy to get in and out of, 5 seats, petrol. Deposit refunded.",
+      "description": "Rent a Maruti WagonR without a driver in Nagercoil and Kanyakumari district. Tall cabin, easy to get in and out of, 5 seats, petrol. Deposit refunded.",
       "intro": "The WagonR is the tall one, and that is the whole point of it. High roof, upright seats and big doors — you step in rather than drop down into it, and you step out the same way.",
       "suits": "Anyone travelling with older parents or grandparents, anyone with a knee or a back that objects to a low seat, and temple visits where the parking is tight and the streets are narrow.",
       "drive": "You sit high and see over the traffic, which makes town driving less of a guess. It is narrow for its height, so it goes down streets a wider car has to back out of — worth knowing around Suchindram and the older parts of Nagercoil. In return it feels the wind on the open coastal stretch towards Colachel, so it is happier at an easy pace than a hurried one.",
@@ -146,9 +173,18 @@
       ],
       "watch": "The tall body catches side wind on the open coast road, and it is the least settled of our hatchbacks at highway speed. For a long run to Thiruvananthapuram, take the Innova.",
       "goesWellWith": [
-        { "to": "/car-rental/suchindram", "label": "Suchindram and the temple streets" },
-        { "to": "/car-rental/nagercoil", "label": "Nagercoil town and the market" },
-        { "to": "/contact", "label": "Ask us to bring it to your door" }
+        {
+          "to": "/car-rental/suchindram",
+          "label": "Suchindram and the temple streets"
+        },
+        {
+          "to": "/car-rental/nagercoil",
+          "label": "Nagercoil town and the market"
+        },
+        {
+          "to": "/contact",
+          "label": "Ask us to bring it to your door"
+        }
       ],
       "faq": [
         {
@@ -175,7 +211,7 @@
       "fuel": "Petrol",
       "transmission": "Manual",
       "luggage": "Modest with all seven seats up; large with the third row folded",
-      "title": "Toyota Rumion 7 Seater Self Drive Hire in Kanyakumari",
+      "title": "Toyota Rumion 7 Seater Self Drive Rental in Kanyakumari",
       "description": "Self drive Toyota Rumion in Nagercoil and across Kanyakumari district. Seven seats, petrol, manual. For family groups and temple trips. Clear KM limits.",
       "intro": "The Rumion is a seven-seater that runs on petrol, and that combination is why people take it. For a family group staying inside the district it costs noticeably less to run over a day than a diesel seven-seater, without giving up the seats.",
       "suits": "Family groups of five to seven, temple circuits, and weekend trips where everybody wants to travel in one vehicle rather than two.",
@@ -187,9 +223,18 @@
       ],
       "watch": "With all seven seats up the boot is small — enough for a day out, not for seven people's luggage. For a wedding party or a multi-day tour with bags, the Innova is the one.",
       "goesWellWith": [
-        { "to": "/tourist-vehicles", "label": "Tourist vehicles, with a driver if you prefer" },
-        { "to": "/car-rental/kanyakumari", "label": "Kanyakumari with the whole family" },
-        { "to": "/car-rental/thuckalay", "label": "Thuckalay and the temple circuit" }
+        {
+          "to": "/tourist-vehicles",
+          "label": "Tourist vehicles, with a driver if you prefer"
+        },
+        {
+          "to": "/car-rental/kanyakumari",
+          "label": "Kanyakumari with the whole family"
+        },
+        {
+          "to": "/car-rental/thuckalay",
+          "label": "Thuckalay and the temple circuit"
+        }
       ],
       "faq": [
         {
@@ -216,8 +261,8 @@
       "fuel": "Diesel",
       "transmission": "Manual",
       "luggage": "Large — suitcases for a full group, with all three rows in use",
-      "title": "Toyota Innova Self Drive & Tour Hire, Nagercoil",
-      "description": "Hire a Toyota Innova in Nagercoil and Kanyakumari district — 7 seats, diesel, for weddings, airport runs and multi-day tours. Rates agreed before you leave.",
+      "title": "Toyota Innova Self Drive & Tour Rental, Nagercoil",
+      "description": "Rent a Toyota Innova in Nagercoil and Kanyakumari district — 7 seats, diesel, for weddings, airport runs and multi-day tours. Rates agreed before you leave.",
       "intro": "The Innova is the long-distance vehicle. It is what gets booked for a wedding party, for a Thiruvananthapuram airport run at four in the morning, and for the multi-day tours where seven people and their luggage have to travel together and arrive unbothered.",
       "suits": "Wedding parties, airport transfers, multi-day tours, and any group of six or seven with real luggage.",
       "drive": "It is the most settled vehicle we keep on a highway — heavy, quiet at speed and comfortable over long distances in a way the hatchbacks are not. The diesel pulls from low revs, which suits a loaded vehicle on the climbs inland. In town it is the biggest thing we hand over, so allow for the length when parking, and think ahead on the narrow temple streets.",
@@ -228,13 +273,22 @@
       ],
       "watch": "It is long, and the streets around the older temples were not built for it. For town errands and tight parking a hatchback is the easier choice; take the Innova for the distance, not for the market run.",
       "goesWellWith": [
-        { "to": "/wedding-cars", "label": "Wedding cars and family vehicles" },
-        { "to": "/tourist-vehicles", "label": "Tourist vehicles with a driver" },
-        { "to": "/nri", "label": "Airport pickup when you land" }
+        {
+          "to": "/wedding-cars",
+          "label": "Wedding cars and family vehicles"
+        },
+        {
+          "to": "/tourist-vehicles",
+          "label": "Tourist vehicles with a driver"
+        },
+        {
+          "to": "/nri",
+          "label": "Airport pickup when you land"
+        }
       ],
       "faq": [
         {
-          "question": "Can I hire an Innova with a driver?",
+          "question": "Can I rent an Innova with a driver?",
           "answer": "Yes. Self drive and with a driver are both possible — for airport runs at odd hours and for multi-day tours most people take a driver. Tell us which you want when you enquire and the rate is quoted accordingly."
         },
         {
@@ -243,7 +297,7 @@
         },
         {
           "question": "Is it worth it for a trip inside the district?",
-          "answer": "Only if you need the seats or the luggage space. For four people staying inside Kanyakumari district a hatchback costs less to hire and less to fuel. The Innova earns its rate on distance, on load, and on comfort over a long day."
+          "answer": "Only if you need the seats or the luggage space. For four people staying inside Kanyakumari district a hatchback costs less to rent and less to fuel. The Innova earns its rate on distance, on load, and on comfort over a long day."
         }
       ]
     }

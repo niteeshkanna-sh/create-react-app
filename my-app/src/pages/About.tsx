@@ -50,20 +50,20 @@ export function About() {
             for sightseeing.
           </p>
           <p>
-            Rates are quoted per day and come down for longer hires. Each
+            Rates are quoted per day and come down for longer rentals. Each
             vehicle carries a daily KM allowance, a rate for anything beyond it,
             and a refundable deposit. Those three numbers are listed against
             every car, so the price you agree is the price you pay.
           </p>
           <p>
-            To hire, you need a valid driving licence and a government photo ID.
+            To rent, you need a valid driving licence and a government photo ID.
             The deposit is returned once the car comes back, less any extra-KM
             charges or damage.
           </p>
         </div>
 
         <h2 className="mt-12 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
-          How we run a hire
+          How we run a rental
         </h2>
         <div className="mt-4 space-y-5 leading-relaxed text-ink-dim">
           <p>
@@ -84,7 +84,7 @@ export function About() {
           <p>
             We deliver rather than asking you to collect. Give us an address
             and a time anywhere in {seo.site.district} district and the vehicle
-            arrives there with its papers in it. On a long hire the servicing
+            arrives there with its papers in it. On a long rental the servicing
             is ours to arrange, not yours, and if a vehicle has to go in for
             work we talk to you about a replacement rather than leaving you
             without one.

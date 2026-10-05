@@ -20,9 +20,9 @@ export function Services() {
       <PageHeader
         photo="services-hero"
         scene="/cars"
-        title="What we hire"
-        imageAlt="Self-drive cars, bikes and tourist vehicles for hire across Kanyakumari district"
-        intro="Cars you drive yourself, bikes by the day, vehicles with a driver, and cars for a wedding. All of it is here on one page, and all of it is hired out across Kanyakumari district."
+        title="Rental cars, bikes and more"
+        imageAlt="Self-drive cars, bikes and tourist vehicles for rent across Kanyakumari district"
+        intro="Cars you drive yourself, bikes by the day, vehicles with a driver, and cars for a wedding. All of it is here on one page, and all of it is rented out across Kanyakumari district."
       />
       <ServicesInFull />
     </>

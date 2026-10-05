@@ -30,7 +30,7 @@ export function Places() {
         scene="coast"
         title="Places to visit in Kanyakumari"
         imageAlt="The Kanyakumari coastline, with the Vivekananda Rock Memorial offshore"
-        intro="Everything here is within a comfortable drive of Nagercoil. Hire a car for the day and see them in your own order, without waiting on a tour bus."
+        intro="Everything here is within a comfortable drive of Nagercoil. Rent a car for the day and see them in your own order, without waiting on a tour bus."
       />
 
       <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12 py-20">

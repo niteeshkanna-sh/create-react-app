@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import pickupData from '../data/pickups.json';
-import townData from '../data/towns.json';
 import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
 import { DistrictMap, DISTRICT_ROUTE_D } from './art/DistrictMap';
@@ -30,10 +29,10 @@ import { DistrictMap, DISTRICT_ROUTE_D } from './art/DistrictMap';
  * gradient of the brand's own colours and the picture is an improvement on it
  * rather than a requirement of it.
  *
- * Two lists, and the second is not decoration. The pickup points are the ones
- * people ask for; towns.json is the service area, it feeds every town page and
- * the sitemap, and dropping its towns off the home page would quietly cut the
- * internal link each of those pages has. So they stay, smaller, underneath.
+ * The twelve towns of towns.json used to be listed underneath this, to keep a
+ * link from the home page to each of their pages. They are one step further
+ * away now: "See every town we deliver to" goes to /car-rental, which lists
+ * all twelve and links them. Still reachable, still crawlable, one hop out.
  */
 
 /* One glyph per kind of place, drawn rather than fetched -- three small shapes
@@ -85,11 +84,6 @@ function PlaceIcon({ kind }: { kind: string }) {
   );
 }
 
-/** The towns with a page of their own that the pickup list does not already name. */
-function remainingTowns(named: Set<string>) {
-  return townData.towns.filter((town) => !named.has(town.name.toLowerCase()));
-}
-
 /**
  * The heading, with the district's name picked out in gold.
  *
@@ -111,13 +105,6 @@ export function AreasServed() {
   const photo = useSiteImage('coast');
 
   const [plain, marked] = splitHeading(heading, 'Kanyakumari');
-
-  const named = new Set(
-    pickupData.groups.flatMap((group) =>
-      group.points.map((point) => point.name.toLowerCase()),
-    ),
-  );
-  const rest = remainingTowns(named);
 
   return (
     <section className="deliver-band">
@@ -187,21 +174,6 @@ export function AreasServed() {
               </Reveal>
             ))}
           </div>
-
-          {rest.length > 0 ? (
-            <Reveal delay={200}>
-              <p className="deliver-rest">
-                We also deliver to{' '}
-                {rest.map((town, i) => (
-                  <span key={town.slug}>
-                    <Link to={`/car-rental/${town.slug}`}>{town.name}</Link>
-                    {i < rest.length - 2 ? ', ' : i === rest.length - 2 ? ' and ' : ''}
-                  </span>
-                ))}
-                .
-              </p>
-            </Reveal>
-          ) : null}
 
           <Reveal delay={240}>
             <p className="deliver-foot">
