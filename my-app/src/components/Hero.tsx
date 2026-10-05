@@ -25,13 +25,20 @@ export function Hero() {
   // Only for the committed one. A photograph uploaded in the panel is served
   // by the panel at whatever size it was cropped to, and inventing -800w
   // addresses for it would be inventing files that 404.
-  const sources = uploaded
-    ? undefined
-    : [
-        `${BAKED.replace('.webp', '-800w.webp')} 800w`,
-        `${BAKED.replace('.webp', '-1280w.webp')} 1280w`,
-        `${BAKED} 1920w`,
-      ].join(', ');
+  const widths = [800, 1280];
+  const set = (ext: string) =>
+    [
+      ...widths.map((w) => `${BAKED.replace('.webp', `-${w}w${ext}`)} ${w}w`),
+      `${BAKED.replace('.webp', ext)} 1920w`,
+    ].join(', ');
+
+  const sources = uploaded ? undefined : set('.webp');
+  // The same picture again in AVIF, offered first. Measured against the
+  // original, it is as faithful as the WebP at 42 per cent of the size -- and
+  // this is the home page's largest contentful paint, so those bytes are the
+  // number Google reports. A browser too old to read it skips the source and
+  // takes the img below, which is the file it gets today.
+  const avif = uploaded ? undefined : set('.avif');
 
   return (
     <section id="top" className="relative isolate overflow-hidden bg-navy text-white">
@@ -48,6 +55,12 @@ export function Hero() {
           search has besides the file name -- a page cannot tell a crawler
           "this is the photograph of the business" and a screen reader "there
           is nothing here". The words are editable beside the heading. */}
+      {/* display:contents, so the picture is a wrapper for the browser's
+          choosing and not a box in the layout -- the img inside is absolutely
+          positioned and an inline <picture> around it would still generate a
+          line box in the band. */}
+      <picture className="contents">
+      {avif ? <source type="image/avif" srcSet={avif} sizes="100vw" /> : null}
       <img
         src={background}
         srcSet={sources}
@@ -65,6 +78,7 @@ export function Hero() {
         height={1080}
         className="hero-photo absolute inset-0 -z-10 h-full w-full object-cover object-center"
       />
+      </picture>
       <div aria-hidden="true" className="hero-scrim absolute inset-0 -z-10" />
 
       <div className="relative mx-auto max-w-[86rem] px-5 pt-10 pb-12 sm:px-8 sm:pt-14 sm:pb-16 lg:px-12">

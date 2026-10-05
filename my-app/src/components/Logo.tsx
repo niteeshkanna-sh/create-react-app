@@ -44,14 +44,19 @@ export function Logo({ onClick }: { onClick?: () => void }) {
   // below the sm breakpoint, so a two-times screen wants about 166 pixels and
   // was being sent the 400-wide file: 27 KB for a picture it renders at a
   // fifth of that. At 240 it is 17 KB and still over the density it needs.
-  const sources = uploaded
-    ? undefined
-    : [
-        `${LOGO_FALLBACK.replace('.webp', '-240w.webp')} 240w`,
-        `${LOGO_FALLBACK.replace('.webp', '-400w.webp')} 400w`,
-        `${LOGO_FALLBACK.replace('.webp', '-800w.webp')} 800w`,
-        `${LOGO_FALLBACK} 1209w`,
-      ].join(', ');
+  const widths = [240, 400, 800];
+  const set = (ext: string) =>
+    [
+      ...widths.map((w) => `${LOGO_FALLBACK.replace('.webp', `-${w}w${ext}`)} ${w}w`),
+      `${LOGO_FALLBACK.replace('.webp', ext)} 1209w`,
+    ].join(', ');
+
+  const sources = uploaded ? undefined : set('.webp');
+  // And in AVIF, which the browser takes if it can read it. On this lockup it
+  // is both smaller and closer to the original than the WebP -- flat colour
+  // and hard edges are what AVIF is best at -- and its transparency survives,
+  // which is the thing to check before believing any of that.
+  const avif = uploaded ? undefined : set('.avif');
 
   if (logo) {
     return (
@@ -60,6 +65,14 @@ export function Logo({ onClick }: { onClick?: () => void }) {
         onClick={onClick}
         className="flex shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
       >
+        <picture className="contents">
+        {avif ? (
+          <source
+            type="image/avif"
+            srcSet={avif}
+            sizes="(min-width: 640px) 110px, 83px"
+          />
+        ) : null}
         <img
           src={logo}
           srcSet={sources}
@@ -77,6 +90,7 @@ export function Logo({ onClick }: { onClick?: () => void }) {
           height={705}
           className="h-12 w-auto object-contain sm:h-16"
         />
+        </picture>
       </Link>
     );
   }
