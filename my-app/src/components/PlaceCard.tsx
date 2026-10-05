@@ -34,7 +34,7 @@ export function PlaceCard({ place }: { place: Place }) {
 
       <div className="flex flex-1 flex-col p-5">
         {place.category ? (
-          <p className="text-xs font-medium tracking-wide text-ink-faint uppercase">
+          <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">
             {place.category}
           </p>
         ) : null}

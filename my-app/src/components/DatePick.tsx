@@ -352,7 +352,7 @@ export function DatePick({
           <rect x="3" y="5" width="18" height="16" rx="3" />
           <path d="M3 10h18M8 3v4M16 3v4" />
         </svg>
-        <span className={`truncate ${value === '' ? 'text-ink-faint' : 'font-medium text-ink'}`}>
+        <span className={`truncate ${value === '' ? 'text-ink-faint' : 'font-semibold text-ink'}`}>
           {value === '' ? placeholder : readable(value)}
         </span>
       </button>

@@ -129,7 +129,7 @@ export function Header() {
                   end={l.to === '/'}
                   onClick={closeMenus}
                   className={({ isActive }) =>
-                    `block rounded-xl px-3 py-2.5 font-medium transition ${
+                    `block rounded-xl px-3 py-2.5 font-semibold transition ${
                       isActive ? 'bg-gold text-navy' : 'text-white/75 hover:bg-white/10'
                     }`
                   }

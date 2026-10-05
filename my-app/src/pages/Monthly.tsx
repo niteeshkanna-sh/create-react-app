@@ -170,11 +170,11 @@ export function Monthly() {
             </div>
             <p className="mt-5 text-sm text-ink-faint">
               Visiting from abroad?{' '}
-              <Link to="/nri" className="font-medium text-navy hover:text-gold-deep">
+              <Link to="/nri" className="font-semibold text-navy hover:text-gold-deep">
                 We can have it waiting at the airport
               </Link>
               . Based in the district headquarters?{' '}
-              <Link to="/monthly/nagercoil" className="font-medium text-navy hover:text-gold-deep">
+              <Link to="/monthly/nagercoil" className="font-semibold text-navy hover:text-gold-deep">
                 Monthly hire in Nagercoil
               </Link>{' '}
               covers how it works there.
