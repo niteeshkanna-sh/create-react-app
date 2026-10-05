@@ -38,12 +38,6 @@ function toPanelShape(v) {
     // The loan on this car, flattened so the form reads one field per box.
     // Null when there is none, and null on a database that has not run the
     // migration yet -- which reads the same as "no loan", correctly.
-    emiAmount: v.emi ? v.emi.amount : '',
-    emiDay: v.emi ? v.emi.due_day : '',
-    emiCount: v.emi ? v.emi.instalments : '',
-    emiFirstDue: v.emi ? (v.emi.first_due_on || '') : '',
-    emiLender: v.emi ? (v.emi.lender || '') : '',
-    emiEndedOn: v.emi ? (v.emi.ended_on || '') : '',
     purchase_date: v.purchase_date || '',
     insurance_expiry: v.insurance_expiry || '',
     pollution_expiry: v.pollution_expiry || '',
@@ -87,12 +81,6 @@ function toApiShape(car) {
     owner_name: car.ownerName || '',
     owner_phone: car.ownerPhone || '',
     is_temporary: car.isTemporary ? 1 : 0,
-    emi_amount: car.emiAmount ?? '',
-    emi_day: car.emiDay ?? '',
-    emi_count: car.emiCount ?? '',
-    emi_first_due: car.emiFirstDue || '',
-    emi_lender: car.emiLender || '',
-    emi_ended_on: car.emiEndedOn || '',
     purchase_date: car.purchase_date || '',
     insurance_expiry: car.insurance_expiry || '',
     pollution_expiry: car.pollution_expiry || '',
