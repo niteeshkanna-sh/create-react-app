@@ -20,6 +20,13 @@ import { useEffect, useRef } from 'react';
  * way the moment anybody touches it and stays out for a couple of seconds
  * after; it also stops on hover, on focus, when the tab is in the background,
  * and entirely when the system asks for less motion.
+ *
+ * It does not run until the rail is on screen, and stops again when it
+ * leaves. Both rails on the home page are below the fold, so without this
+ * they spend the whole of the first load animating something nobody can see
+ * -- on the one thread that is also parsing the page -- and then carry on
+ * animating it for as long as the tab is open. A thing that moves where it
+ * cannot be seen is all cost.
  */
 
 /** Pixels a second. Slow enough to read a card as it goes past. */
@@ -76,7 +83,24 @@ export function useRailCrawl(itemCount: number) {
       el.scrollLeft = at;
     };
 
-    frame = requestAnimationFrame(tick);
+    // Only while it is on screen. The margin starts it a little before the
+    // rail arrives, so it is already moving when it comes into view rather
+    // than visibly starting as somebody looks at it.
+    const watch = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!frame) {
+            last = performance.now();
+            frame = requestAnimationFrame(tick);
+          }
+        } else if (frame) {
+          cancelAnimationFrame(frame);
+          frame = 0;
+        }
+      },
+      { rootMargin: '200px 0px' },
+    );
+    watch.observe(el);
 
     // Hover and focus stop it; a touch or a wheel stands it down for a while,
     // because someone mid-scroll should not be fighting it back.
@@ -100,6 +124,7 @@ export function useRailCrawl(itemCount: number) {
     el.addEventListener('touchmove', stand, { passive: true });
 
     return () => {
+      watch.disconnect();
       cancelAnimationFrame(frame);
       el.removeEventListener('pointerenter', stop);
       el.removeEventListener('pointerleave', start);
