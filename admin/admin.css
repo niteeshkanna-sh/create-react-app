@@ -919,14 +919,27 @@ label.finance-toggle {
   text-decoration: line-through; cursor: not-allowed;
 }
 .cal-day:disabled:not(.is-busy) { color: var(--ink-faint); opacity: 0.45; cursor: not-allowed; }
+
+/* A day that has been and gone but can still be chosen, for writing down a
+   hire after it happened. Ringed rather than filled: it is selectable, so it
+   must not read as taken, and it is behind us, so it must not read as an
+   ordinary open day either. */
+.cal-day.is-back:not(.is-on) {
+  color: var(--ink-dim);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.cal-day.is-back:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
 .cal-key {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   margin-top: 8px; font-size: 0.7rem; color: var(--ink-faint);
 }
+/* The second swatch needs air before it, or the two keys run together. */
+.cal-key .cal-swatch-back { margin-left: 6px; }
 .cal-swatch {
   display: inline-block; width: 12px; height: 12px; border-radius: 3px;
   background: var(--accent);
 }
+.cal-swatch-back { background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
 .cal-warn { margin-top: 6px; font-size: 0.8rem; font-weight: 600; color: var(--danger); }
 
 /* ---------- Bookings ---------- */
