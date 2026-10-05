@@ -43,6 +43,12 @@ const SITE_IMAGE_SLOTS = [
     'why-us-1'      => 'Why hire from us — large photo',
     'why-us-2'      => 'Why hire from us — small photo',
 
+    // Behind the questions band, which stands on the home page and on the
+    // tariff page. It had no slot and quietly borrowed the home page's
+    // background, so there was no way to set it here and the tariff page's
+    // questions sat over the home page's photograph.
+    'faq'           => 'Questions panel background',
+
     // The panel on the home page listing the towns served.
     'coast'         => 'Areas we serve panel',
 
@@ -100,6 +106,10 @@ const SITE_IMAGE_SHAPES = [
 
     // Full-bleed sections, which are seen at whatever the window is.
     'home-hero' => [16, 9, 1600, 900],
+    // The questions band is shorter than the home page's, and almost entirely
+    // behind navy -- so it is cropped wider and saved smaller. Nothing in it
+    // is ever read; it is there to stop the band being a flat colour.
+    'faq'       => [16, 7, 1400, 613],
 
     // The photographs beside "Why hire from us" are laid out 4:3.
     'why-us-1' => [4, 3, 1200, 900],
@@ -146,6 +156,7 @@ const SITE_IMAGE_KEYWORDS = [
     'why-us-1'  => 'why hire from NiteSha Cars Nagercoil',
     'why-us-2'  => 'self drive car handover Nagercoil',
     'coast'     => 'car rental delivery areas Kanyakumari district',
+    'faq'       => 'self drive car rental questions Kanyakumari',
 
     'cars'             => 'self drive cars for rent Nagercoil',
     'bikes'            => 'two wheeler rental Kanyakumari',

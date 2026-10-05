@@ -2,6 +2,9 @@ import { useRef } from 'react';
 import type { SyntheticEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useHome, useSiteImage } from '../content';
+
+/** The photograph this band falls back to when the panel holds none. */
+const BAKED = '/mountain-road-at-sunrise-self-drive-car-rental.webp';
 import { useReveal } from '../lib/useReveal';
 import { Reveal } from './Reveal';
 
@@ -97,12 +100,33 @@ export function Faq({
   const all = faq?.items ?? [];
   const list = useRef<HTMLDivElement>(null);
 
-  // The banner photograph again, almost entirely behind navy. The section was
-  // a white list on cream and read as small print at the foot of the page;
-  // what it actually is is the page answering the things people phone up to
-  // ask, which is worth a band of its own.
-  const photo = useSiteImage('home-hero')
-    ?? '/mountain-road-at-sunrise-self-drive-car-rental.webp';
+  // A photograph almost entirely behind navy. The section was a white list on
+  // cream and read as small print at the foot of the page; what it actually is
+  // is the page answering the things people phone up to ask, which is worth a
+  // band of its own.
+  //
+  // Its own slot in the panel now. It used to read home-hero, which meant
+  // there was no way to set this band's picture at all and the tariff page's
+  // questions sat over the home page's photograph. home-hero is still the
+  // fallback, so a site that has only ever set that one looks exactly as it
+  // did.
+  const chosen = useSiteImage('faq') ?? useSiteImage('home-hero');
+  const photo = chosen ?? BAKED;
+
+  // Only the committed file gets narrower copies: a photograph uploaded in the
+  // panel is served by the panel at the size it was cropped to, and inventing
+  // -800w addresses for it would be inventing files that 404.
+  //
+  // It was asking for the full 1920-wide original -- 166 KB, nearly half the
+  // weight of the tariff page -- for a picture that is lazily loaded, purely
+  // decorative, and sunk under a navy wash. 800 wide in AVIF is 26 KB and
+  // there is nothing in this band anyone can see well enough to miss.
+  const sources = chosen
+    ? undefined
+    : [800, 1280].map((w) => `${BAKED.replace('.webp', `-${w}w.webp`)} ${w}w`).join(', ');
+  const avif = chosen
+    ? undefined
+    : [800, 1280].map((w) => `${BAKED.replace('.webp', `-${w}w.avif`)} ${w}w`).join(', ');
 
   if (all.length === 0) return null;
 
@@ -125,14 +149,19 @@ export function Faq({
 
   return (
     <section className="relative isolate overflow-hidden bg-navy py-16 text-white sm:py-20">
-      <img
-        src={photo}
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        className="faq-photo absolute inset-0 -z-10 h-full w-full object-cover object-center"
-      />
+      <picture className="contents">
+        {avif ? <source type="image/avif" srcSet={avif} sizes="100vw" /> : null}
+        <img
+          src={photo}
+          srcSet={sources}
+          sizes={sources ? '100vw' : undefined}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="faq-photo absolute inset-0 -z-10 h-full w-full object-cover object-center"
+        />
+      </picture>
       <div aria-hidden="true" className="faq-wash absolute inset-0 -z-10" />
 
       <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
