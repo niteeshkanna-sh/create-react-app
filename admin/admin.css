@@ -972,8 +972,85 @@ label.finance-toggle {
   border: 1px solid var(--border); border-radius: 9px;
 }
 
-.u-new { max-width: 640px; }
+.u-new { max-width: 920px; }
+.u-new .modal-row, .u-new > .field-group:not(.u-perm-block) { max-width: 640px; }
 .u-new .field-group { margin-bottom: 12px; }
+
+/* ---------- Who may do what ---------- */
+
+/* One person per row, shut unless they are an exception to their role. An
+   account that is exactly its role has nothing to read, and twenty-seven
+   ticks saying "yes, the standard" is twenty-seven things to scan past to
+   reach the one person somebody opened this page for. */
+.u-perm-person {
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 0 14px; margin-bottom: 10px; background: var(--surface);
+}
+.u-perm-person > summary {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 13px 0; cursor: pointer; list-style: none;
+}
+.u-perm-person > summary::-webkit-details-marker { display: none; }
+.u-perm-person > summary::after {
+  content: '+'; margin-left: auto; color: var(--ink-faint);
+  font-weight: 700; font-size: 1.05rem; line-height: 1;
+}
+.u-perm-person[open] > summary::after { content: '\2212'; }
+.u-perm-person[open] > summary { border-bottom: 1px solid var(--border); }
+.u-perm-person > :not(summary) { margin: 14px 0; }
+.u-perm-name { font-weight: 700; }
+.u-perm-person > summary .field-hint { margin: 0; }
+.u-perm-role { font-size: 0.82rem; color: var(--ink-dim); }
+
+/* The tally under a role in the table above: "2 added, 1 removed". */
+.u-perm-tally { display: block; margin-top: 3px; }
+
+/* Columns that fit what is in them rather than a fixed count: eight groups of
+   between one and five permissions, which at one column each on a desk leaves
+   Reports as a column of one, and at four fixed columns on a phone is
+   unreadable. */
+.u-perm-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+.u-perm-group {
+  border: 1px solid var(--border); border-radius: 11px;
+  padding: 10px 13px 12px; margin: 0; min-width: 0;
+}
+.u-perm-group legend {
+  font-size: 0.71rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink-faint); padding: 0 5px;
+}
+/* Written as .u-perm-grid .u-perm rather than .u-perm so it outranks
+   ".field-group label { display: block }", which the create form's copy of
+   this grid sits inside. Without it the tick box stops being the start of a
+   row and the words wrap underneath it. */
+.u-perm-grid .u-perm {
+  display: flex; align-items: flex-start; gap: 9px; margin: 0;
+  padding: 5px 0; font-size: 0.85rem; font-weight: 500; color: var(--ink);
+  cursor: pointer; line-height: 1.35;
+}
+.u-perm-grid .u-perm input[type="checkbox"] {
+  margin: 1px 0 0; flex-shrink: 0; width: 16px; height: 16px;
+  accent-color: var(--primary);
+}
+.u-perm-grid .u-perm input:disabled { cursor: default; }
+.u-perm-grid .u-perm input:disabled + span { color: var(--ink-faint); }
+
+/* The ones that remove something, or change a figure already counted. Marked
+   rather than separated out: they belong beside the thing they undo, and a
+   "dangerous" group of its own invites being ticked as a group. */
+.u-perm-grid .u-perm.is-weighty > span::after {
+  content: ''; display: inline-block; vertical-align: middle;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--danger); opacity: 0.55; margin-left: 6px;
+}
+
+.u-perm-save { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+@media (max-width: 560px) {
+  .u-perm-grid { grid-template-columns: 1fr; }
+}
 
 /* ---------- Bookings ---------- */
 

@@ -114,6 +114,85 @@ check('staff may NOT view payments',           !role_can('staff', 'payment.view'
 check('staff may NOT read the audit log',      !role_can('staff', 'audit.view'));
 check('unknown role gets nothing',             !role_can('nonsense', 'booking.view'));
 
+echo "\n-- the permission catalogue --\n";
+
+// A tick that changes nothing is worse than no tick, because somebody will
+// rely on having removed it. So every permission the screen offers has to be
+// one that something actually guards. This is the check that keeps the
+// catalogue honest as endpoints come and go.
+$guarded = [];
+foreach (['/../api', '/..', '/../src'] as $dir) {
+    foreach (glob(__DIR__ . $dir . '/*.php') ?: [] as $file) {
+        $code = (string) file_get_contents($file);
+        if (preg_match_all("/(?:api_guard|require_can|user_can)\\('([a-z_]+\\.[a-z_]+)'/", $code, $m)) {
+            foreach ($m[1] as $ability) {
+                $guarded[$ability] = true;
+            }
+        }
+    }
+}
+$unenforced = array_values(array_diff(all_abilities(), array_keys($guarded)));
+check('every permission offered is one the server enforces', $unenforced === [],
+    'nothing checks: ' . implode(', ', $unenforced));
+check('the Users screen permission is not on offer',
+    !in_array(ABILITY_NOT_GRANTABLE, all_abilities(), true));
+check('a role\'s standard agrees with role_can',
+    role_abilities('accounts')['payment.create'] === true
+    && role_abilities('accounts')['vehicle.edit'] === false);
+
+echo "\n-- permissions for one person --\n";
+$staffId = create_user('Auth Test Staff', 'authtest-perms@example.com', 'correct-horse-battery', 'staff');
+$staff   = ['id' => $staffId, 'role_slug' => 'staff'];
+
+check('starts as exactly the role',
+    user_allows($staff, 'booking.create') && !user_allows($staff, 'payment.create'));
+
+// Staff's standard, plus one it does not have, minus one it does.
+$wanted = array_keys(array_filter(role_abilities('staff')));
+$wanted[] = 'payment.create';
+$wanted = array_values(array_diff($wanted, ['booking.create']));
+$delta = set_user_abilities($staffId, 'staff', $wanted);
+
+check('an added permission is granted',    user_allows($staff, 'payment.create'));
+check('a removed permission is refused',  !user_allows($staff, 'booking.create'));
+check('the rest of the role is untouched', user_allows($staff, 'booking.view'));
+check('only the differences are stored',
+    (int) (fetch_one('SELECT COUNT(*) AS n FROM user_abilities WHERE user_id = ?', [$staffId])['n'] ?? -1) === 2,
+    'expected two rows, one each way');
+check('what changed is reported back',
+    $delta['extra'] === ['payment.create'] && $delta['removed'] === ['booking.create']);
+check('the count under the role is right',
+    user_ability_counts($staffId, 'staff') === ['extra' => 1, 'removed' => 1]);
+
+// The one that must never be grantable, however the form is forged.
+set_user_abilities($staffId, 'staff', array_merge($wanted, [ABILITY_NOT_GRANTABLE]));
+check('managing users cannot be granted a tick at a time',
+    !user_allows($staff, ABILITY_NOT_GRANTABLE));
+check('and no row for it is written',
+    fetch_one('SELECT 1 AS present FROM user_abilities WHERE user_id = ? AND ability = ?',
+        [$staffId, ABILITY_NOT_GRANTABLE]) === null);
+
+// A Super Admin is full access by definition. Even a row that says otherwise
+// -- put there by hand, or left behind by a role change -- does not narrow one.
+query('INSERT INTO user_abilities (user_id, ability, granted) VALUES (?,?,0)
+       ON DUPLICATE KEY UPDATE granted = 0', [$staffId, 'report.view']);
+check('a Super Admin is not narrowed by a stored exception',
+    user_allows(['id' => $staffId, 'role_slug' => 'super_admin'], 'report.view'));
+
+clear_user_abilities($staffId);
+check('clearing puts the role back',
+    user_allows($staff, 'booking.create') && !user_allows($staff, 'payment.create'));
+check('and leaves no rows behind',
+    (int) (fetch_one('SELECT COUNT(*) AS n FROM user_abilities WHERE user_id = ?', [$staffId])['n'] ?? -1) === 0);
+
+// A row that agrees with the role says nothing, which is what a role change
+// leaves behind if one is ever missed.
+query('INSERT INTO user_abilities (user_id, ability, granted) VALUES (?,?,1)', [$staffId, 'booking.view']);
+user_ability_overrides($staffId, true);
+check('an exception that matches the role is counted as nothing',
+    user_ability_counts($staffId, 'staff') === ['extra' => 0, 'removed' => 0]);
+clear_user_abilities($staffId);
+
 echo "\n-- audit trail --\n";
 $logs = fetch_all(
     "SELECT action, module FROM audit_logs
