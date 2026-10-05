@@ -1,61 +1,175 @@
 import { Link } from 'react-router-dom';
+import pickupData from '../data/pickups.json';
 import townData from '../data/towns.json';
 import { useHome } from '../content';
 import { Reveal } from './Reveal';
 import { SectionArt } from './art/SectionArt';
 
 /**
- * Visible text naming the towns we cover.
+ * Where a vehicle can be handed over, named on the page.
  *
  * Local search leans on what a page actually says, not only on its meta tags
- * and structured data. Someone searching "car rental Marthandam" is best
- * served by a page that says Marthandam on it.
+ * and structured data. Someone searching "self drive car Nagercoil railway
+ * station" is best served by a page that says exactly that.
  *
- * The wording is editable; the town list is not. It comes from towns.json,
- * which also feeds each town's own page, its tags and its line in the sitemap
- * -- editing the two apart would tell Google one service area and the reader
- * another.
+ * Grouped by town rather than listed flat, because four of these are in
+ * Nagercoil and two are in Kanyakumari: a flat row of ten reads as ten places
+ * and overstates how far apart they are. Under a heading each, the three
+ * Nagercoil spots read as what they are -- three doors into the same town.
  *
- * Each name is a link to that town's page rather than a chip that does
- * nothing. Twelve towns named in plain text is a weaker claim to any of them
- * than twelve pages that each say what hiring there involves, and this is the
- * only place on the home page that leads to them.
+ * Each one links to the town page it sits in. A name in plain text is a weaker
+ * claim to a place than a page saying what hiring there involves, and these
+ * are the only links the home page has into them.
+ *
+ * Two lists, and the second is not decoration. The pickup points are the ones
+ * people ask for; towns.json is the service area, it feeds every town page and
+ * the sitemap, and dropping its towns off the home page would quietly cut the
+ * internal link each of those pages has. So they stay, smaller, underneath.
  */
+
+/* One glyph per kind of place, drawn rather than fetched -- three small shapes
+   are a few hundred bytes of markup here, and an icon font is a request and a
+   fallback. pathLength="1" for the same reason the rest of the site uses it:
+   one dash rule can then draw any of them. */
+const GLYPHS: Record<string, React.ReactNode> = {
+  // A pin.
+  town: (
+    <>
+      <path pathLength="1" d="M12 21s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10z" />
+      <circle pathLength="1" cx="12" cy="11" r="2.1" />
+    </>
+  ),
+  // A train, head on.
+  rail: (
+    <>
+      <rect pathLength="1" x="6" y="3.5" width="12" height="13" rx="3" />
+      <path pathLength="1" d="M6.8 10.5h10.4" />
+      <path pathLength="1" d="M9.5 13.8h.01M14.5 13.8h.01" />
+      <path pathLength="1" d="M8.5 16.5L6.5 20.5M15.5 16.5l2 4" />
+    </>
+  ),
+  // A bus, from the side.
+  bus: (
+    <>
+      <rect pathLength="1" x="3.5" y="5" width="17" height="10.5" rx="2.5" />
+      <path pathLength="1" d="M3.5 10h17" />
+      <path pathLength="1" d="M7.5 15.5v2M16.5 15.5v2" />
+      <path pathLength="1" d="M7 12.8h.01M17 12.8h.01" />
+    </>
+  ),
+};
+
+function PlaceIcon({ kind }: { kind: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="size-4 shrink-0 text-gold-deep"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {GLYPHS[kind] ?? GLYPHS.town}
+    </svg>
+  );
+}
+
+/** The towns with a page of their own that the pickup list does not already name. */
+function remainingTowns(named: Set<string>) {
+  return townData.towns.filter((town) => !named.has(town.name.toLowerCase()));
+}
+
 export function AreasServed() {
   const home = useHome();
   const { heading, intro, footnoteLead, footnoteLinkLabel, footnoteTail } =
     home.areasServed;
+
+  const named = new Set(
+    pickupData.groups.flatMap((group) =>
+      group.points.map((point) => point.name.toLowerCase()),
+    ),
+  );
+  const rest = remainingTowns(named);
 
   return (
     <section className="bg-white py-16">
       <div className="mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 lg:px-12 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:gap-14">
         <div>
           <Reveal>
-            <p className="section-eyebrow">
-              Where we deliver
-            </p>
+            <p className="section-eyebrow">Where we deliver</p>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
               {heading}
             </h2>
             <p className="mt-3 max-w-2xl leading-relaxed text-ink-dim">{intro}</p>
           </Reveal>
 
-          <ul className="mt-7 flex flex-wrap gap-2.5">
-            {townData.towns.map((town, i) => (
-              <Reveal key={town.slug} as="li" delay={i * 35}>
-                <Link
-                  to={`/car-rental/${town.slug}`}
-                  className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-cream px-4 py-1.5 text-sm font-semibold text-ink-dim transition hover:border-gold hover:text-navy"
-                >
-                  <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
-                  {town.name}
-                </Link>
+          <div className="mt-7 space-y-6">
+            {pickupData.groups.map((group, g) => (
+              <Reveal key={group.town} delay={g * 70}>
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-navy">
+                    {group.town}
+                  </h3>
+                  {group.note ? (
+                    <span className="text-xs text-ink-faint">{group.note}</span>
+                  ) : null}
+                </div>
+
+                <ul className="mt-2.5 flex flex-wrap gap-2.5">
+                  {group.points.map((point) => {
+                    // The point's own town page, the group's, or the list of
+                    // every town. Never a dead chip: a place worth naming is
+                    // worth somewhere to read about.
+                    const slug =
+                      ('slug' in point ? (point.slug as string) : undefined) ??
+                      ('slug' in group ? (group.slug as string) : undefined);
+
+                    return (
+                      <li key={point.name}>
+                        <Link
+                          to={slug ? `/car-rental/${slug}` : '/car-rental'}
+                          className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-cream px-4 py-1.5 text-sm font-semibold text-ink-dim transition hover:border-gold hover:text-navy"
+                        >
+                          <PlaceIcon kind={point.kind} />
+                          {point.name}
+                          {'tag' in point && point.tag ? (
+                            <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-wide text-gold-deep">
+                              {point.tag as string}
+                            </span>
+                          ) : null}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
               </Reveal>
             ))}
-          </ul>
+          </div>
 
-          <Reveal delay={120}>
-            <p className="mt-7 text-ink-dim">
+          {rest.length > 0 ? (
+            <Reveal delay={200}>
+              <p className="mt-6 text-sm leading-relaxed text-ink-faint">
+                We also deliver to{' '}
+                {rest.map((town, i) => (
+                  <span key={town.slug}>
+                    <Link
+                      to={`/car-rental/${town.slug}`}
+                      className="font-semibold text-ink-dim underline-offset-2 hover:text-navy hover:underline"
+                    >
+                      {town.name}
+                    </Link>
+                    {i < rest.length - 2 ? ', ' : i === rest.length - 2 ? ' and ' : ''}
+                  </span>
+                ))}
+                .
+              </p>
+            </Reveal>
+          ) : null}
+
+          <Reveal delay={240}>
+            <p className="mt-5 text-ink-dim">
               {footnoteLead}{' '}
               <Link to="/contact" className="font-semibold text-navy hover:text-gold-deep">
                 {footnoteLinkLabel}
