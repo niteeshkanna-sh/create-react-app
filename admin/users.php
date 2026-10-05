@@ -10,7 +10,7 @@ require_once __DIR__ . '/src/audit.php';
 require_once __DIR__ . '/src/shell.php';
 
 /**
- * Who can sign in, and as what.
+ * Users: who can sign in, and as what.
  *
  * The roles table has described five of these since the schema was written,
  * and the Super Admin row says in so many words "Full access, including user
@@ -336,7 +336,7 @@ $fmt = static function (?string $when): string {
     return $t === false ? 'never' : date('j M Y, g:ia', $t);
 };
 
-admin_shell_open($me, 'users.php', 'Who can sign in', false, $migrationError);
+admin_shell_open($me, 'users.php', 'Users', false, $migrationError);
 ?>
 
   <div class="c-top">
