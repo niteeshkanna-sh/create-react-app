@@ -17,6 +17,13 @@ import { SectionArt } from './art/SectionArt';
  * and overstates how far apart they are. Under a heading each, the three
  * Nagercoil spots read as what they are -- three doors into the same town.
  *
+ * Drawn as stops on a route, and the route draws itself downward as the
+ * section is scrolled to. A list of places is a list; a line through them is
+ * what a delivery actually is, and it gives the eye an order to read ten
+ * names in rather than ten things arriving at once. The motion is all in
+ * index.css under "the route", including the part that turns it off for
+ * anybody who has asked their system for less of it.
+ *
  * Each one links to the town page it sits in. A name in plain text is a weaker
  * claim to a place than a page saying what hiring there involves, and these
  * are the only links the home page has into them.
@@ -64,7 +71,7 @@ function PlaceIcon({ kind }: { kind: string }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="size-4 shrink-0 text-gold-deep"
+      className="route-ico"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.6"
@@ -105,20 +112,18 @@ export function AreasServed() {
             <p className="mt-3 max-w-2xl leading-relaxed text-ink-dim">{intro}</p>
           </Reveal>
 
-          <div className="mt-7 space-y-6">
+          <div className="mt-8">
             {pickupData.groups.map((group, g) => (
-              <Reveal key={group.town} delay={g * 70}>
+              <Reveal key={group.town} delay={g * 150} className="route-stop">
+                <span aria-hidden="true" className="route-dot" />
+
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-navy">
-                    {group.town}
-                  </h3>
-                  {group.note ? (
-                    <span className="text-xs text-ink-faint">{group.note}</span>
-                  ) : null}
+                  <h3 className="route-town">{group.town}</h3>
+                  {group.note ? <span className="route-note">{group.note}</span> : null}
                 </div>
 
-                <ul className="mt-2.5 flex flex-wrap gap-2.5">
-                  {group.points.map((point) => {
+                <ul className="route-chips">
+                  {group.points.map((point, i) => {
                     // The point's own town page, the group's, or the list of
                     // every town. Never a dead chip: a place worth naming is
                     // worth somewhere to read about.
@@ -127,17 +132,18 @@ export function AreasServed() {
                       ('slug' in group ? (group.slug as string) : undefined);
 
                     return (
-                      <li key={point.name}>
+                      <li
+                        key={point.name}
+                        style={{ '--chip-delay': `${i * 80}ms` } as React.CSSProperties}
+                      >
                         <Link
                           to={slug ? `/car-rental/${slug}` : '/car-rental'}
-                          className="tap-target inline-flex items-center gap-2 rounded-full border border-line bg-cream px-4 py-1.5 text-sm font-semibold text-ink-dim transition hover:border-gold hover:text-navy"
+                          className="route-chip tap-target"
                         >
                           <PlaceIcon kind={point.kind} />
                           {point.name}
                           {'tag' in point && point.tag ? (
-                            <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-wide text-gold-deep">
-                              {point.tag as string}
-                            </span>
+                            <span className="route-tag">{point.tag as string}</span>
                           ) : null}
                         </Link>
                       </li>
