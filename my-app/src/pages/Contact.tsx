@@ -83,7 +83,7 @@ export function Contact() {
         imageAlt="The NiteSha Cars & Bikes office in Nagercoil, Kanyakumari district"
         scene="coast"
         title="Contact"
-        intro="Call us, write to us, or send the form. Only your name and phone number are needed to start."
+        intro="Call us, write to us, or send the form — for self drive car rental in Nagercoil, or a vehicle anywhere else in Kanyakumari district. Only your name and phone number are needed to start."
       />
 
       <section className="mx-auto max-w-[86rem] px-5 py-16 sm:px-8 lg:px-12">
