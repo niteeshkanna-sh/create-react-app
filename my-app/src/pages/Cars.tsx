@@ -51,7 +51,7 @@ export function Cars() {
         imageAlt="Self-drive rental cars available in Nagercoil and across Kanyakumari district"
         scene="/cars"
         title="Our cars"
-        intro="Hatchbacks, sedans, SUVs and 7 seater vehicles for self-drive rental. Every car lists its KM limit, extra-KM rate and deposit, so there is nothing to discover later."
+        intro="Hatchbacks, sedans, SUVs and 7 seater vehicles for self drive car rental in Nagercoil and across Kanyakumari district. Every car lists its KM limit, extra-KM rate and deposit, so there is nothing to discover later."
       />
 
       <section className="mx-auto max-w-[86rem] px-5 pt-16 sm:px-8 lg:px-12">

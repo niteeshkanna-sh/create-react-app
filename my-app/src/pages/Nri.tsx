@@ -57,7 +57,7 @@ export function Nri() {
         imageAlt="A rental car ready for an NRI visitor arriving in Kanyakumari district"
         scene="/nri"
         title="Coming home from abroad?"
-        intro={`Arrange a car or bike before you land. We look after families visiting ${seo.site.district} district from the Gulf, Singapore, Malaysia and further afield.`}
+        intro={`Arrange self drive car rental, or a bike, before you land. We look after families visiting ${seo.site.district} district from the Gulf, Singapore, Malaysia and further afield.`}
       />
 
       <section className="mx-auto max-w-3xl px-5 py-16">

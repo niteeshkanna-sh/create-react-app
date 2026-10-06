@@ -24,7 +24,7 @@ export function About() {
         imageAlt="The NiteSha Cars & Bikes team and vehicle yard in Nagercoil"
         scene="coast"
         title="About us"
-        intro="NiteSha Cars & Bikes rents self drive cars, two-wheelers, wedding cars and tourist vehicles across Kanyakumari district."
+        intro="NiteSha Cars & Bikes is a self drive car rental in Nagercoil, and we rent two-wheelers, wedding cars and tourist vehicles across Kanyakumari district as well."
       />
 
       <section className="mx-auto max-w-3xl px-5 py-16">

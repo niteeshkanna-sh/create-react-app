@@ -22,7 +22,7 @@ export function Services() {
         scene="/cars"
         title="Rental cars, bikes and more"
         imageAlt="Self-drive cars, bikes and tourist vehicles for rent across Kanyakumari district"
-        intro="Cars you drive yourself, bikes by the day, vehicles with a driver, and cars for a wedding. All of it is here on one page, and all of it is rented out across Kanyakumari district."
+        intro="Cars you drive yourself, bikes by the day, vehicles with a driver, and cars for a wedding. Self drive car rental is the bulk of it, and everything here is rented out across Kanyakumari district."
       />
       <ServicesInFull />
     </>
