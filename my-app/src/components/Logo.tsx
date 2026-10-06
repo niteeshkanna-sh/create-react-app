@@ -63,7 +63,11 @@ export function Logo({ onClick }: { onClick?: () => void }) {
       <Link
         to="/"
         onClick={onClick}
-        className="flex shrink-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+        // Every other thing in the header answers a pointer and this did
+        // not, which on the one link that is on every page reads as a
+        // picture rather than a way home. Brightness rather than a lift: the
+        // mark is gold on navy, and lighting it is what gold does.
+        className="flex shrink-0 items-center transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
       >
         <picture className="contents">
         {avif ? (
@@ -96,7 +100,11 @@ export function Logo({ onClick }: { onClick?: () => void }) {
   }
 
   return (
-    <Link to="/" onClick={onClick} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+    <Link
+      to="/"
+      onClick={onClick}
+      className="flex min-w-0 items-center gap-2.5 sm:gap-3 transition hover:brightness-110"
+    >
       <Monogram className="size-11 shrink-0 sm:size-12" />
       {/* whitespace-nowrap because "NiteSha Cars & Bikes" was breaking after
           "Cars", which reads as two businesses. */}

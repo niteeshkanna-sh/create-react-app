@@ -595,25 +595,6 @@ body {
   opacity: 1;
 }
 
-/* The same lift on the navy band. The shadow there is invisible -- a dark
-   shadow under a dark card is nothing -- so the card lifts into a gold glow
-   and a brighter face instead, which is the same signal in the only currency
-   a dark background has. */
-.card-lift.on-navy:hover,
-.card-lift.on-navy:focus-within {
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
-  background-color: color-mix(in srgb, #fff 7%, transparent);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .card-lift.on-navy {
-    transition:
-      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 0.3s ease;
-  }
-}
-
 /* A gold hairline, for dividing a card's description from its list. Fading at
    both ends rather than a flat rule, so it reads as a seam in the card rather
    than a line drawn across it. */
