@@ -74,9 +74,14 @@ export function WhyUs() {
                         onClick={() => setOpen(isOpen ? -1 : i)}
                         aria-expanded={isOpen}
                         aria-controls={`why-panel-${i}`}
-                        className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                        // group, so the row answers as one thing. Without
+                        // it this was a full-width button that did nothing
+                        // at all under the pointer -- the only sign it could
+                        // be opened was the chevron, which looks like
+                        // decoration until something moves.
+                        className="group flex w-full items-center justify-between gap-4 py-5 text-left"
                       >
-                        <span className="text-lg font-semibold text-navy">
+                        <span className="text-lg font-semibold text-navy transition group-hover:text-gold-deep">
                           {i + 1}. {item.title}
                         </span>
                         <svg
@@ -109,10 +114,12 @@ export function WhyUs() {
           <Reveal delay={120}>
             <Link
               to="/about"
-              className="tap-target mt-8 inline-flex items-center gap-1.5 font-semibold text-navy transition hover:text-gold-deep"
+              className="tap-target group mt-8 inline-flex items-center gap-1.5 font-semibold text-navy transition hover:text-gold-deep"
             >
               More about us
-              <span aria-hidden="true">→</span>
+              <span aria-hidden="true" className="transition group-hover:translate-x-1">
+                →
+              </span>
             </Link>
           </Reveal>
         </div>

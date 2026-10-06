@@ -112,10 +112,12 @@ export function Nri() {
             </p>
             <Link
               to="/wedding-cars"
-              className="mt-4 inline-flex items-center gap-1 font-semibold text-gold-deep"
+              className="group mt-4 inline-flex items-center gap-1 font-semibold text-gold-deep"
             >
               About our wedding cars
-              <span aria-hidden="true">→</span>
+              <span aria-hidden="true" className="transition group-hover:translate-x-1">
+                →
+              </span>
             </Link>
           </div>
         </Reveal>
