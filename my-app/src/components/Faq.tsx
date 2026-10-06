@@ -22,9 +22,17 @@ import { Reveal } from './Reveal';
  * whether they are open or shut, so a crawler reads every one of them.
  *
  * The same questions are turned into FAQPage structured data at build time by
- * scripts/prerender-seo.mjs, from this same content and the same count. Google
- * asks that such data match what the page shows, and one copy of each is how
- * that stays true.
+ * scripts/prerender-seo.mjs, which builds each page's list exactly the way
+ * this does -- same source, same slice. Google asks that such data match what
+ * the page shows, and one list built twice from one rule is how that stays
+ * true.
+ *
+ * No question is answered at two URLs. The home page takes the first six of
+ * the panel's; the tariff page asks its own six about the table above it and
+ * then picks up the panel's from the seventh. Before that split the tariff
+ * page rendered all ten, so six questions and six answers were claimed by
+ * both pages -- and of a duplicate pair Google shows one and the other earns
+ * nothing.
  *
  * Panels of the band's own navy rather than cream cards. Ten pale blocks on a
  * dark photograph read as a stack of paper dropped on the page -- the section
@@ -57,7 +65,7 @@ function Item({
       // no script at all. The handler below is for the ones that do not.
       name={GROUP}
       onToggle={onToggle}
-      className="faq-panel group rounded-[16px] px-5 py-4 text-left sm:px-6 sm:py-5"
+      className="faq-panel group rounded-[16px] px-5 py-3.5 text-left sm:px-6 sm:py-4"
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] leading-snug font-semibold text-white marker:content-none sm:text-[16.5px]">
         {question}
@@ -78,12 +86,14 @@ function Item({
           </svg>
         </span>
       </summary>
-      <p className="faq-answer mt-4 border-t border-white/12 pt-4 text-[14.5px] leading-relaxed text-white/75">
+      <p className="faq-answer mt-3 border-t border-white/12 pt-3.5 text-[14.5px] leading-relaxed text-white/75">
         {answer}
       </p>
     </details>
   );
 }
+
+export type FaqItem = { question: string; answer: string };
 
 export function Faq({
   /** How many to show. Everything, unless a page says otherwise. */
@@ -91,13 +101,44 @@ export function Faq({
   /** Where the ones that did not fit can be read, when some did not. */
   moreHref,
   moreLabel,
+  /**
+   * Questions belonging to this page, asked before the panel's.
+   *
+   * The tariff page's questions are about how its own table is written --
+   * what a per-day column means, how the allowance is counted -- which is
+   * not something the owner edits when the figures change, so they live in
+   * src/data and arrive here.
+   */
+  items: own,
+  /**
+   * Panel questions to drop from the front, because another page answers
+   * them. The home page shows the first six; the tariff page skips those six
+   * and shows the rest, so no question on this site is answered at two URLs
+   * -- which is also what keeps each page's FAQPage data its own.
+   */
+  skip = 0,
+  /**
+   * Overrides the panel's own, for a page whose questions are not its.
+   *
+   * A heading on its own drops the panel's intro rather than keeping it:
+   * "if yours is not here" is written about that list of questions, and
+   * under a different heading it is a sentence about something else.
+   */
+  heading,
+  intro,
 }: {
   limit?: number;
   moreHref?: string;
   moreLabel?: string;
+  items?: readonly FaqItem[];
+  skip?: number;
+  heading?: string;
+  intro?: string;
 } = {}) {
   const { faq } = useHome();
-  const all = faq?.items ?? [];
+  const all = [...(own ?? []), ...(faq?.items ?? []).slice(skip)];
+  const title = heading ?? faq?.heading;
+  const blurb = intro ?? (heading ? undefined : faq?.intro);
   const list = useRef<HTMLDivElement>(null);
 
   // A photograph almost entirely behind navy. The section was a white list on
@@ -156,7 +197,7 @@ export function Faq({
   };
 
   return (
-    <section className="relative isolate overflow-hidden bg-navy py-16 text-white sm:py-20">
+    <section className="relative isolate overflow-hidden bg-navy py-11 text-white sm:py-14">
       <picture className="contents">
         {avif ? <source type="image/avif" srcSet={avif} sizes="100vw" /> : null}
         <img
@@ -174,12 +215,14 @@ export function Faq({
 
       <div className="mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-[1.6rem] font-bold tracking-tight sm:text-[2.1rem]">
-            {faq.heading}
-          </h2>
-          {faq.intro ? (
-            <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-white/75">
-              {faq.intro}
+          {title ? (
+            <h2 className="text-[1.6rem] font-bold tracking-tight sm:text-[2.1rem]">
+              {title}
+            </h2>
+          ) : null}
+          {blurb ? (
+            <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-white/75">
+              {blurb}
             </p>
           ) : null}
         </Reveal>
@@ -198,13 +241,13 @@ export function Faq({
             asked in. */}
         <div
           ref={list}
-          className="mx-auto mt-10 grid max-w-4xl gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4"
+          className="mx-auto mt-7 grid max-w-4xl gap-2.5 sm:mt-9 sm:grid-cols-2 sm:gap-3"
         >
           {[
             items.slice(0, Math.ceil(items.length / 2)),
             items.slice(Math.ceil(items.length / 2)),
           ].map((column, side) => (
-            <div key={side} className="flex flex-col gap-3 sm:gap-4">
+            <div key={side} className="flex flex-col gap-2.5 sm:gap-3">
               {column.map((item, i) => (
                 <Item
                   key={item.question}
@@ -222,7 +265,7 @@ export function Faq({
             send them. A link saying "and four more" that goes nowhere is
             worse than not mentioning them. */}
         {rest > 0 && moreHref ? (
-          <Reveal className="mt-9 text-center">
+          <Reveal className="mt-7 text-center">
             <Link
               to={moreHref}
               className="group inline-flex items-center gap-2 rounded-xl border border-gold/40 px-5 py-2.5 text-[15px] font-semibold text-gold-light transition hover:bg-gold/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"

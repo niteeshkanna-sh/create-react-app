@@ -5,6 +5,11 @@ import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';
 import { BrandPanel } from '../components/BrandPanel';
 import { Faq } from '../components/Faq';
+import tariffFaq from '../data/tariff-faq.json';
+// @ts-expect-error -- plain ESM, shared verbatim with the build so the
+// questions this page shows and the ones in its structured data cannot
+// disagree about which of the panel's the home page already answered.
+import { HOME_FAQ_SHOWN } from '../data/faq-shown.mjs';
 
 /** The page written about this vehicle, if there is one. */
 function modelPath(car: Car): string | null {
@@ -130,10 +135,22 @@ export function Tariff() {
         </div>
       </section>
 
-      {/* The questions the figures above raise -- the deposit, the kilometre
-          allowance, what happens over it -- answered on the page that raises
-          them. */}
-      <Faq />
+      {/* The questions the figures above raise -- what a per-day column
+          means, how the allowance is counted, what the deposit is -- asked
+          and answered on the page that raises them.
+
+          Then the panel's own questions, minus the ones the home page
+          already shows. This page used to show all ten, which meant six of
+          them were answered at two URLs: the same six questions, the same
+          six answers, and the same six in both pages' FAQPage data. Google
+          picks one of a pair like that and the other is wasted. Now each
+          question is answered once, on one page. */}
+      <Faq
+        heading={tariffFaq.heading}
+        intro={tariffFaq.intro}
+        items={tariffFaq.items}
+        skip={HOME_FAQ_SHOWN}
+      />
     </>
   );
 }
