@@ -4,16 +4,18 @@
     {
       "slug": "nagercoil",
       "name": "Nagercoil",
-      "title": "Self Drive Car & Bike Rental in Nagercoil",
-      "description": "Self drive cars, bikes and wedding cars in Nagercoil. Delivery anywhere in town, clear KM limits and a deposit you get back. Call +91 63749 42976.",
+      "title": "Self Drive Car Rental in Nagercoil — Delivered to You",
+      "description": "Self drive car rental in Nagercoil, delivered to Nagercoil Junction, Nagercoil Town station, Vadasery bus stand or your door. Bikes too. Call +91 63749 42976.",
       "distanceKm": 0,
-      "knownFor": "the district headquarters, and where our vehicles are kept",
-      "intro": "Nagercoil is where we are based, so this is the quickest place in the district to get a vehicle. If you are at the railway junction, the bus stand, a hotel in town or your own front door, we can usually have something with you the same day, and often within the hour.",
-      "local": "The town is built around the Nagaraja temple, and traffic through the centre is heavy for most of the day. Anyone driving here for the first time is better off taking the bypass rather than the old town roads, and parking near the market is easier before ten in the morning.",
+      "knownFor": "being the headquarters of Kanyakumari district, and for being the easiest place in it to pick up a self drive car",
+      "intro": "Nagercoil is where our rental cars and bikes are kept, so a self drive car here is the quickest in the district to arrange. We hand over at Nagercoil Junction, at Nagercoil Town railway station, at the Vadasery bus stand, at your hotel or at your own door — usually the same day, and often within the hour.",
+      "local": "Most self drive car rentals in Nagercoil start in one of three places: the junction, the Vadasery bus stand, or a house in town. The centre is built around the Nagaraja temple and the traffic through it is heavy for most of the day, so anyone driving here for the first time is better off on the bypass than the old town roads, and parking near the market is easier before ten in the morning. For errands inside town a scooter is the easier thing; a car earns its keep the moment you leave Nagercoil, which is what most of our rentals here are for — the coast, the temples, or a run up towards Tirunelveli.",
       "landmarks": [
         "Nagaraja Temple, in the centre of town",
-        "Nagercoil Junction, on the Thiruvananthapuram line",
-        "The Vadasery bus stand, for connections across the district"
+        "Nagercoil Junction, on the Thiruvananthapuram line — we deliver to the station",
+        "Nagercoil Town railway station, for the local services",
+        "The Vadasery bus stand, for connections across Kanyakumari district",
+        "Parvathipuram, where we hand over self drive cars and bikes as well"
       ],
       "trips": [
         {
@@ -30,6 +32,11 @@
           "to": "Maruthuvazhmalai",
           "km": 11,
           "note": "A hill walk, best early in the day"
+        },
+        {
+          "to": "Padmanabhapuram Palace",
+          "km": 20,
+          "note": "The wooden palace of the old Travancore capital, an easy half day"
         }
       ]
     },
