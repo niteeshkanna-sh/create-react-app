@@ -139,6 +139,9 @@ const photos = JSON.parse(readFileSync(join(root, 'src/data/photos.json'), 'utf8
  * this runs, from the panel.
  */
 const live = JSON.parse(readFileSync(join(root, 'src/content/live.json'), 'utf8'));
+
+/** The tariff page's own questions, which the panel does not carry. */
+const tariffFaq = JSON.parse(readFileSync(join(root, 'src/data/tariff-faq.json'), 'utf8'));
 const footer = live?.home?.footer ?? {};
 const social = live?.home?.social ?? {};
 
@@ -655,12 +658,20 @@ function faqFor(route) {
   const usable = (live?.home?.faq?.items ?? [])
     .filter((item) => String(item?.question ?? '').trim() && String(item?.answer ?? '').trim());
 
-  // The home page shows six of them and the tariff page shows all of them,
-  // so this says six on one and all on the other. Google asks that FAQPage
-  // data match what the page displays, and claiming ten answers on a page
-  // that shows six is the kind of mismatch that gets a site's rich results
-  // turned off rather than improved.
-  const items = route.path === '/' ? usable.slice(0, HOME_FAQ_SHOWN) : usable;
+  // The home page shows the first six of the panel's questions. The tariff
+  // page shows its own six -- about how its table is written -- and then the
+  // panel questions the home page did not show.
+  //
+  // Which means no question appears in two pages' FAQPage data. It used to:
+  // the tariff page rendered all ten, so six questions and six answers were
+  // claimed at both URLs. Google picks one of a duplicate pair and the other
+  // earns nothing. The split also keeps the rule that matters -- this data
+  // has to match what the page displays, and both lists are built the same
+  // way the component builds them.
+  const items =
+    route.path === '/'
+      ? usable.slice(0, HOME_FAQ_SHOWN)
+      : [...tariffFaq.items, ...usable.slice(HOME_FAQ_SHOWN)];
   if (items.length === 0) return null;
 
   return {

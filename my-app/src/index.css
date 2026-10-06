@@ -1878,6 +1878,17 @@ body {
     transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* The entrance animation fills forwards, which means it goes on owning
+   `transform` after it has finished -- and an animation beats a transition,
+   so the lift below was computing and never showing. Handing the property
+   back once the panel has arrived costs nothing: fade-up ends on
+   translate3d(0,0,0), which is where the panel sits anyway. The explicit
+   opacity is what the fill was holding for, so it has to stay behind. */
+.faq-panel[data-reveal].is-visible {
+  opacity: 1;
+  animation-fill-mode: backwards;
+}
+
 .faq-panel:hover {
   border-color: color-mix(in srgb, var(--color-gold) 42%, transparent);
   transform: translate3d(0, -2px, 0);
