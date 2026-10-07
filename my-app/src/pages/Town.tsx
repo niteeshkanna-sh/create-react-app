@@ -162,10 +162,12 @@ export function Town() {
 
                 <Link
                   to={enquire}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+                  className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
                 >
                   Check availability in {town.name}
-                  <span aria-hidden="true">→</span>
+                  <span aria-hidden="true" className="transition group-hover:translate-x-1">
+                    →
+                  </span>
                 </Link>
                 <p className="mt-3 text-center text-sm text-ink-dim">
                   or call{' '}
