@@ -1,31 +1,31 @@
 {
-  "_PageHeader-rWbEn8Iy.js": {
-    "file": "assets/PageHeader-rWbEn8Iy.js",
+  "_PageHeader-BdmZmjs8.js": {
+    "file": "assets/PageHeader-BdmZmjs8.js",
     "name": "PageHeader",
     "imports": [
-      "_SectionArt-Dn7_dd8k.js"
+      "_SectionArt-C-zaW5hP.js"
     ]
   },
-  "_SectionArt-Dn7_dd8k.js": {
-    "file": "assets/SectionArt-Dn7_dd8k.js",
+  "_SectionArt-C-zaW5hP.js": {
+    "file": "assets/SectionArt-C-zaW5hP.js",
     "name": "SectionArt"
   },
-  "_ServicePage-CmQsyIjj.js": {
-    "file": "assets/ServicePage-CmQsyIjj.js",
+  "_ServicePage-D6gzuKHm.js": {
+    "file": "assets/ServicePage-D6gzuKHm.js",
     "name": "ServicePage",
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "index.html": {
-    "file": "assets/index-D1J7QPbU.js",
+    "file": "assets/index-B5fuVMIT.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js"
+      "_SectionArt-C-zaW5hP.js"
     ],
     "dynamicImports": [
       "src/pages/About.tsx",
@@ -52,201 +52,201 @@
     ]
   },
   "src/pages/About.tsx": {
-    "file": "assets/About-BkRKcCV8.js",
+    "file": "assets/About-CI1hic09.js",
     "name": "About",
     "src": "src/pages/About.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Bikes.tsx": {
-    "file": "assets/Bikes-CUCAUF6s.js",
+    "file": "assets/Bikes-DLleZl6n.js",
     "name": "Bikes",
     "src": "src/pages/Bikes.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
-      "_ServicePage-CmQsyIjj.js"
+      "_SectionArt-C-zaW5hP.js",
+      "_ServicePage-D6gzuKHm.js"
     ]
   },
   "src/pages/Blog.tsx": {
-    "file": "assets/Blog-BSkaKKAl.js",
+    "file": "assets/Blog-CpKW1bwC.js",
     "name": "Blog",
     "src": "src/pages/Blog.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/CarModel.tsx": {
-    "file": "assets/CarModel-Bi0DJGSw.js",
+    "file": "assets/CarModel-P-BFsXq1.js",
     "name": "CarModel",
     "src": "src/pages/CarModel.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js",
+      "_PageHeader-BdmZmjs8.js",
       "src/pages/NotFound.tsx"
     ]
   },
   "src/pages/CarRentalAreas.tsx": {
-    "file": "assets/CarRentalAreas-DbgC-Zvw.js",
+    "file": "assets/CarRentalAreas-hGe5jRYO.js",
     "name": "CarRentalAreas",
     "src": "src/pages/CarRentalAreas.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Cars.tsx": {
-    "file": "assets/Cars-DDTQQyLl.js",
+    "file": "assets/Cars-84WCeLr6.js",
     "name": "Cars",
     "src": "src/pages/Cars.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Contact.tsx": {
-    "file": "assets/Contact-uCFTVMjU.js",
+    "file": "assets/Contact-CkEd8rVG.js",
     "name": "Contact",
     "src": "src/pages/Contact.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Monthly.tsx": {
-    "file": "assets/Monthly-CcKoLudL.js",
+    "file": "assets/Monthly-Digf_RkL.js",
     "name": "Monthly",
     "src": "src/pages/Monthly.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/NotFound.tsx": {
-    "file": "assets/NotFound-Bd_55ZTu.js",
+    "file": "assets/NotFound-CNOmav6N.js",
     "name": "NotFound",
     "src": "src/pages/NotFound.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
-      "_PageHeader-rWbEn8Iy.js"
+      "_SectionArt-C-zaW5hP.js",
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Nri.tsx": {
-    "file": "assets/Nri-CFu3sWmE.js",
+    "file": "assets/Nri-CNyF98M9.js",
     "name": "Nri",
     "src": "src/pages/Nri.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Places.tsx": {
-    "file": "assets/Places-BiRWRPpV.js",
+    "file": "assets/Places-BgT8SG5P.js",
     "name": "Places",
     "src": "src/pages/Places.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Post.tsx": {
-    "file": "assets/Post-CVcRJMGU.js",
+    "file": "assets/Post-DIeEyPCD.js",
     "name": "Post",
     "src": "src/pages/Post.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js",
+      "_PageHeader-BdmZmjs8.js",
       "src/pages/NotFound.tsx"
     ]
   },
   "src/pages/ServiceArea.tsx": {
-    "file": "assets/ServiceArea-CxOVaCox.js",
+    "file": "assets/ServiceArea-B-VkCXvp.js",
     "name": "ServiceArea",
     "src": "src/pages/ServiceArea.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js",
+      "_PageHeader-BdmZmjs8.js",
       "src/pages/NotFound.tsx"
     ]
   },
   "src/pages/Services.tsx": {
-    "file": "assets/Services-DfJveOd8.js",
+    "file": "assets/Services-xyAnYQhy.js",
     "name": "Services",
     "src": "src/pages/Services.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/Tariff.tsx": {
-    "file": "assets/Tariff-BCgXlZRa.js",
+    "file": "assets/Tariff-BCL9zhGC.js",
     "name": "Tariff",
     "src": "src/pages/Tariff.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js"
+      "_PageHeader-BdmZmjs8.js"
     ]
   },
   "src/pages/TouristVehicles.tsx": {
-    "file": "assets/TouristVehicles-Bhv7c-mL.js",
+    "file": "assets/TouristVehicles-B7r6I34Z.js",
     "name": "TouristVehicles",
     "src": "src/pages/TouristVehicles.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
-      "_ServicePage-CmQsyIjj.js"
+      "_SectionArt-C-zaW5hP.js",
+      "_ServicePage-D6gzuKHm.js"
     ]
   },
   "src/pages/Town.tsx": {
-    "file": "assets/Town-SYdLAyxA.js",
+    "file": "assets/Town-Q2OsF5Tn.js",
     "name": "Town",
     "src": "src/pages/Town.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
+      "_SectionArt-C-zaW5hP.js",
       "index.html",
-      "_PageHeader-rWbEn8Iy.js",
+      "_PageHeader-BdmZmjs8.js",
       "src/pages/NotFound.tsx"
     ]
   },
   "src/pages/WeddingCars.tsx": {
-    "file": "assets/WeddingCars-CTMbVGQV.js",
+    "file": "assets/WeddingCars-9fP42sXG.js",
     "name": "WeddingCars",
     "src": "src/pages/WeddingCars.tsx",
     "isDynamicEntry": true,
     "imports": [
-      "_SectionArt-Dn7_dd8k.js",
-      "_ServicePage-CmQsyIjj.js"
+      "_SectionArt-C-zaW5hP.js",
+      "_ServicePage-D6gzuKHm.js"
     ]
   }
 }

@@ -34,7 +34,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
   // reader's outline is built from.
   const CardHeading = showHeading ? 'h3' : 'h2';
 
-  const { rail, page } = useRailCrawl(items.length);
+  const { rail, page, ready } = useRailCrawl(items.length);
 
   const card = (s: (typeof items)[number], copy: boolean, first = false) => (
     <div
@@ -130,7 +130,8 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
             className="rail flex gap-5 overflow-x-auto pb-4"
           >
             {items.map((s) => card(s, false))}
-            {items.slice(0, RAIL_REPEAT).map((s, i) => card(s, true, i === 0))}
+            {/* Only once the rail is nearly on screen: see useRailCrawl. */}
+            {ready ? items.slice(0, RAIL_REPEAT).map((s, i) => card(s, true, i === 0)) : null}
           </div>
         </div>
       </div>
