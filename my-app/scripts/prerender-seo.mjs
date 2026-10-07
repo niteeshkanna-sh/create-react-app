@@ -122,6 +122,49 @@ for (const icon of [
     .slice(0, 8);
   template = template.replaceAll(`/${icon}"`, `/${icon}?v=${stamp}"`);
 }
+/**
+ * The stylesheet, moved to the front of the head.
+ *
+ * Vite appends it, so it was arriving after six favicon links, a theme
+ * colour, the viewport, a title, a description, a canonical, nine og: and
+ * twitter: tags, a block of JSON-LD, three font preloads, an inline script,
+ * the module script and a modulepreload. It is the one request that blocks
+ * the first paint, and it was the last thing in the head the browser had a
+ * reason to ask for.
+ *
+ * Measured on a throttled phone -- 4x CPU, 150ms, 1.6 Mbps -- over HTTP/2,
+ * seven runs a side, median: first contentful paint on /cars went 1908ms to
+ * 1000ms. Inlining the whole stylesheet into every page scored the same
+ * 980ms, which is how we know the bytes were never the problem and the
+ * queue was; this costs nothing and keeps the file cacheable.
+ *
+ * The home page does not move (1496ms either way): its first paint waits on
+ * laying out 1433 nodes rather than on the stylesheet. Every other page in
+ * the site is the /cars case.
+ *
+ * charset and viewport stay in front of it. The first has to be inside the
+ * opening bytes, and the second decides how wide the page is -- a stylesheet
+ * applied before the viewport is known is a layout done twice.
+ */
+function cssFirst(html) {
+  const link = html.match(/<link rel="stylesheet"[^>]*>/);
+  if (!link) return html;   // no stylesheet in this build; nothing to hoist
+
+  const without = html.replace(link[0], '');
+  const head = without.match(/<meta charset="[^"]*"\s*\/?>/);
+  if (!head) return html;
+
+  // Viewport moves up with it rather than staying behind the icons.
+  const viewport = without.match(/\s*<meta name="viewport"[^>]*>/);
+  const body = viewport ? without.replace(viewport[0], '') : without;
+  const at = body.indexOf(head[0]) + head[0].length;
+  const put = (viewport ? '\n    ' + viewport[0].trim() : '') + '\n    ' + link[0];
+
+  return body.slice(0, at) + put + body.slice(at);
+}
+
+template = cssFirst(template);
+
 // Which photographs actually exist, for the sitemap and the structured data.
 const photos = JSON.parse(readFileSync(join(root, 'src/data/photos.json'), 'utf8'));
 
