@@ -31,7 +31,7 @@ import { Reveal } from './Reveal';
  */
 export function PlacesTeaser() {
   const places = usePlaces();
-  const { rail, page } = useRailCrawl(places.length);
+  const { rail, page, ready } = useRailCrawl(places.length);
 
   if (places.length === 0) return null;
 
@@ -98,16 +98,19 @@ export function PlacesTeaser() {
                 <PlaceCard place={place} />
               </div>
             ))}
-            {places.slice(0, RAIL_REPEAT).map((place, i) => (
-              <div
-                key={`again-${place.id}`}
-                className="rail-item"
-                aria-hidden="true"
-                {...(i === 0 ? { 'data-rail-repeat': '' } : {})}
-              >
-                <PlaceCard place={place} decorative />
-              </div>
-            ))}
+            {/* Only once the rail is nearly on screen: see useRailCrawl. */}
+            {ready
+              ? places.slice(0, RAIL_REPEAT).map((place, i) => (
+                  <div
+                    key={`again-${place.id}`}
+                    className="rail-item"
+                    aria-hidden="true"
+                    {...(i === 0 ? { 'data-rail-repeat': '' } : {})}
+                  >
+                    <PlaceCard place={place} decorative />
+                  </div>
+                ))
+              : null}
           </div>
         </div>
       </div>

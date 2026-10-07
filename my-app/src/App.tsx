@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useSeo } from './lib/useSeo';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { SceneDefs } from './components/art/SectionArt';
 import { FloatingActions } from './components/FloatingActions';
 import { Home } from './pages/Home';
 
@@ -75,6 +76,9 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      {/* The gradients the illustrated cards paint with, once for the page
+          rather than once per drawing. See SectionArt. */}
+      <SceneDefs />
       <Header />
       {/* Keyed on the path so React remounts on navigation and the entrance
           animation replays; without the key the DOM is reused and nothing

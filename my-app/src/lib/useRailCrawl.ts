@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * A rail of cards that moves on its own.
@@ -19,6 +19,16 @@ import { useEffect, useRef } from 'react';
  * whether anybody sees it or not. A full second copy of twelve places is
  * twelve cards of work for a loop that only ever needs the four or five that
  * fit on the screen at the moment it wraps. RAIL_REPEAT is that number.
+ *
+ * And not until the rail is nearly on screen. The repeat is scenery for a
+ * wrap that cannot happen until the rail has been in view and crawling for
+ * the better part of a minute, but it was in the served HTML of every page
+ * that has a rail and in the first layout of every one of them -- 265 nodes
+ * of service cards and 60 of place cards on the home page, about a quarter
+ * of the document, for something nobody can see yet. `ready` says when the
+ * observer has fired; the caller renders the repeat then. Somebody who has
+ * asked for less motion never gets it at all, because for them the rail
+ * never moves and so never wraps.
  *
  * Native scrolling underneath, so a flick, a trackpad, shift-wheel, the
  * arrows and the keyboard all work while it moves. The crawl gets out of the
@@ -53,6 +63,10 @@ export function useRailCrawl(itemCount: number) {
   const rail = useRef<HTMLDivElement>(null);
   const hold = useRef(false);
   const idleUntil = useRef(0);
+
+  // False on the server and on the first client render, so the markup the
+  // browser is handed and the markup React expects are the same one.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const el = rail.current;
@@ -92,12 +106,17 @@ export function useRailCrawl(itemCount: number) {
       // Where the repeat begins, which is the length of the list itself. Read
       // each frame rather than cached: it changes with the width of the
       // window, and a stale one wraps in the wrong place.
+      //
+      // For the frame or two between the observer firing and React putting
+      // the repeat in, there is nothing to wrap at. Crawl on and leave the
+      // wrap alone rather than guessing at a position: a guess here is a
+      // visible jump, and at 26 pixels a second the end is a long way off.
       const repeat = el.querySelector<HTMLElement>('[data-rail-repeat]');
-      const loop = repeat ? repeat.offsetLeft - el.offsetLeft : el.scrollWidth / 2;
-      if (loop <= 0) return;
-
       at += (SPEED * elapsed) / 1000;
-      if (at >= loop) at -= loop;
+      if (repeat) {
+        const loop = repeat.offsetLeft - el.offsetLeft;
+        if (loop > 0 && at >= loop) at -= loop;
+      }
       el.scrollLeft = at;
     };
 
@@ -107,6 +126,9 @@ export function useRailCrawl(itemCount: number) {
     const watch = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          // The repeat is only ever needed by the crawl, so it arrives with
+          // it -- and never for somebody who has asked for less motion.
+          if (!still.matches) setReady(true);
           if (!frame) {
             last = performance.now();
             frame = requestAnimationFrame(tick);
@@ -171,5 +193,5 @@ export function useRailCrawl(itemCount: number) {
     });
   };
 
-  return { rail, page };
+  return { rail, page, ready };
 }
