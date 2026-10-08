@@ -273,7 +273,7 @@
       tick.disabled = true;
       post('done', { id: Number(tick.dataset.done) })
         .then(refresh)
-        .catch(function (e) { tick.disabled = false; window.alert(e.message); });
+        .catch(function (e) { tick.disabled = false; nsDialog.tell(e.message, { title: 'That did not save' }); });
       return;
     }
 
@@ -286,7 +286,7 @@
           var found = (data.open || []).find(function (r) { return r.id === want; });
           if (found) openForm(found);
         })
-        .catch(function () { window.alert('Could not open that reminder.'); });
+        .catch(function () { nsDialog.tell('Could not open that reminder.', { title: 'Reminders' }); });
       return;
     }
 

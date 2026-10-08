@@ -33,7 +33,9 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
     if (m.type() === 'error' && !t.includes('favicon') && !t.includes('ERR_CONNECTION_RESET')
         && !t.includes('ERR_CERT_AUTHORITY_INVALID')) errs.push('console: ' + t);
   });
-  p.on('dialog', d => d.accept().catch(() => {}));
+  // Nothing here should reach a browser dialog any more -- this suite drives
+  // the panel's own, by its buttons. One arriving is a finding, not noise.
+  p.on('dialog', async (d) => { errs.push('a browser dialog: ' + d.message()); await d.dismiss(); });
 
   await p.goto(`${BASE}/index.php`, { waitUntil: 'networkidle' });
   await p.fill('#email', EMAIL);
@@ -197,30 +199,30 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
 
   await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
   await p.waitForTimeout(400);
-  (await p.locator('#confirmOverlay').isVisible())
+  (await p.locator('#nsDialog').isVisible())
     ? ok('the bin asks before it does anything') : bad('the bin asks first');
-  const dialog = await p.locator('#confirmOverlay .modal').innerText();
+  const dialog = await p.locator('#nsDialog .modal').innerText();
   has('it names the booking', dialog, doomed);
   has('and says the money stops being counted', dialog, 'stops being counted');
   has('and that it cannot be undone', dialog, 'cannot be undone');
 
   await p.keyboard.press('Escape');
   await p.waitForTimeout(400);
-  (await p.locator('#confirmOverlay').isVisible())
+  (await p.locator('#nsDialog').isVisible())
     ? bad('Escape closes it') : ok('Escape closes it');
   is('and nothing was deleted',
     Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore);
 
   await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
   await p.waitForTimeout(400);
-  await p.click('#confirmCancel');
+  await p.click('#nsDialog [data-ns="cancel"]');
   await p.waitForTimeout(600);
   is('Cancel leaves it alone',
     Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore);
 
   await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
   await p.waitForTimeout(400);
-  await p.click('#confirmGo');
+  await p.click('#nsDialog [data-ns="go"]');
   await p.waitForTimeout(1800);
   is('confirming removes it',
     Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore - 1);
@@ -235,8 +237,8 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
   const inqBefore = Number((await p.locator('#enquiryPager').innerText()).match(/Total (\d+)/)[1]);
   await p.locator('#inquiriesWrap tbody tr [data-act="delete"]').first().click();
   await p.waitForTimeout(400);
-  has('an inquiry asks the same way', await p.locator('#confirmOverlay .modal').innerText(), 'ENQ-');
-  await p.click('#confirmGo');
+  has('an inquiry asks the same way', await p.locator('#nsDialog .modal').innerText(), 'ENQ-');
+  await p.click('#nsDialog [data-ns="go"]');
   await p.waitForTimeout(1600);
   is('and goes when confirmed',
     Number((await p.locator('#enquiryPager').innerText()).match(/Total (\d+)/)[1]), inqBefore - 1);

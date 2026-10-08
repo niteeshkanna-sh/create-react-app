@@ -20,8 +20,17 @@
 
     var fields = row.querySelectorAll('input, textarea');
     var hadContent = [].some.call(fields, function (f) { return f.value.trim() !== ''; });
-    if (hadContent && !confirm('Remove this item? It goes when you save the section.')) return;
+    if (!hadContent) { clearRow(row, fields); return; }
 
+    nsDialog.confirm('It goes from the page when you save the section.', {
+      title: 'Remove this item?',
+      confirmLabel: 'Remove',
+      tone: 'danger',
+    }).then(function (yes) { if (yes) clearRow(row, fields); });
+  });
+
+  /** Empties the row and says so, which is the same whether we asked or not. */
+  function clearRow(row, fields) {
     [].forEach.call(fields, function (f) { f.value = ''; });
     row.classList.add('is-cleared');
 
@@ -37,7 +46,7 @@
     // thing under the hand rather than something to go looking for.
     var save = row.closest('form')?.querySelector('[value="save"]');
     if (save) save.focus();
-  });
+  }
 }());
 
 /**
@@ -132,7 +141,7 @@
         probe.src = retry;
         return;
       }
-      alert('That image could not be opened.');
+      nsDialog.tell('That image could not be opened.', { title: 'Picture' });
     };
     probe.src = src;
   }
@@ -254,7 +263,7 @@
 
     var target = form;
     canvas.toBlob(function (blob) {
-      if (!blob) { alert('The framed image could not be prepared.'); return; }
+      if (!blob) { nsDialog.tell('The framed image could not be prepared.', { title: 'Picture' }); return; }
       close();
       submitSlot(target, new File([blob], 'image.webp', { type: 'image/webp' }));
     }, 'image/webp', 0.85);
@@ -276,11 +285,17 @@
       return;
     }
     if (ev.target.closest('.brand-remove')) {
-      if (!confirm('Remove the image for "' + label + '"?')) return;
-      slot.querySelector('[name="action"]').value = 'brand-clear';
-      // Cleared, or an empty file part would arrive with the clear.
-      slot.querySelector('.brand-slot-file').value = '';
-      slot.submit();
+      nsDialog.confirm('The site goes back to the picture it ships with.', {
+        title: 'Remove the image for \u201c' + label + '\u201d?',
+        confirmLabel: 'Remove',
+        tone: 'danger',
+      }).then(function (yes) {
+        if (!yes) return;
+        slot.querySelector('[name="action"]').value = 'brand-clear';
+        // Cleared, or an empty file part would arrive with the clear.
+        slot.querySelector('.brand-slot-file').value = '';
+        slot.submit();
+      });
     }
   });
 

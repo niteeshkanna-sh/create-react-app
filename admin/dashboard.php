@@ -311,24 +311,13 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div id="expensesWrap"></div>
       </section>
 
-      <!-- Record an expense -->
-      <!-- ===== Are you sure? =====
-       One dialog for every destructive action, so what is about to be
-       removed can be listed rather than crammed into a browser confirm(). -->
-  <div class="modal-overlay" id="confirmOverlay" hidden>
-    <div class="modal modal-confirm" role="alertdialog" aria-modal="true"
-         aria-labelledby="confirmTitle" aria-describedby="confirmLead">
-      <h3 id="confirmTitle">Are you sure?</h3>
-      <p id="confirmLead" class="confirm-lead"></p>
-      <ul id="confirmPoints" class="confirm-points"></ul>
-      <p class="confirm-final">This cannot be undone.</p>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="confirmCancel">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirmGo">Delete</button>
-      </div>
-    </div>
-  </div>
+      <!-- Record an expense.
 
+       The "are you sure?" dialog that used to sit here has moved to
+       dialog.js, which draws every question the panel asks -- so the list of
+       what is about to be removed, and everything else that used to be
+       crammed into a browser confirm(), is built there instead of marked up
+       on this page. -->
   <div class="modal-overlay" id="expenseModalOverlay" hidden>
         <div class="modal">
           <h3 id="expenseModalTitle">Record Expense</h3>
