@@ -176,7 +176,10 @@ admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
             </div>
             <div class="place-actions">
               <a class="btn btn-outline btn-sm" href="places.php?edit=<?= (int) $row['id'] ?>">Edit</a>
-              <form method="post" onsubmit="return confirm('Remove this place?')">
+              <!-- Asked in the panel's own dialog; see dialog.js. -->
+              <form method="post" data-confirm="It stops appearing on the website's places page."
+                    data-confirm-title="Remove <?= e((string) $row['name']) ?>?"
+                    data-confirm-label="Remove">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">

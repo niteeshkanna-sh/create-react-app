@@ -1396,7 +1396,12 @@ label.finance-toggle {
      three lines. Stacked, each gets the width of the screen. */
   .modal-row, .modal-row-3, .modal-row-4 { grid-template-columns: 1fr; }
   .modal { padding: 18px; border-radius: 16px; max-height: 94vh; }
+  /* A form on a phone rises from the bottom, where the thumb already is.
+     A question does not: it is a few lines and two buttons, and putting it
+     in the middle of the screen is what makes it read as the thing being
+     asked rather than as a tray that slid up. */
   .modal-overlay { padding: 10px; align-items: flex-end; }
+  .modal-overlay.ns-dialog { align-items: center; }
   /* Side by side, not stacked. Two 44px-tall buttons fit across a 390px
      phone with room to spare, and stacking them put Cancel under the primary
      action where a thumb reaching for one finds the other. */
@@ -1764,10 +1769,55 @@ label.finance-toggle {
 .confirm-final {
   font-size: 0.82rem; font-weight: 600; color: var(--danger); margin: 0 0 16px;
 }
-/* Solid, because in this dialog the destructive button is the action being
-   offered -- the pale one everywhere else is a secondary among other buttons. */
-#confirmGo { background: var(--danger); color: #fff; }
-#confirmGo:hover { background: #8F1E17; }
+/* The panel's dialogs, which replaced alert(), confirm() and prompt() as well
+   as the delete dialog that used to have markup of its own. See dialog.js.
+   They borrow .modal-overlay and .modal, so they are centred and shaped like
+   every other dialog here without describing any of that again; what is left
+   is the field, the error line and the one button that is sometimes red.
+
+   Solid red rather than the pale danger button used elsewhere: in this dialog
+   the destructive button is the action being offered, not a secondary among
+   others. */
+.ns-dialog-danger { background: var(--danger); color: #fff; }
+.ns-dialog-danger:hover { background: #8F1E17; }
+
+.ns-dialog-field { margin: 0 0 16px; }
+.ns-dialog-field label {
+  display: block; font-size: 0.82rem; font-weight: 600; color: var(--ink-dim);
+  margin-bottom: 7px; line-height: 1.45;
+}
+.ns-dialog-field input,
+.ns-dialog-field select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
+  font-size: 0.92rem; font-family: inherit; color: var(--ink); background: #fff; outline: none;
+}
+.ns-dialog-field input:focus,
+.ns-dialog-field select:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+}
+
+/* Said under the field rather than in place of it, so what was typed is still
+   there to correct. */
+.ns-dialog-error {
+  margin: -8px 0 14px; font-size: 0.82rem; font-weight: 600; color: var(--danger);
+}
+
+/* A dialog with one button is a message, and a message should not be as wide
+   as a form. */
+.ns-dialog .modal { max-width: 440px; }
+.ns-dialog .confirm-lead p { margin: 0 0 9px; }
+.ns-dialog .confirm-lead p:last-child { margin-bottom: 0; }
+.ns-dialog .confirm-lead { margin-bottom: 16px; }
+.ns-dialog .confirm-lead[hidden] { display: none; }
+
+/* It arrives rather than appears: at this size, a card that is simply there
+   is easy to miss when the answer to it is "yes, delete". */
+@media (prefers-reduced-motion: no-preference) {
+  .ns-dialog:not([hidden]) { animation: ns-dialog-in 0.14s ease-out; }
+  .ns-dialog:not([hidden]) .modal { animation: ns-dialog-rise 0.18s cubic-bezier(0.22, 1, 0.36, 1); }
+}
+@keyframes ns-dialog-in { from { opacity: 0; } }
+@keyframes ns-dialog-rise { from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.985); } }
 
 .rec-act-btn.is-danger:hover {
   background: #FBECEA; color: var(--danger); border-color: var(--danger);

@@ -18,7 +18,8 @@ function showDashboard() {
 function showError(err) {
   const fields = err && err.fields ? Object.values(err.fields) : [];
   const detail = fields.length ? '\n\n' + fields.join('\n') : '';
-  alert((err && err.message ? err.message : 'Something went wrong.') + detail);
+  nsDialog.tell((err && err.message ? err.message : 'Something went wrong.') + detail,
+                { title: 'That did not go through' });
 }
 
 // Vehicles come from the database now. Everything below reads them through
@@ -189,8 +190,17 @@ function renderCarAdminGrid() {
       const car = loadCars().find((c) => c.id === id);
       // Retired rather than deleted: bookings, expenses and KM records point
       // at this vehicle, and removing it would orphan that history.
-      if (!confirm(`Retire "${car.name}"? It stops appearing in the fleet, but its booking history is kept.`)) return;
-      const reason = prompt('Reason (optional):') || '';
+      // One dialog rather than two: a confirm followed by a prompt made
+      // somebody answer the same decision twice.
+      const reason = await nsDialog.ask('Reason (optional)', {
+        title: `Retire \u201c${car.name}\u201d?`,
+        body: 'It stops appearing in the fleet. Its bookings, expenses and '
+            + 'readings are kept and still point at it.',
+        confirmLabel: 'Retire',
+        tone: 'danger',
+        placeholder: 'Sold, off the road, …',
+      });
+      if (reason === null) return;
       btn.disabled = true;
       try {
         await retireVehicle(id, reason);
@@ -880,8 +890,13 @@ async function renderEnquiry(id) {
   });
 
   document.getElementById('enqAddNote')?.addEventListener('click', async () => {
-    const note = prompt('Add a note to this enquiry:');
-    if (note === null || !note.trim()) return;
+    const note = await nsDialog.ask('The note', {
+      title: 'Add a note to this enquiry',
+      confirmLabel: 'Add note',
+      required: true,
+      placeholder: 'Called back, line busy',
+    });
+    if (note === null) return;
     try {
       await api.enquiries.note(e.id, note.trim());
       await renderEnquiry(e.id);
@@ -896,9 +911,15 @@ async function renderEnquiry(id) {
       // Turning someone away needs a reason; the server insists, and asking
       // here means the user is not bounced back by an error.
       const needsReason = status === 'Rejected';
-      const note = prompt(needsReason ? 'Why is this being rejected?' : 'Add a note (optional):');
+      const note = await nsDialog.ask(needsReason ? 'Why is this being rejected?' : 'Note (optional)', {
+        title: needsReason ? 'Reject this enquiry' : `Mark as ${status}`,
+        confirmLabel: needsReason ? 'Reject' : 'Save',
+        tone: needsReason ? 'danger' : undefined,
+        required: needsReason,
+        validate: (v) => (needsReason && !v.trim()
+          ? 'A reason is required to reject an enquiry.' : null),
+      });
       if (note === null) return;
-      if (needsReason && !note.trim()) { alert('A reason is required to reject an enquiry.'); return; }
       try {
         await api.enquiries.status(e.id, status, note.trim());
         await renderEnquiry(e.id);
@@ -1106,7 +1127,13 @@ async function renderFinance() {
   wrap.querySelectorAll('.void-expense').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       const id = Number(e.target.closest('.expense-card').dataset.id);
-      const reason = prompt('Why is this expense being voided?');
+      const reason = await nsDialog.ask('Why is this expense being voided?', {
+        title: 'Void this expense',
+        body: 'The entry stays on file and stops counting. It is not deleted.',
+        confirmLabel: 'Void it',
+        tone: 'danger',
+        required: true,
+      });
       if (!reason) return;
       await guardedCall(() => api.expenses.void(id, reason));
     });
@@ -1115,10 +1142,23 @@ async function renderFinance() {
   wrap.querySelectorAll('.correct-expense').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       const id = Number(e.target.closest('.expense-card').dataset.id);
-      const amount = prompt('Adjustment — positive if too little was recorded, '
-        + 'negative if too much. The original entry stays on file.');
+      const amount = await nsDialog.ask('Adjustment (\u20b9)', {
+        title: 'Correct this expense',
+        body: 'Positive if too little was recorded, negative if too much. '
+            + 'The original entry stays on file.',
+        confirmLabel: 'Next',
+        type: 'number',
+        placeholder: '-250',
+        required: true,
+        validate: (v) => (Number.isFinite(Number(v)) && Number(v) !== 0
+          ? null : 'A number, and not zero.'),
+      });
       if (amount === null || amount.trim() === '') return;
-      const reason = prompt('Why is it being corrected?');
+      const reason = await nsDialog.ask('Why is it being corrected?', {
+        title: 'Correct this expense',
+        confirmLabel: 'Correct it',
+        required: true,
+      });
       if (!reason) return;
       await guardedCall(() => api.expenses.correct({ corrects_id: id, amount, reason }));
     });
@@ -1127,7 +1167,10 @@ async function renderFinance() {
   wrap.querySelectorAll('.approve-expense').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       const id = Number(e.target.closest('.expense-card').dataset.id);
-      if (!confirm('Approve this expense?')) return;
+      if (!await nsDialog.confirm('It counts against the books once it is approved.', {
+        title: 'Approve this expense?',
+        confirmLabel: 'Approve',
+      })) return;
       await guardedCall(() => api.expenses.approve(id, 'approved', ''));
     });
   });
@@ -1140,7 +1183,7 @@ async function guardedCall(fn) {
     await renderFinance();
     await renderOverview();
   } catch (err) {
-    alert(err.message);
+    nsDialog.tell(err.message, { title: 'That did not go through' });
   }
 }
 
@@ -1442,43 +1485,23 @@ async function deleteEnquiry(enquiry) {
 // needed is the name of the thing and a list of what goes with it -- deleting
 // a booking takes its payments, its deposit and its readings too, and nobody
 // should have to already know that.
+//
+// This was that dialog, with its own markup in dashboard.php and its own
+// open-and-resolve code here. It is dialog.js now, which is the same dialog
+// written once for the whole panel; what is left is the shape its callers
+// already pass.
 
-let confirmResolve = null;
-
-function closeConfirm(answer) {
-  document.getElementById('confirmOverlay').hidden = true;
-  const resolve = confirmResolve;
-  confirmResolve = null;
-  if (resolve) resolve(answer);
-}
-
-/**
- * Asks, and resolves true only if the confirming button was pressed.
- *
- * Cancel is focused rather than the destructive button: the reflex press of
- * space or enter on a dialog that appeared should not delete anything.
- */
 function askToConfirm({ title, lead, points = [], confirmLabel = 'Delete' }) {
-  const overlay = document.getElementById('confirmOverlay');
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmLead').innerHTML = lead;
-  document.getElementById('confirmPoints').innerHTML =
-    points.map((t) => `<li>${t}</li>`).join('');
-  document.getElementById('confirmGo').textContent = confirmLabel;
-  overlay.hidden = false;
-  document.getElementById('confirmCancel').focus();
-
-  return new Promise((resolve) => { confirmResolve = resolve; });
+  return nsDialog.confirm('', {
+    title,
+    body: lead,
+    bodyIsHtml: true,
+    points,
+    footnote: 'This cannot be undone.',
+    confirmLabel,
+    tone: 'danger',
+  });
 }
-
-document.getElementById('confirmCancel')?.addEventListener('click', () => closeConfirm(false));
-document.getElementById('confirmGo')?.addEventListener('click', () => closeConfirm(true));
-document.getElementById('confirmOverlay')?.addEventListener('click', (e) => {
-  if (e.target.id === 'confirmOverlay') closeConfirm(false);
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && confirmResolve) closeConfirm(false);
-});
 
 // ---- The records shape: counts, chips, a sortable table, a pager ---------
 //
@@ -2019,7 +2042,15 @@ bookingForm.addEventListener('submit', async (e) => {
       });
       convertingEnquiry = null;
       closeBookingModal();
-      alert(`${result.enquiry_number} is now booking ${result.booking_number}.`);
+      // Awaited, so the number is still on screen when the list behind it
+      // repaints -- it is the one thing in this flow worth writing down.
+      await nsDialog.tell('', {
+        title: 'Booking created',
+        bodyIsHtml: true,
+        body: `Enquiry <strong>${escapeHTML(result.enquiry_number)}</strong> is now booking `
+            + `<strong>${escapeHTML(result.booking_number)}</strong>.`,
+        confirmLabel: 'Done',
+      });
       // Back to the list: the enquiry that was on screen is now a booking,
       // and the page behind the form is showing what it used to be.
       closeEnquiryDetail();
@@ -2445,7 +2476,11 @@ function wireDetailActions(booking) {
   // per-element listeners would be re-bound each time or left behind.
   document.querySelectorAll('.proof-remove').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Remove this file? It cannot be brought back.')) return;
+      if (!await nsDialog.confirm('It cannot be brought back.', {
+        title: 'Remove this file?',
+        confirmLabel: 'Remove',
+        tone: 'danger',
+      })) return;
       try {
         await api.bookingFiles.remove(Number(btn.dataset.fileId));
         await refreshAfterBookingChange();
@@ -2458,43 +2493,66 @@ function wireDetailActions(booking) {
   on('detailEditBtn', () => openBookingModal(booking));
 
   on('detailCancelBtn', async () => {
-    const reason = prompt('Why is this booking being cancelled?');
+    const title = `Cancel ${booking.booking_number || 'this booking'}`;
+    const reason = await nsDialog.ask('Why is this booking being cancelled?', {
+      title,
+      confirmLabel: 'Next',
+      required: true,
+      validate: (v) => (v.trim() ? null : 'A reason is required to cancel a booking.'),
+    });
     if (reason === null) return;
-    if (!reason.trim()) { alert('A reason is required to cancel a booking.'); return; }
 
     // Whose decision it was decides whether a fee is fair, and it is the one
-    // thing nobody remembers a month later.
-    const by = confirm(
-      'Was this the customer\u2019s decision?\n\nOK — the customer cancelled.\nCancel — we cancelled it.',
-    ) ? 'customer' : 'admin';
+    // thing nobody remembers a month later. Asked as two named answers: it
+    // used to be a confirm, where the choice was between OK and Cancel and
+    // the message had to explain which was which.
+    const by = await nsDialog.choose('Who cancelled it?', [
+      { value: 'customer', label: 'The customer cancelled' },
+      { value: 'admin', label: 'We cancelled it' },
+    ], { title, confirmLabel: 'Next' });
+    if (by === null) return;
 
-    const fee = prompt('Cancellation fee to keep, if any (₹). Leave blank for none.', '') || '';
-    if (fee !== '' && !(Number(fee) >= 0)) { alert('That is not an amount.'); return; }
+    const fee = await nsDialog.ask('Cancellation fee to keep (\u20b9)', {
+      title,
+      body: 'Leave it blank if there is none.',
+      confirmLabel: 'Cancel the booking',
+      tone: 'danger',
+      type: 'number',
+      placeholder: '0',
+      validate: (v) => (v.trim() === '' || Number(v) >= 0 ? null : 'That is not an amount.'),
+    });
+    if (fee === null) return;
 
     try {
       const result = await api.bookings.cancel(booking.id, reason.trim(), by, fee);
-      if (result.warning) alert(result.warning);
+      if (result.warning) nsDialog.tell(result.warning, { title: 'Cancelled, with a note' });
       await refreshAfterBookingChange();
     } catch (err) { showError(err); }
   });
 
   // Adding a document. A hidden input rather than a modal: one file, one
   // kind, and a dialog around that is more clicks than the job needs.
-  on('detailAddDocBtn', () => {
-    if (!booking.customer_id) { alert('This booking has no customer record yet.'); return; }
-    const kind = prompt(
-      'Which document?\n\n' + DOCUMENT_KINDS.map(([k, l]) => `${k} — ${l}`).join('\n'),
-      'licence',
-    );
-    if (kind === null) return;
-    if (!DOCUMENT_KINDS.some(([k]) => k === kind.trim())) {
-      alert('That is not one of the documents this keeps.');
+  on('detailAddDocBtn', async () => {
+    if (!booking.customer_id) {
+      nsDialog.tell('This booking has no customer record yet.', { title: 'Documents' });
       return;
     }
+    // A list to pick from rather than a slug to type: the old prompt printed
+    // the kinds and then asked the user to copy one of them back.
+    const kind = await nsDialog.choose('Which document?', DOCUMENT_KINDS.map(([k, l]) => ({
+      value: k, label: l,
+    })), { title: 'Add a document', confirmLabel: 'Next', value: 'licence' });
+    if (kind === null) return;
 
-    const expiry = kind.trim() === 'licence'
-      ? (prompt('Licence expiry date (YYYY-MM-DD). Leave blank if you do not have it.', '') || '')
+    const expiry = kind === 'licence'
+      ? (await nsDialog.ask('Licence expiry date', {
+        title: 'Add a document',
+        body: 'Leave it blank if you do not have it.',
+        confirmLabel: 'Choose the file',
+        type: 'date',
+      }))
       : '';
+    if (expiry === null) return;
 
     const picker = document.createElement('input');
     picker.type = 'file';
@@ -2502,7 +2560,7 @@ function wireDetailActions(booking) {
     picker.addEventListener('change', async () => {
       if (!picker.files || picker.files.length === 0) return;
       try {
-        await api.customerFiles.add(booking.customer_id, kind.trim(), picker.files[0], expiry.trim());
+        await api.customerFiles.add(booking.customer_id, kind, picker.files[0], expiry.trim());
         await renderBookingDetail(booking.id);
       } catch (err) { showError(err); }
     });
@@ -2511,7 +2569,11 @@ function wireDetailActions(booking) {
 
   document.querySelectorAll('.remove-doc').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Remove this document? It cannot be brought back.')) return;
+      if (!await nsDialog.confirm('It cannot be brought back.', {
+        title: 'Remove this document?',
+        confirmLabel: 'Remove',
+        tone: 'danger',
+      })) return;
       try {
         await api.customerFiles.remove(Number(btn.dataset.id));
         await renderBookingDetail(booking.id);
@@ -2521,7 +2583,11 @@ function wireDetailActions(booking) {
 
   document.querySelectorAll('.void-damage').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Remove this damage record? Any charge raised for it stays — void that separately.')) return;
+      if (!await nsDialog.confirm('Any charge raised for it stays. Void that separately.', {
+        title: 'Remove this damage record?',
+        confirmLabel: 'Remove',
+        tone: 'danger',
+      })) return;
       try {
         await api.extras.voidDamage(Number(btn.dataset.id));
         await refreshAfterBookingChange();
@@ -2532,10 +2598,13 @@ function wireDetailActions(booking) {
   on('detailDeleteBtn', () => deleteBooking(booking));
 
   on('detailCompleteBtn', async () => {
-    if (!confirm('Mark this booking as completed?')) return;
+    if (!await nsDialog.confirm('The vehicle is back and the rental is over.', {
+      title: 'Mark this booking as completed?',
+      confirmLabel: 'Mark completed',
+    })) return;
     try {
       const result = await api.bookings.complete(booking.id);
-      if (result.warning) alert(result.warning);
+      if (result.warning) nsDialog.tell(result.warning, { title: 'Completed, with a note' });
       await refreshAfterBookingChange();
     } catch (err) { showError(err); }
   });
@@ -2548,9 +2617,15 @@ function wireDetailActions(booking) {
 
   document.querySelectorAll('.void-payment').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const reason = prompt('Why is this payment being voided?');
+      const reason = await nsDialog.ask('Why is this payment being voided?', {
+        title: 'Void this payment',
+        body: 'The payment stays on the record and stops counting.',
+        confirmLabel: 'Void it',
+        tone: 'danger',
+        required: true,
+        validate: (v) => (v.trim() ? null : 'A reason is required to void a payment.'),
+      });
       if (reason === null) return;
-      if (!reason.trim()) { alert('A reason is required to void a payment.'); return; }
       try {
         await api.payments.void(Number(btn.dataset.id), reason.trim());
         await refreshAfterBookingChange();
@@ -2561,18 +2636,31 @@ function wireDetailActions(booking) {
   document.querySelectorAll('.correct-km').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const current = btn.dataset.current;
-      const corrected = prompt(`Corrected odometer reading (currently ${current}):`, current);
+      const corrected = await nsDialog.ask('Corrected odometer reading (km)', {
+        title: 'Correct this reading',
+        body: `It currently reads ${current} km.`,
+        confirmLabel: 'Next',
+        type: 'number',
+        value: current,
+        required: true,
+        validate: (v) => (Number(v) >= 0 ? null : 'A reading in kilometres.'),
+      });
       if (corrected === null) return;
-      const reason = prompt('Why is this reading being corrected?');
+      const reason = await nsDialog.ask('Why is this reading being corrected?', {
+        title: 'Correct this reading',
+        confirmLabel: 'Correct it',
+        required: true,
+        validate: (v) => (v.trim() ? null : 'A reason is required to correct a reading.'),
+      });
       if (reason === null) return;
-      if (!reason.trim()) { alert('A reason is required to correct a reading.'); return; }
       try {
         const result = await api.km.correct({
           id: Number(btn.dataset.id),
           odometer_km: Number(corrected),
           reason: reason.trim(),
         });
-        alert(`Reading corrected by ${result.difference} km. The original reading is kept on the record.`);
+        nsDialog.tell(`Reading corrected by ${result.difference} km. `
+          + 'The original reading is kept on the record.', { title: 'Reading corrected' });
         await refreshAfterBookingChange();
       } catch (err) { showError(err); }
     });
@@ -2971,11 +3059,12 @@ async function uploadAttachments(kind, bookingId, refId = null) {
 
   try {
     const result = await api.bookingFiles.add(bookingId, kind, input.files, refId);
-    if (result.warning) alert(result.warning);
+    if (result.warning) nsDialog.tell(result.warning, { title: 'Saved, with a note' });
   } catch (err) {
     // Said out loud, and said as being about the file only. The thing the
     // person came to do has already been saved.
-    alert(`The ${box.kind} record was saved, but the file was not: ${err.message}`);
+    nsDialog.tell(`The ${box.kind} record was saved, but the file was not: ${err.message}`,
+                  { title: 'The file did not upload' });
   } finally {
     resetAttachmentBox(kind);
   }
@@ -3116,7 +3205,7 @@ document.getElementById('refundForm').addEventListener('submit', async (e) => {
     });
     await uploadAttachments('refund', Number(document.getElementById('refundBookingId').value));
     refundModalOverlay.hidden = true;
-    alert(`Refunded ${formatINR(result.refund_amount)}.`);
+    nsDialog.tell(`Refunded ${formatINR(result.refund_amount)}.`, { title: 'Refund recorded' });
     await refreshAfterBookingChange();
   } catch (err) { showError(err); } finally { btn.disabled = false; }
 });
@@ -3156,7 +3245,11 @@ async function openServiceModal(car) {
 
     document.querySelectorAll('.void-service').forEach((btn) => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Remove this service record?')) return;
+        if (!await nsDialog.confirm('It goes from this vehicle\u2019s service history.', {
+          title: 'Remove this service record?',
+          confirmLabel: 'Remove',
+          tone: 'danger',
+        })) return;
         try {
           await api.services.void(Number(btn.dataset.id));
           await openServiceModal(car);
@@ -3338,7 +3431,8 @@ async function raiseReturnCharges(bookingId) {
   }
 
   if (problems.length) {
-    alert('The return was saved. These did not go through:\n\n' + problems.join('\n'));
+    nsDialog.tell('These did not go through:\n\n' + problems.join('\n'),
+                  { title: 'The return was saved' });
   }
 }
 

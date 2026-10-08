@@ -107,10 +107,15 @@ const is  = (l, a, b) => (String(a) === String(b) ? ok(l) : bad(l, `expected ${b
   await p.fill('#carExtraKmRate', '5');
   await p.fill('#carSecurityDeposit', '1000');
   await p.fill('#carCurrentKm', '0');
-  let alertText = '';
-  p.once('dialog', async d => { alertText = d.message(); await d.dismiss(); });
+  // The panel says this in its own dialog now, not the browser's.
   await p.click('#carForm button[type="submit"]');
-  await p.waitForTimeout(1000);
+  let alertText = '';
+  try {
+    await p.waitForSelector('#nsDialog:not([hidden])', { timeout: 5000 });
+    alertText = await p.locator('#nsDialog .modal').innerText();
+    await p.click('#nsDialog [data-ns="go"]');
+    await p.waitForTimeout(400);
+  } catch { /* nothing was said, which the assertion below reports */ }
   alertText.toLowerCase().includes('registration')
     ? ok('duplicate registration reported to the user')
     : bad('duplicate registration reported to the user', alertText || '(no dialog)');

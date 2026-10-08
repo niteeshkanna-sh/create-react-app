@@ -342,8 +342,13 @@ admin_shell_open($me, 'content.php', 'Website content');
         <button class="btn btn-primary btn-sm" type="submit" name="action" value="save"
           <?= $ready ? '' : 'disabled' ?>>Save this section</button>
         <?php if ($overridden): ?>
+          <!-- data-confirm rather than onclick="return confirm(...)": the panel
+               asks in its own dialog now, which cannot answer an inline
+               handler because it does not block. dialog.js catches this. -->
           <button class="btn btn-ghost btn-sm" type="submit" name="action" value="reset"
-            onclick="return confirm('Put back the wording the site ships with? Your edits to this section are lost.')">
+            data-confirm="Your edits to this section are lost, and the site goes back to the wording it ships with."
+            data-confirm-title="Reset this section?"
+            data-confirm-label="Reset">
             Reset to original
           </button>
         <?php endif; ?>

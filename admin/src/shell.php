@@ -247,6 +247,9 @@ function admin_shell_close(): void
   </div>
 </div>
 
+<!-- Before everything else: every other script on the page asks questions
+     through it. -->
+<script src="<?= asset('dialog.js') ?>"></script>
 <script src="<?= asset('shell.js') ?>"></script>
 <?php
 }

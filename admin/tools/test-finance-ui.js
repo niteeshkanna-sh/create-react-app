@@ -36,12 +36,46 @@ const rupees = (text) => Number(String(text).replace(/[^0-9.-]/g, '')) || 0;
         && !/status of (409|422|429)/.test(t)) errs.push('console: ' + t);
   });
 
+  // The panel asks in its own dialog now, not the browser's, so answering it
+  // means driving the page rather than listening for a dialog event. Same
+  // queue as before: true presses the confirming button, a string is typed
+  // (or selected) first, and anything unanswered is cancelled.
   let dialogAnswers = [];
-  p.on('dialog', async (d) => {
-    const next = dialogAnswers.shift();
-    if (next === undefined) return d.dismiss();
-    return next === true ? d.accept() : d.accept(String(next));
-  });
+  (async function answerDialogs() {
+    for (;;) {
+      try { await p.waitForSelector('#nsDialog:not([hidden])', { timeout: 0 }); }
+      catch {
+        // Signing in navigates, which tears down the wait. Only a closed
+        // page means there is nothing left to answer.
+        if (p.isClosed()) return;
+        await new Promise((r) => setTimeout(r, 50));
+        continue;
+      }
+      const next = dialogAnswers.shift();
+      const asked = await p.locator('#nsDialog .modal').innerText().catch(() => '');
+      try {
+        if (next === undefined || next === false) {
+          await p.click('#nsDialog [data-ns="cancel"]');
+        } else {
+          if (next !== true) {
+            const select = await p.$('#nsDialog #nsDialogSelect:not([hidden])');
+            if (select) await select.selectOption(String(next));
+            else await p.fill('#nsDialog #nsDialogInput', String(next));
+          }
+          await p.click('#nsDialog [data-ns="go"]');
+        }
+        // Until this question is gone: either the dialog closed, or the
+        // next one replaced it. Waiting only for [hidden] misses a close
+        // followed immediately by another question -- the element never
+        // reads as hidden, and the wait costs its whole timeout.
+        await p.waitForFunction((was) => {
+          const el = document.querySelector('#nsDialog');
+          if (!el || el.hidden) return true;
+          return el.querySelector('.modal').innerText !== was;
+        }, asked, { timeout: 5000 });
+      } catch { /* answered or closed under us */ }
+    }
+  }());
 
   const stamp = Date.now().toString().slice(-6);
   const expenseText = `Diesel run ${stamp}`;

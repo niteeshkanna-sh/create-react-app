@@ -34,7 +34,32 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
     if (m.type() === 'error' && !t.includes('favicon') && !t.includes('ERR_CERT_AUTHORITY_INVALID')
         && !t.includes('ERR_CONNECTION_RESET')) errs.push('console: ' + t);
   });
-  p.on('dialog', d => d.accept().catch(() => {}));
+  // The panel's own dialog now; say yes to whatever it asks.
+  (async function answerDialogs() {
+    for (;;) {
+      try { await p.waitForSelector('#nsDialog:not([hidden])', { timeout: 0 }); }
+      catch {
+        // Signing in navigates, which tears down the wait. Only a closed
+        // page means there is nothing left to answer.
+        if (p.isClosed()) return;
+        await new Promise((r) => setTimeout(r, 50));
+        continue;
+      }
+      const asked = await p.locator('#nsDialog .modal').innerText().catch(() => '');
+      try {
+        await p.click('#nsDialog [data-ns="go"]');
+        // Until this question is gone: either the dialog closed, or the
+        // next one replaced it. Waiting only for [hidden] misses a close
+        // followed immediately by another question -- the element never
+        // reads as hidden, and the wait costs its whole timeout.
+        await p.waitForFunction((was) => {
+          const el = document.querySelector('#nsDialog');
+          if (!el || el.hidden) return true;
+          return el.querySelector('.modal').innerText !== was;
+        }, asked, { timeout: 5000 });
+      } catch { /* answered or closed under us */ }
+    }
+  }());
 
   await p.goto(`${BASE}/index.php`, { waitUntil: 'networkidle' });
   await p.fill('#email', EMAIL);
