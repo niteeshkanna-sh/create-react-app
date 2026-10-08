@@ -473,9 +473,9 @@ document.getElementById('carOwnership').addEventListener('change', syncOwnerFiel
 
 document.getElementById('addCarBtn').addEventListener('click', () => openCarModal(null));
 document.getElementById('carModalCancel').addEventListener('click', closeCarModal);
-carModalOverlay.addEventListener('click', (e) => {
-  if (e.target === carModalOverlay) closeCarModal();
-});
+// Closing by clicking away asks first when the form has been filled in.
+// See nsModal.guard in dialog.js.
+nsModal.guard(carModalOverlay, closeCarModal);
 
 carForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1987,9 +1987,7 @@ function closeBookingModal() {
 
 document.getElementById('addBookingBtn').addEventListener('click', () => openBookingModal(null));
 document.getElementById('bookingModalCancel').addEventListener('click', closeBookingModal);
-bookingModalOverlay.addEventListener('click', (e) => {
-  if (e.target === bookingModalOverlay) closeBookingModal();
-});
+nsModal.guard(bookingModalOverlay, closeBookingModal);
 
 bookingForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3102,7 +3100,7 @@ function openPaymentModal(bookingId) {
   paymentModalOverlay.hidden = false;
 }
 document.getElementById('paymentModalCancel').addEventListener('click', () => { paymentModalOverlay.hidden = true; });
-paymentModalOverlay.addEventListener('click', (e) => { if (e.target === paymentModalOverlay) paymentModalOverlay.hidden = true; });
+nsModal.guard(paymentModalOverlay, () => { paymentModalOverlay.hidden = true; });
 
 document.getElementById('paymentForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3143,7 +3141,7 @@ function openDepositModal(bookingId, booking) {
   depositModalOverlay.hidden = false;
 }
 document.getElementById('depositModalCancel').addEventListener('click', () => { depositModalOverlay.hidden = true; });
-depositModalOverlay.addEventListener('click', (e) => { if (e.target === depositModalOverlay) depositModalOverlay.hidden = true; });
+nsModal.guard(depositModalOverlay, () => { depositModalOverlay.hidden = true; });
 
 document.getElementById('depositForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3186,7 +3184,7 @@ function openRefundModal(bookingId, booking) {
   refundModalOverlay.hidden = false;
 }
 document.getElementById('refundModalCancel').addEventListener('click', () => { refundModalOverlay.hidden = true; });
-refundModalOverlay.addEventListener('click', (e) => { if (e.target === refundModalOverlay) refundModalOverlay.hidden = true; });
+nsModal.guard(refundModalOverlay, () => { refundModalOverlay.hidden = true; });
 document.getElementById('refundDeduction').addEventListener('input', updateRefundPreview);
 
 document.getElementById('refundForm').addEventListener('submit', async (e) => {
@@ -3260,7 +3258,7 @@ async function openServiceModal(car) {
 }
 
 document.getElementById('serviceModalCancel').addEventListener('click', () => { serviceModalOverlay.hidden = true; });
-serviceModalOverlay.addEventListener('click', (e) => { if (e.target === serviceModalOverlay) serviceModalOverlay.hidden = true; });
+nsModal.guard(serviceModalOverlay, () => { serviceModalOverlay.hidden = true; });
 
 document.getElementById('serviceForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3300,7 +3298,7 @@ function openPickupModal(bookingId, booking) {
   pickupModalOverlay.hidden = false;
 }
 document.getElementById('pickupModalCancel').addEventListener('click', () => { pickupModalOverlay.hidden = true; });
-pickupModalOverlay.addEventListener('click', (e) => { if (e.target === pickupModalOverlay) pickupModalOverlay.hidden = true; });
+nsModal.guard(pickupModalOverlay, () => { pickupModalOverlay.hidden = true; });
 
 document.getElementById('pickupForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -3354,7 +3352,7 @@ function openReturnModal(bookingId, booking) {
   returnModalOverlay.hidden = false;
 }
 document.getElementById('returnModalCancel').addEventListener('click', () => { returnModalOverlay.hidden = true; });
-returnModalOverlay.addEventListener('click', (e) => { if (e.target === returnModalOverlay) returnModalOverlay.hidden = true; });
+nsModal.guard(returnModalOverlay, () => { returnModalOverlay.hidden = true; });
 document.getElementById('returnEndKm').addEventListener('input', updateReturnKmPreview);
 
 document.getElementById('returnForm').addEventListener('submit', async (e) => {
