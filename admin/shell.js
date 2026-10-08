@@ -236,10 +236,9 @@
   if (overlay) {
     document.getElementById('nsBellAdd').addEventListener('click', function () { openForm(null); });
     document.getElementById('nsReminderCancel').addEventListener('click', closeForm);
-    overlay.addEventListener('click', function (ev) { if (ev.target === overlay) closeForm(); });
-    document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && !overlay.hidden) closeForm();
-    });
+    // Clicking away from a half-written reminder asks before it throws it
+    // away, the same as every other form in the panel. See dialog.js.
+    nsModal.guard(overlay, closeForm);
 
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();

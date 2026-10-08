@@ -341,6 +341,90 @@
     });
   }, true);
 
+  /**
+   * The panel's form modals, and the click that used to throw them away.
+   *
+   * Every one of them closed on a click anywhere outside the card. On a
+   * booking form that is twenty fields and several minutes of typing, and a
+   * press that lands an inch wide of the card -- or a drag that starts on a
+   * field and ends on the grey -- emptied all of it with nothing asked and
+   * nothing kept. The owner reported doing it two or three times in a row.
+   *
+   * Three things close that hole:
+   *
+   *   The press has to start and end on the backdrop. Selecting text in a
+   *   field and releasing outside the card is not a press on the backdrop,
+   *   and it was being counted as one.
+   *
+   *   A form with nothing typed in it still closes immediately. Opening the
+   *   wrong form and clicking away is not worth a question.
+   *
+   *   A form with something typed in it asks first, and the default answer
+   *   is to stay. What was typed is still there behind the question either
+   *   way -- answering "keep writing" leaves every field exactly as it was.
+   *
+   * What counts as "something typed" is the form's values against the ones
+   * it opened with, so a form that pre-fills itself from an enquiry is not
+   * treated as edited before it has been touched.
+   */
+  var opened = new WeakMap();
+
+  function snapshot(overlay) {
+    var fields = overlay.querySelectorAll('input, select, textarea');
+    var out = [];
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      if (f.type === 'file') { out.push(f.value); continue; }
+      out.push(f.type === 'checkbox' || f.type === 'radio' ? String(f.checked) : f.value);
+    }
+    return out.join('\u0000');
+  }
+
+  function wasTypedIn(overlay) {
+    var before = opened.get(overlay);
+    return before !== undefined && snapshot(overlay) !== before;
+  }
+
+  window.nsModal = {
+    /**
+     * Wires one overlay: a click on the backdrop, and Escape, close it --
+     * through a question first when there is something to lose.
+     */
+    guard: function (overlay, close) {
+      if (!overlay) return;
+
+      // Taken whenever the modal is shown, whatever showed it. The alternative
+      // is a snapshot call at every place that opens one, which is nine places
+      // and a tenth one someone adds later without knowing.
+      new MutationObserver(function () {
+        if (!overlay.hidden) opened.set(overlay, snapshot(overlay));
+      }).observe(overlay, { attributes: true, attributeFilter: ['hidden'] });
+
+      var leave = function () {
+        if (!wasTypedIn(overlay)) { close(); return; }
+        window.nsDialog.confirm('What you have filled in is lost.', {
+          title: 'Leave this form?',
+          confirmLabel: 'Discard it',
+          cancelLabel: 'Keep writing',
+          tone: 'danger',
+        }).then(function (yes) { if (yes) close(); });
+      };
+
+      var fromBackdrop = false;
+      overlay.addEventListener('pointerdown', function (e) { fromBackdrop = e.target === overlay; });
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay && fromBackdrop) leave();
+      });
+      document.addEventListener('keydown', function (e) {
+        // Not while a question is up: Escape belongs to whatever is on top,
+        // and the question is.
+        if (e.key !== 'Escape' || overlay.hidden) return;
+        if (showing) return;
+        leave();
+      });
+    },
+  };
+
   document.addEventListener('click', function (e) {
     var button = e.target.closest ? e.target.closest('[data-confirm]') : null;
     // A form carrying it is the submit handler's, not this one's -- that is
