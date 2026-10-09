@@ -187,7 +187,7 @@ export function Fleet() {
                 {detail ? (
                   <Link
                     to={detail}
-                    className="group mt-3 inline-flex items-center gap-1.5 self-center text-sm font-semibold text-gold-deep"
+                    className="tap-target group mt-3 inline-flex items-center gap-1.5 self-center text-sm font-semibold text-gold-deep"
                   >
                     More about the {car.name}
                     <span aria-hidden="true" className="transition group-hover:translate-x-1">

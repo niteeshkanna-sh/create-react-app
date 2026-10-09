@@ -152,8 +152,10 @@ export function Post() {
             ))}
           </ul>
 
+          {/* The <p> here is spacing, not a sentence, so the link is a
+              standalone target and gets a thumb-sized one. */}
           <p className="mt-8">
-            <Link to="/blog" className="font-semibold text-navy hover:text-gold-deep">
+            <Link to="/blog" className="tap-target font-semibold text-navy hover:text-gold-deep">
               &larr; All articles
             </Link>
           </p>

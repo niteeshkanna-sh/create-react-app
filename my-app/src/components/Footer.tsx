@@ -226,7 +226,9 @@ export function Footer() {
           <p>
             &copy; {new Date().getFullYear()} {seo.site.name}. All rights reserved.
           </p>
-          <p className="flex items-center gap-3">
+          {/* tap-list, because these two are standalone links rather than
+              words in a sentence -- 20px of line is not a thumb target. */}
+          <p className="tap-list flex items-center gap-3">
             <Link to="/tariff" className="transition hover:text-gold">
               Tariff
             </Link>
