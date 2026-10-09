@@ -15,7 +15,11 @@ require_once __DIR__ . '/src/shell.php';
  * while running the day. The dashboard is for today's bookings.
  */
 
-$me = require_login();
+// As on the Website content screen: reading the list and changing it are two
+// permissions, so a read-only account can check what the site offers without
+// being able to rewrite it. See abilities.php.
+$me      = require_can('place.view');
+$mayEdit = user_can('place.edit');
 
 $migrationError = migrate_if_needed();
 
@@ -28,6 +32,7 @@ $error  = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_can('place.edit');
 
     $action = (string) ($_POST['action'] ?? '');
 
@@ -70,6 +75,12 @@ admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
   <?php if ($notice !== null): ?><div class="c-msg c-ok"><?= e($notice) ?></div><?php endif; ?>
   <?php if ($error !== null): ?><div class="c-msg c-bad"><?= e($error) ?></div><?php endif; ?>
 
+  <?php if (!$mayEdit): ?>
+    <p class="c-note">You can see what the website offers here. Changing it needs
+      the &ldquo;<?= e(ability_label('place.edit')) ?>&rdquo; permission.</p>
+  <?php endif; ?>
+
+  <?php if ($mayEdit): ?>
   <form class="c-sec" method="post" enctype="multipart/form-data">
     <?= csrf_field() ?>
     <input type="hidden" name="action" value="save">
@@ -146,12 +157,13 @@ admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
       </button>
     </div>
   </form>
+  <?php endif; ?>
 
   <div class="c-sec">
     <h2><?= count($places) ?> place<?= count($places) === 1 ? '' : 's' ?></h2>
 
     <?php if ($places === []): ?>
-      <div class="empty-state">Nothing yet. Add the first one above.</div>
+      <div class="empty-state">Nothing yet.<?= $mayEdit ? ' Add the first one above.' : '' ?></div>
     <?php else: ?>
       <div class="place-list">
         <?php foreach ($places as $row): ?>
@@ -174,6 +186,7 @@ admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
                 <?= $row['map_url'] !== '' ? ' &middot; has a map link' : ' &middot; no map link' ?>
               </p>
             </div>
+            <?php if ($mayEdit): ?>
             <div class="place-actions">
               <a class="btn btn-outline btn-sm" href="places.php?edit=<?= (int) $row['id'] ?>">Edit</a>
               <!-- Asked in the panel's own dialog; see dialog.js. -->
@@ -194,6 +207,7 @@ admin_shell_open($me, 'places.php', 'Places to visit', false, $migrationError);
                 </button>
               </form>
             </div>
+            <?php endif; ?>
           </div>
         <?php endforeach; ?>
       </div>

@@ -39,7 +39,12 @@ get() { curl -s -o /tmp/eq_body -w '%{http_code}' -b "$JAR" "$BASE/api/$1"; }
 
 # Every local suite posts from 127.0.0.1 and shares one throttle window, so
 # the window is cleared first; the flood below then exercises it deliberately.
-php "$(dirname "$0")/clear-enquiry-throttle.php" >/dev/null
+# If it cannot reach the database it says so and this stops, rather than
+# every submission below being refused for a reason nothing explains.
+php "$(dirname "$0")/clear-enquiry-throttle.php" >/dev/null || {
+  echo "  FAIL  the rate-limit window could not be cleared"
+  exit 1
+}
 
 echo
 echo "-- the public form --"

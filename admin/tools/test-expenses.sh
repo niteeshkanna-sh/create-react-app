@@ -111,6 +111,15 @@ check "a correction of zero is refused" \
   "$(post 'expenses.php?action=correct' "{\"corrects_id\":$EXP1,\"amount\":\"0\",\"reason\":\"x\"}")" "422"
 check "a correction without a reason is refused" \
   "$(post 'expenses.php?action=correct' "{\"corrects_id\":$EXP1,\"amount\":\"100\"}")" "422"
+# An expense entered too high. The comment beside this endpoint always said
+# negative was allowed; the shared amount validator refused it, so until now
+# a figure could only ever be corrected upwards.
+check "a correction of -300 is accepted" \
+  "$(post 'expenses.php?action=correct' "{\"corrects_id\":$EXP1,\"amount\":\"-300\",
+     \"reason\":\"Put the 300 on twice\"}")" "200"
+# Taken back off, so the totals the rest of this file asserts still hold.
+post 'expenses.php?action=correct' "{\"corrects_id\":$EXP1,\"amount\":\"300\",
+  \"reason\":\"The 300 was right after all\"}" >/dev/null
 
 echo
 echo "-- the summary adds up --"

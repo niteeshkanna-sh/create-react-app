@@ -83,13 +83,25 @@ function config_path(): ?string
  */
 function config_missing_page(): never
 {
+    $panelDir = dirname(__DIR__);
+    $aboveDir = dirname($panelDir, 2) . '/nitesha-config';
+
+    // At a command line there is no browser to show a page to, and a tool
+    // that prints HTML and exits 0 is worse than one that fails: the test
+    // fixture that clears the enquiry throttle did exactly that for a while,
+    // reporting nothing wrong while doing nothing at all.
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, "The panel cannot find its configuration.\n"
+            . "Looked in {$panelDir}/config.php and {$aboveDir}/config.php.\n"
+            . "Set NITESHA_CONFIG to the file, or run this from a checkout that has one.\n");
+        exit(1);
+    }
+
     http_response_code(500);
     header('Content-Type: text/html; charset=utf-8');
     header('X-Robots-Tag: noindex, nofollow');
 
-    $panel  = dirname(__DIR__);
-    $above  = dirname($panel, 2) . '/nitesha-config';
-    $e      = static fn (string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+    $e = static fn (string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 
     echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
        . '<meta name="viewport" content="width=device-width, initial-scale=1">'
@@ -114,8 +126,8 @@ function config_missing_page(): never
        . '<p class="note"><strong>Your data is not affected.</strong> Bookings, vehicles '
        . 'and enquiries live in the database, which this file only points at.</p>'
        . '<p>Two places were checked:</p><ol>'
-       . '<li><code>' . $e($panel . '/config.php') . '</code></li>'
-       . '<li><code>' . $e($above . '/config.php') . '</code> &mdash; the better one, '
+       . '<li><code>' . $e($panelDir . '/config.php') . '</code></li>'
+       . '<li><code>' . $e($aboveDir . '/config.php') . '</code> &mdash; the better one, '
        . 'because it sits above the website folder where a deploy cannot reach it</li>'
        . '</ol>'
        . '<p>The installer will write it for you, in the second place, and will not '

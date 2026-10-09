@@ -41,7 +41,8 @@ const has = (l, text, needle) =>
   // The panel asks in its own dialog now, not the browser's, so answering it
   // means driving the page rather than listening for a dialog event. Same
   // queue as before: true presses the confirming button, a string is typed
-  // (or selected) first, and anything unanswered is cancelled.
+  // (or selected) first, an object fills a form dialog field by field, and
+  // anything unanswered is cancelled.
   let dialogAnswers = [];
   (async function answerDialogs() {
     for (;;) {
@@ -60,9 +61,21 @@ const has = (l, text, needle) =>
           await p.click('#nsDialog [data-ns="cancel"]');
         } else {
           if (next !== true) {
-            const select = await p.$('#nsDialog #nsDialogSelect:not([hidden])');
-            if (select) await select.selectOption(String(next));
-            else await p.fill('#nsDialog #nsDialogInput', String(next));
+            // A form dialog -- several fields at once -- is answered with an
+            // object of {field: value}. See nsDialog.form in dialog.js.
+            if (next && typeof next === 'object') {
+              for (const [name, value] of Object.entries(next)) {
+                const field = await p.$(`#nsDialog [data-name="${name}"]`);
+                if (!field) continue;
+                const tag = await field.evaluate((n) => n.tagName);
+                if (tag === 'SELECT') await field.selectOption(String(value));
+                else await field.fill(String(value));
+              }
+            } else {
+              const select = await p.$('#nsDialog #nsDialogSelect:not([hidden])');
+              if (select) await select.selectOption(String(next));
+              else await p.fill('#nsDialog #nsDialogInput', String(next));
+            }
           }
           await p.click('#nsDialog [data-ns="go"]');
         }
@@ -89,6 +102,18 @@ const has = (l, text, needle) =>
   // The hero plus whichever tab is open -- a hidden tab's text is not on
   // screen, and innerText is right not to report it.
   const detailText = async () => (await p.locator('#bookingDetailView').innerText());
+
+  // After a write the record is fetched and redrawn, and how long that takes
+  // depends on how busy the database is. Waiting for the words to appear is
+  // the only pause that is right on both a quiet machine and a loaded one.
+  const detailSays = async (needle) => {
+    await p.waitForFunction(
+      (want) => (document.getElementById('bookingDetailView') || {}).innerText
+        ?.toLowerCase().includes(String(want).toLowerCase()),
+      needle, { timeout: 10000 },
+    ).catch(() => {});
+    return detailText();
+  };
   const openTab = async (pane) => {
     await p.locator(`.rec-tab[data-pane="${pane}"]`).click();
     await p.waitForTimeout(250);
@@ -137,6 +162,22 @@ const has = (l, text, needle) =>
   await p.click('#bookingForm button[type="submit"]');
   await p.waitForTimeout(1200);
 
+  // Narrowed to this run's own booking before anything is read off the
+  // table. The list shows one page of thirty, newest hire dates first, and
+  // the other suites leave bookings dated well into 2027 -- enough to push
+  // this one off the page entirely and fail a test of something else.
+  //
+  // Waited for rather than slept through: typing debounces and then fetches
+  // the whole list again, which takes as long as the database is busy.
+  const findBooking = async () => {
+    await p.fill('#bookingSearch', customer);
+    await p.waitForFunction(
+      (name) => [...document.querySelectorAll('#bookingListWrap tbody tr')]
+        .some((r) => r.innerText.includes(name)),
+      customer, { timeout: 10000 },
+    ).catch(() => {});
+  };
+  await findBooking();
   const listText = await p.locator('#bookingListWrap').innerText();
   has('booking appears in the list', listText, customer);
   has('booking number allocated', listText, 'NSC-');
@@ -164,6 +205,7 @@ const has = (l, text, needle) =>
   await p.waitForTimeout(300);
 
   console.log('\n-- open the booking --');
+  await findBooking();
   await p.locator('#bookingListWrap tbody tr').filter({ hasText: customer }).first().click();
   await p.waitForTimeout(900);
   has('detail shows the customer', await detailText(), customer);
@@ -206,10 +248,34 @@ const has = (l, text, needle) =>
   await p.waitForTimeout(900);
   dialogAnswers = ['Entered against the wrong booking'];
   await p.locator('.void-payment').last().click();
-  await p.waitForTimeout(1000);
-  text = await detailText();
+  text = await detailSays('voided');
   has('voided payment still listed', text, 'voided');
   has('balance back to 4,500', text, '₹4,500');
+
+  console.log('\n-- correct a payment that was entered too high --');
+  dialogAnswers = [{ amount: '2500', reason: 'Counted 3000, took 2500' }];
+  await p.locator('.edit-payment').first().click();
+  text = await detailSays('correction');
+  has('the correction is listed', text, 'correction');
+  has('taken off as a negative row', text, '\u2212\u202f₹500');
+  has('received falls to 2,500', text, '₹2,500');
+  has('and the original 3,000 is still there', text, '₹3,000');
+
+  console.log('\n-- correct the deposit --');
+  await openTab('deposit');
+  dialogAnswers = [{ amount: '4500', reason: 'Took 4500, wrote 5000' }];
+  await p.locator('.edit-deposit').first().click();
+  text = await detailSays('₹4,500');
+  has('the corrected deposit is held', text, '₹4,500');
+  // One row, not two: the superseded figure is kept by the server and left
+  // off the screen, because what is still held is one sum of money.
+  const depositRowCount = await p.locator('.edit-deposit').count();
+  depositRowCount === 1 ? ok('still one deposit row')
+                        : bad('still one deposit row', `${depositRowCount} rows`);
+  // Put it back, so the refund below is testing the refund.
+  dialogAnswers = [{ amount: '5000', reason: 'The 5000 was right' }];
+  await p.locator('.edit-deposit').first().click();
+  has('and a correction can itself be corrected', await detailSays('₹5,000'), '₹5,000');
 
   console.log('\n-- pickup --');
   await openTab('handover');
@@ -244,14 +310,17 @@ const has = (l, text, needle) =>
   has('extra charge of 2,000', text, '₹2,000');
   has('total rises to 9,500', text, '₹9,500');
 
-  console.log('\n-- correct a misread meter --');
+  console.log('\n-- correct a misread meter, and the fuel with it --');
   await openTab('handover');
-  dialogAnswers = ['60800', 'Misread the meter', true];
-  await p.locator('.correct-km').last().click();
-  await p.waitForTimeout(1300);
-  text = await detailText();
+  dialogAnswers = [{ odometer_km: '60800', fuel_level: '1/4',
+                     condition_note: 'Mud on the sills',
+                     reason: 'Misread the meter' }, true];
+  await p.locator('.edit-km').last().click();
+  text = await detailSays('Mud on the sills');
   has('800 km after correction', text, '800');
   has('extra charge falls to 1,600', text, '₹1,600');
+  has('the fuel level went with it', text, '1/4');
+  has('and so did the condition', text, 'Mud on the sills');
 
   console.log('\n-- refund the deposit --');
   await openTab('deposit');
@@ -292,6 +361,9 @@ const has = (l, text, needle) =>
   await p.waitForTimeout(900);
   const counts = await p.locator('#bookingStats').innerText();
   has('the counts are shown above the list', counts, 'Total');
+  // The reload clears the search box, and page one of the list is whatever
+  // has the latest hire dates. Ask for this booking by name again.
+  await findBooking();
   const afterReload = await p.locator('#bookingListWrap').innerText();
   has('booking survives a reload', afterReload, customer);
   has('still shows as Completed', afterReload, 'Completed');

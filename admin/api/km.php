@@ -183,9 +183,15 @@ switch ($action) {
         $user  = api_guard('km.correct', true);
         $input = json_input();
 
+        // Fuel level, the condition note and the time are optional: a caller
+        // sending only a corrected odometer gets exactly what it used to,
+        // and anything left out keeps what the original reading said.
         $data = (new Validator($input))
             ->integer('id', 'Reading', 1)
             ->integer('odometer_km', 'Corrected KM', 0, 9999999)
+            ->inList('fuel_level', 'Fuel level', FUEL_LEVELS, false)
+            ->optional('condition_note', 255)
+            ->optional('recorded_at')
             ->required('reason', 'Reason')
             ->orFail();
 
@@ -210,7 +216,18 @@ switch ($action) {
 
         $difference = (int) $data['odometer_km'] - (int) $original['odometer_km'];
 
-        $id = transaction(function () use ($data, $original, $booking, $difference, $user) {
+        // What was not sent stays as it was. A blank condition note is a
+        // deliberate clearing, which is why the key being present is the
+        // test rather than the value being non-empty.
+        $fuel      = array_key_exists('fuel_level', $input) && $data['fuel_level'] !== null
+            ? $data['fuel_level'] : $original['fuel_level'];
+        $condition = array_key_exists('condition_note', $input)
+            ? $data['condition_note'] : $original['condition_note'];
+        $recordedAt = array_key_exists('recorded_at', $input) && $data['recorded_at'] !== null
+            ? normalise_dt((string) $data['recorded_at']) : $original['recorded_at'];
+
+        $id = transaction(function () use ($data, $original, $booking, $difference, $user,
+                                           $fuel, $condition, $recordedAt) {
             // The superseded reading is marked, not deleted, so both figures
             // and the gap between them stay on the record.
             query("UPDATE km_records SET status = 'voided' WHERE id = ?", [$original['id']]);
@@ -221,7 +238,7 @@ switch ($action) {
                     notes, corrects_id, correct_reason, created_by)
                  VALUES (?,?,?,?,?,?,?,?,?,?)',
                 [$original['booking_id'], $original['leg'], $data['odometer_km'],
-                 $original['recorded_at'], $original['fuel_level'], $original['condition_note'],
+                 $recordedAt, $fuel, $condition,
                  $original['notes'], $original['id'], $data['reason'], $user['id']]
             );
             $recordId = last_insert_id();
@@ -232,9 +249,13 @@ switch ($action) {
             }
 
             audit_log('km_corrected', 'km', 'km_record', $recordId,
-                ['odometer_km' => $original['odometer_km']],
+                ['odometer_km' => $original['odometer_km'],
+                 'fuel_level' => $original['fuel_level'],
+                 'condition_note' => $original['condition_note'],
+                 'recorded_at' => $original['recorded_at']],
                 ['odometer_km' => $data['odometer_km'], 'difference' => $difference,
-                 'leg' => $original['leg']],
+                 'fuel_level' => $fuel, 'condition_note' => $condition,
+                 'recorded_at' => $recordedAt, 'leg' => $original['leg']],
                 $data['reason'], (int) $user['id'], $user['name'],
                 (int) $booking['id'], (int) $booking['customer_id'], (int) $booking['vehicle_id']);
 

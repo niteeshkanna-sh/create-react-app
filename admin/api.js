@@ -165,8 +165,12 @@ const api = {
       apiRequest('api/booking-extras.php?action=add-extra', { method: 'POST', body: extra }),
     void: (id, reason) =>
       apiRequest('api/booking-extras.php?action=void-extra', { method: 'POST', body: { id, reason } }),
+    edit: (extra) =>
+      apiRequest('api/booking-extras.php?action=edit-extra', { method: 'POST', body: extra }),
     addDamage: (damage) =>
       apiRequest('api/booking-extras.php?action=add-damage', { method: 'POST', body: damage }),
+    editDamage: (damage) =>
+      apiRequest('api/booking-extras.php?action=edit-damage', { method: 'POST', body: damage }),
     voidDamage: (id) =>
       apiRequest('api/booking-extras.php?action=void-damage', { method: 'POST', body: { id } }),
   },
@@ -184,6 +188,12 @@ const api = {
       form.append('file', file);
       return apiUpload('api/customer-files.php?action=add', form);
     },
+    // What it is and when it runs out. The file itself is never swapped --
+    // that is a removal and a fresh upload.
+    edit: (id, kind, caption, expiresOn) =>
+      apiRequest('api/customer-files.php?action=edit', {
+        method: 'POST', body: { id, kind, caption, expires_on: expiresOn },
+      }),
     remove: (id) =>
       apiRequest('api/customer-files.php?action=delete', { method: 'POST', body: { id } }),
   },
@@ -228,8 +238,14 @@ const api = {
       apiRequest('api/payments.php?action=correct', { method: 'POST', body: correction }),
     deposit: (deposit) =>
       apiRequest('api/payments.php?action=deposit', { method: 'POST', body: deposit }),
+    // Corrections supersede: the wrong row is kept and marked, the right one
+    // replaces it. See the note at the top of api/payments.php.
+    correctDeposit: (correction) =>
+      apiRequest('api/payments.php?action=deposit-correct', { method: 'POST', body: correction }),
     refund: (refund) =>
       apiRequest('api/payments.php?action=refund', { method: 'POST', body: refund }),
+    correctRefund: (correction) =>
+      apiRequest('api/payments.php?action=refund-correct', { method: 'POST', body: correction }),
   },
 
   enquiries: {

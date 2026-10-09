@@ -264,7 +264,7 @@ switch ($action) {
 
         $data = (new Validator($input))
             ->integer('corrects_id', 'Expense being corrected', 1)
-            ->money('amount', 'Adjustment')
+            ->money('amount', 'Adjustment', true, signed: true)
             ->required('reason', 'Reason')
             ->orFail();
 

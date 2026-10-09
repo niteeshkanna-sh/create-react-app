@@ -205,7 +205,19 @@ final class Validator
         return $this;
     }
 
-    public function money(string $field, string $label, bool $required = true): self
+    /**
+     * An amount of money.
+     *
+     * $signed is for a correction and nothing else. Almost every figure the
+     * panel takes is a sum of money that cannot be less than nothing -- a
+     * payment of minus five hundred rupees is a mistake, not an entry -- so
+     * the default refuses it. An adjustment row is the exception: "the
+     * amount should have been 2,500, not 3,000" is recorded as -500 beside
+     * the original, and without this the correction endpoints could only
+     * ever revise a figure upwards.
+     */
+    public function money(string $field, string $label, bool $required = true,
+                          bool $signed = false): self
     {
         $raw = $this->input[$field] ?? null;
         if ($raw === null || $raw === '') {
@@ -221,11 +233,11 @@ final class Validator
             return $this;
         }
         $value = round((float) $raw, 2);
-        if ($value < 0) {
+        if ($value < 0 && !$signed) {
             $this->errors[$field] = "{$label} cannot be negative.";
             return $this;
         }
-        if ($value > 99999999.99) {
+        if (abs($value) > 99999999.99) {
             $this->errors[$field] = "{$label} is unrealistically large.";
             return $this;
         }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/assets.php';
 require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/auth.php';
 
 /**
  * The frame every admin page sits in.
@@ -31,31 +32,69 @@ function admin_nav_groups(): array
     $groups = [
         'Running the day' => [
             ['tab' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'chart'],
-            ['tab' => 'bookings',  'label' => 'Bookings',  'icon' => 'clipboard', 'count' => 'bookingCount'],
-            ['tab' => 'cars',      'label' => 'Vehicles',  'icon' => 'car'],
-            ['tab' => 'inquiries', 'label' => 'Inquiries', 'icon' => 'inbox',     'count' => 'inquiryCount'],
+            ['tab' => 'bookings',  'label' => 'Bookings',  'icon' => 'clipboard', 'count' => 'bookingCount', 'can' => 'booking.view'],
+            ['tab' => 'cars',      'label' => 'Vehicles',  'icon' => 'car',       'can' => 'vehicle.view'],
+            ['tab' => 'inquiries', 'label' => 'Inquiries', 'icon' => 'inbox',     'count' => 'inquiryCount', 'can' => 'enquiry.view'],
         ],
         'Money' => [
-            ['tab' => 'finance', 'label' => 'Finance', 'icon' => 'card'],
-            ['tab' => 'reports', 'label' => 'Reports', 'icon' => 'trend'],
+            ['tab' => 'finance', 'label' => 'Finance', 'icon' => 'card',  'can' => 'expense.view'],
+            ['tab' => 'reports', 'label' => 'Reports', 'icon' => 'trend', 'can' => 'report.view'],
         ],
         'The website' => [
-            ['page' => 'content.php', 'label' => 'Website content', 'icon' => 'pencil'],
-            ['page' => 'places.php',  'label' => 'Places to visit',  'icon' => 'pin'],
+            ['page' => 'content.php', 'label' => 'Website content', 'icon' => 'pencil', 'can' => 'content.view'],
+            ['page' => 'places.php',  'label' => 'Places to visit',  'icon' => 'pin',    'can' => 'place.view'],
+        ],
+        'The panel' => [
+            ['page' => 'users.php', 'label' => 'Users', 'icon' => 'user', 'can' => 'user.manage'],
         ],
     ];
 
-    // Only for an account that may actually use it. Hiding a link is not a
-    // permission -- users.php guards itself with require_can('user.manage'),
-    // and typing the address gets a 403 regardless. This is so the other four
-    // roles are not shown a door that will not open for them.
-    if (user_can('user.manage')) {
-        $groups['The panel'] = [
-            ['page' => 'users.php', 'label' => 'Users', 'icon' => 'user'],
-        ];
+    // Only the entries the signed-in account may actually use. Hiding a link
+    // is not a permission -- every page and endpoint guards itself, and typing
+    // the address gets a 403 regardless. This is so nobody is shown a door
+    // that will not open for them: a Counter Staff account offered Finance
+    // used to open it and be told it could not load.
+    //
+    // Dashboard carries no 'can' because it is where require_login() lands
+    // everybody; what it shows is decided panel by panel in admin.js, from
+    // the same list of abilities published below.
+    foreach ($groups as $heading => $items) {
+        $allowed = array_values(array_filter(
+            $items,
+            static fn (array $item): bool => !isset($item['can']) || user_can($item['can'])
+        ));
+        if ($allowed === []) {
+            unset($groups[$heading]);
+        } else {
+            $groups[$heading] = $allowed;
+        }
     }
 
     return $groups;
+}
+
+/**
+ * What the signed-in account may do, for the JavaScript that draws the page.
+ *
+ * The server decides permission; this is so the panel does not offer a button
+ * whose only outcome is "You do not have permission to do that", and does not
+ * fetch what it will be refused -- every refusal is written to the audit log,
+ * and a dashboard that asks for the month's expenses on every load used to
+ * put two of them there each time a Counter Staff account signed in.
+ */
+function admin_ability_list(array $me): string
+{
+    $role = (string) ($me['role_slug'] ?? $me['role'] ?? '');
+    $can  = [];
+    foreach (user_abilities((int) $me['id'], $role) as $ability => $granted) {
+        if ($granted) {
+            $can[] = $ability;
+        }
+    }
+    if (user_can(ABILITY_NOT_GRANTABLE)) {
+        $can[] = ABILITY_NOT_GRANTABLE;
+    }
+    return implode(' ', $can);
 }
 
 /** The plate beside a navigation entry. */
@@ -101,6 +140,7 @@ function admin_shell_open(
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+  <meta name="abilities" content="<?= e(admin_ability_list($me)) ?>">
   <link rel="stylesheet" href="<?= asset('admin.css') ?>">
 <?= $headExtra ?>
 </head>
@@ -190,7 +230,11 @@ function admin_shell_open(
         </div>
       </div>
 
-      <span class="admin-tag">Admin</span>
+      <!-- Who you are signed in as. It read "Admin" for everybody, which on a
+           Counter Staff account contradicted the badge in the sidebar -- and
+           on a phone, where the sidebar is a drawer, this is the only place
+           the role is written at all. -->
+      <span class="admin-tag"><?= e((string) ($me['role_name'] ?? $me['role'] ?? 'Admin')) ?></span>
     </header>
 
 <?php if ($migrationError !== null): ?>

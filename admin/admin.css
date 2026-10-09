@@ -430,9 +430,26 @@ button { font-family: inherit; }
   background: var(--bg); color: var(--ink-dim); white-space: nowrap;
 }
 
-.c-msg { padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.92rem; }
-.c-ok  { background: #EAF7EE; border-left: 3px solid #2F6B4F; }
-.c-bad { background: #FDEAEA; border-left: 3px solid var(--danger); }
+.c-msg { padding: 11px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.92rem;
+         background: var(--bg); border-left: 3px solid var(--border); }
+.c-ok  { background: #EAF7EE; border-left-color: #2F6B4F; }
+.c-bad { background: #FDEAEA; border-left-color: var(--danger); }
+
+/* Website content, for an account that may read it and not change it. The
+   fieldset is only there to carry `disabled` to everything inside, so it
+   must not look like a box of its own. min-width keeps a grid inside a
+   fieldset from refusing to shrink, which is a fieldset's own default. */
+.c-readonly { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+/* A button that cannot be pressed should not look pressable. The fields
+   keep their contrast on purpose -- the words in them are what a read-only
+   account came to read -- but they lose the white of something you type in. */
+.c-readonly button:disabled { opacity: 0.5; cursor: not-allowed; }
+.c-readonly input:disabled,
+.c-readonly select:disabled,
+.c-readonly textarea:disabled {
+  background: var(--bg); color: var(--ink); cursor: default;
+}
 
 /* A section that folds. The card is the <details>; the heading is its
    <summary>, which is what you press to open it. */
@@ -1158,6 +1175,18 @@ label.finance-toggle {
 .payment-row:last-child { border-bottom: none; }
 .payment-row .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
 
+/* What the row is about, on the left, with its own second line. The note sits
+   under the heading rather than beside it so a long one does not push the
+   amount off the end of the row. */
+.payment-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.payment-note { font-size: 0.8rem; color: var(--ink-faint); }
+
+/* Edit and Remove together at the end of a row, so the amount keeps the
+   space it needs and the buttons do not drift apart as figures change
+   width. */
+.row-acts { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; }
+.row-acts .btn { margin-left: 0; }
+
 .timeline-list { list-style: none; padding: 0; margin: 0; }
 .timeline-list li {
   position: relative; padding: 0 0 16px 22px; font-size: 0.88rem; border-left: 2px solid var(--border);
@@ -1692,6 +1721,9 @@ label.finance-toggle {
   border-bottom: 1px solid var(--border); margin-bottom: 6px;
 }
 .info-card-head h3 { font-size: 0.98rem; margin: 0; }
+/* The card's own Edit, pushed to the far end of its heading. All three open
+   the booking form -- these cards are its fields. */
+.info-card-head .card-edit { margin-left: auto; }
 .info-card-ico {
   width: 36px; height: 36px; flex: 0 0 36px; border-radius: 10px; display: grid;
   place-items: center; background: #FDF1D8; color: var(--accent-deep);
@@ -1787,13 +1819,36 @@ label.finance-toggle {
   margin-bottom: 7px; line-height: 1.45;
 }
 .ns-dialog-field input,
-.ns-dialog-field select {
+.ns-dialog-field select,
+.ns-dialog-field textarea {
   width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
   font-size: 0.92rem; font-family: inherit; color: var(--ink); background: #fff; outline: none;
 }
+.ns-dialog-field textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
 .ns-dialog-field input:focus,
-.ns-dialog-field select:focus {
+.ns-dialog-field select:focus,
+.ns-dialog-field textarea:focus {
   border-color: var(--primary); box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+}
+
+/* Several fields at once -- correcting a payment, amending a reading. Two to
+   a row where there is room, because an amount and the date it was paid are
+   read together, and a column of six boxes on a laptop is a form that looks
+   longer than the job it does. */
+.ns-dialog-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.ns-dialog-form .ns-dialog-field { grid-column: span 2; }
+.ns-dialog-form .ns-dialog-field.is-half { grid-column: span 1; }
+.ns-dialog-form[hidden] { display: none; }
+
+/* What the figure is now, under the box that changes it. */
+.ns-dialog-hint {
+  margin: 6px 0 0; font-size: 0.78rem; color: var(--ink-faint); line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .ns-dialog-form { grid-template-columns: 1fr; }
+  .ns-dialog-form .ns-dialog-field,
+  .ns-dialog-form .ns-dialog-field.is-half { grid-column: span 1; }
 }
 
 /* Said under the field rather than in place of it, so what was typed is still
@@ -1805,6 +1860,7 @@ label.finance-toggle {
 /* A dialog with one button is a message, and a message should not be as wide
    as a form. */
 .ns-dialog .modal { max-width: 440px; }
+.ns-dialog .modal:has(.ns-dialog-form:not([hidden])) { max-width: 540px; }
 .ns-dialog .confirm-lead p { margin: 0 0 9px; }
 .ns-dialog .confirm-lead p:last-child { margin-bottom: 0; }
 .ns-dialog .confirm-lead { margin-bottom: 16px; }

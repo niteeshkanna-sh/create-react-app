@@ -19,6 +19,12 @@
  *   nsDialog.confirm(text, opts)          instead of confirm()
  *   nsDialog.ask(text, opts)              instead of prompt()
  *   nsDialog.choose(text, choices, opts)  for a prompt that wanted one of a list
+ *   nsDialog.form(fields, opts)           for the several-field edits
+ *
+ * form() is the one the native three never had. Correcting a payment means an
+ * amount, a date, a method and a reason, and asking for those as four
+ * questions one after another is four chances to lose your place -- and it
+ * stops you seeing, while you type the new figure, what the old one was.
  *
  * All four return a promise, which is the real cost of the change: the native
  * three stop the world and these do not, so every caller has to await. That
@@ -58,6 +64,7 @@
       + '<input id="nsDialogInput" type="text" autocomplete="off" />'
       + '<select id="nsDialogSelect" hidden></select>'
       + '</div>'
+      + '<div class="ns-dialog-form" hidden></div>'
       + '<p class="confirm-final" hidden></p>'
       + '<p class="ns-dialog-error" hidden></p>'
       + '<div class="modal-actions">'
@@ -73,6 +80,7 @@
       body: overlay.querySelector('#nsDialogBody'),
       points: overlay.querySelector('.confirm-points'),
       field: overlay.querySelector('.ns-dialog-field'),
+      form: overlay.querySelector('.ns-dialog-form'),
       label: overlay.querySelector('.ns-dialog-field label'),
       input: overlay.querySelector('#nsDialogInput'),
       select: overlay.querySelector('#nsDialogSelect'),
@@ -189,6 +197,9 @@
       }
     }
 
+    dom.form.hidden = spec.kind !== 'form';
+    if (spec.kind === 'form') drawForm(spec);
+
     dom.cancel.hidden = spec.kind === 'tell';
     dom.cancel.textContent = spec.cancelLabel || 'Cancel';
     dom.go.textContent = spec.confirmLabel || (spec.kind === 'tell' ? 'OK' : 'Continue');
@@ -203,8 +214,81 @@
     var land = wantsInput
       ? (spec.kind === 'choose' ? dom.select : dom.input)
       : (spec.tone === 'danger' ? dom.cancel : dom.go);
+    if (spec.kind === 'form') land = dom.form.querySelector('input, select, textarea') || dom.go;
     land.focus();
-    if (land === dom.input) dom.input.select();
+    if (land === dom.input || (land.tagName === 'INPUT' && land.type !== 'date')) {
+      try { land.select(); } catch (e) { /* a type that cannot be selected */ }
+    }
+  }
+
+  /**
+   * The fields of a form dialog.
+   *
+   * Rebuilt each time rather than kept and reused: these dialogs differ by
+   * one or two fields, and a stale control left behind from the last one is
+   * the kind of fault nobody finds until somebody corrects the wrong figure.
+   */
+  function drawForm(spec) {
+    dom.form.innerHTML = '';
+    spec.fields.forEach(function (f, i) {
+      var id = 'nsField' + i;
+      var wrap = document.createElement('div');
+      // A short field sits beside its neighbour where there is room. See
+      // .ns-dialog-form in admin.css.
+      wrap.className = 'ns-dialog-field' + (f.half ? ' is-half' : '');
+
+      if (f.label) {
+        var label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.textContent = f.label;
+        wrap.appendChild(label);
+      }
+
+      var control;
+      if (f.type === 'select') {
+        control = document.createElement('select');
+        (f.options || []).forEach(function (opt) {
+          var option = document.createElement('option');
+          option.value = opt.value === undefined ? opt : opt.value;
+          option.textContent = opt.label === undefined ? opt : opt.label;
+          control.appendChild(option);
+        });
+      } else if (f.type === 'textarea') {
+        control = document.createElement('textarea');
+        control.rows = f.rows || 3;
+      } else {
+        control = document.createElement('input');
+        control.type = f.type || 'text';
+        control.autocomplete = 'off';
+        if (f.step) control.step = f.step;
+        if (f.inputMode) control.inputMode = f.inputMode;
+      }
+      control.id = id;
+      control.value = f.value == null ? '' : String(f.value);
+      if (f.placeholder) control.placeholder = f.placeholder;
+      control.setAttribute('data-name', f.name);
+      wrap.appendChild(control);
+
+      // What the figure is now, under the box that changes it. The whole
+      // reason to show a form rather than ask a question at a time.
+      if (f.hint) {
+        var hint = document.createElement('p');
+        hint.className = 'ns-dialog-hint';
+        hint.textContent = f.hint;
+        wrap.appendChild(hint);
+      }
+      dom.form.appendChild(wrap);
+    });
+  }
+
+  /** What the form says now, as {name: value}. */
+  function formValues() {
+    var out = {};
+    var controls = dom.form.querySelectorAll('[data-name]');
+    for (var i = 0; i < controls.length; i++) {
+      out[controls[i].getAttribute('data-name')] = controls[i].value;
+    }
+    return out;
   }
 
   function submit() {
@@ -213,6 +297,31 @@
 
     if (spec.kind === 'tell') { settle(undefined); return; }
     if (spec.kind === 'confirm') { settle(true); return; }
+
+    if (spec.kind === 'form') {
+      var values = formValues();
+      var wrong = null;
+      var culprit = null;
+      spec.fields.forEach(function (f, i) {
+        if (wrong) return;
+        var value = values[f.name];
+        if (f.required && !String(value).trim()) {
+          wrong = (f.label || 'This') + ' is needed before we can save.';
+        } else if (f.validate) {
+          wrong = f.validate(value, values) || null;
+        }
+        if (wrong) culprit = dom.form.querySelectorAll('[data-name]')[i];
+      });
+      if (!wrong && spec.validate) wrong = spec.validate(values) || null;
+      if (wrong) {
+        dom.error.textContent = wrong;
+        dom.error.hidden = false;
+        if (culprit) culprit.focus();
+        return;
+      }
+      settle(values);
+      return;
+    }
 
     var value = spec.kind === 'choose' ? dom.select.value : dom.input.value;
     var complaint = spec.validate ? spec.validate(value) : null;
@@ -299,6 +408,22 @@
     /** Asks for a line of text. Resolves null if it was cancelled. */
     ask: function (message, opts) {
       return show(spec('ask', message, opts));
+    },
+    /**
+     * Asks for several things at once. Resolves an object of the values, or
+     * null if it was cancelled.
+     *
+     * Each field is {name, label, type, value, hint, required, validate}.
+     * type is text, number, date, select (with options) or textarea.
+     */
+    form: function (fields, opts) {
+      var o = opts || {};
+      var s = spec('form', '', o);
+      s.fields = fields || [];
+      s.validate = o.validate;
+      s.confirmLabel = o.confirmLabel || 'Save';
+      s.title = o.title || 'Edit';
+      return show(s);
     },
     /** Asks for one of a list. Resolves null if it was cancelled. */
     choose: function (message, choices, opts) {

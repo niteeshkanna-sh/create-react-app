@@ -67,7 +67,9 @@ const ABILITY_GROUPS = [
         'payment.correct' => 'Correct the amount of a payment',
         'payment.void'    => 'Cancel a payment entered wrongly',
         'deposit.create'  => 'Take and return a deposit',
+        'deposit.correct' => 'Correct a deposit entered wrongly',
         'refund.create'   => 'Give a refund',
+        'refund.correct'  => 'Correct a refund entered wrongly',
     ],
     'Money going out' => [
         'expense.view'    => 'See what the business spends',
@@ -85,8 +87,23 @@ const ABILITY_GROUPS = [
     ],
     'Reminders' => [
         'reminder.view'   => 'See reminders',
-        'reminder.edit'   => 'Add a reminder and tick it off',
+        // Setting one and finishing one are separate ticks because the
+        // server has always asked for them separately -- reminders.php
+        // guards a new one with create and a change with edit -- and only
+        // one of the two was on offer here, so the other could not be
+        // withheld from anybody.
+        'reminder.create' => 'Set a reminder',
+        'reminder.edit'   => 'Change a reminder and tick it off',
         'reminder.delete' => 'Delete a reminder somebody else set',
+    ],
+    // The public website. Not an internal record like everything above it:
+    // what is changed here is read by customers within the minute, which is
+    // why seeing the screen and saving from it are two separate ticks.
+    'The website' => [
+        'content.view' => 'See what the website says',
+        'content.edit' => 'Change the words and pictures on the website',
+        'place.view'   => 'See the places to visit',
+        'place.edit'   => 'Add, change and remove a place to visit',
     ],
 ];
 
@@ -100,7 +117,7 @@ const ABILITY_GROUPS = [
 const ABILITY_WEIGHTY = [
     'booking.delete', 'vehicle.delete', 'enquiry.delete', 'reminder.delete',
     'payment.void', 'payment.correct', 'expense.void', 'expense.correct',
-    'km.correct', 'refund.create',
+    'km.correct', 'refund.create', 'deposit.correct', 'refund.correct',
 ];
 
 /** The permission that opens this screen, and is never a checkbox. See above. */
@@ -137,7 +154,7 @@ function role_can(string $role, string $ability): bool
     $abilities = [
         'super_admin' => ['*'],
         'admin'       => ['booking.*', 'vehicle.*', 'enquiry.*', 'customer.*', 'km.*',
-                          'reminder.*',
+                          'reminder.*', 'content.*', 'place.*',
                           'payment.view', 'deposit.view', 'expense.view', 'report.view'],
         'accounts'    => ['payment.*', 'deposit.*', 'refund.*', 'expense.*',
                           'reminder.*',

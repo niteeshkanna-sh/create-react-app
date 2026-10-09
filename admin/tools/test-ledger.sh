@@ -75,6 +75,19 @@ has "paid is now 4500" '"paid":4500'
 check "a correction needs a reason" \
   "$(post "payments.php?action=correct" "{\"corrects_id\":$PMT,\"amount\":\"100\",
      \"paid_on\":\"2026-09-04\",\"method\":\"Cash\"}")" "422"
+# Downwards as well as up. The endpoint always said an adjustment could be
+# negative; the validator it shares with every other amount refused one, so
+# a figure entered too high could not be corrected at all.
+check "a correction of -200 is accepted" \
+  "$(post "payments.php?action=correct" "{\"corrects_id\":$PMT,\"amount\":\"-200\",
+     \"reason\":\"Counted 1300, recorded 1500\",\"paid_on\":\"2026-09-04\",\"method\":\"Cash\"}")" "200"
+has "paid falls to 4300" '"paid":4300'
+check "and a correction of zero still changes nothing" \
+  "$(post "payments.php?action=correct" "{\"corrects_id\":$PMT,\"amount\":\"0\",
+     \"reason\":\"x\",\"paid_on\":\"2026-09-04\",\"method\":\"Cash\"}")" "422"
+# Put it back, so the figures the rest of this file asserts still hold.
+post "payments.php?action=correct" "{\"corrects_id\":$PMT,\"amount\":\"200\",
+  \"reason\":\"The 1500 was right\",\"paid_on\":\"2026-09-04\",\"method\":\"Cash\"}" >/dev/null
 
 get "bookings.php?action=get&id=$BID" >/dev/null
 has "the original 1000 is still on the record" '"amount":1000'
@@ -100,6 +113,35 @@ check "deposit of 5000 recorded" \
 has "deposit shown as held" '"deposit_held":5000'
 has "but paid is unchanged at 4500" '"paid":4500'
 has "and the total owed is unchanged" '"total":7500'
+
+echo
+echo "-- a deposit entered wrongly is corrected, not overwritten --"
+DEPID=$(curl -s -b "$JAR" "$BASE/api/bookings.php?action=get&id=$BID" \
+  | tr '{' '\n' | grep '"received_on"' | grep '"status":"active"' \
+  | sed -n 's/.*"id":\([0-9]*\).*/\1/p' | head -1)
+check "correcting a deposit needs a reason" \
+  "$(post "payments.php?action=deposit-correct" "{\"id\":$DEPID,\"amount\":\"4000\",
+     \"received_on\":\"2026-09-01\",\"method\":\"Cash\"}")" "422"
+check "corrected down to 4000" \
+  "$(post "payments.php?action=deposit-correct" "{\"id\":$DEPID,\"amount\":\"4000\",
+     \"received_on\":\"2026-09-01\",\"method\":\"Cash\",\"reason\":\"Counted 5000, took 4000\"}")" "200"
+has "only 4000 is held now" '"deposit_held":4000'
+check "the superseded row cannot be corrected again" \
+  "$(post "payments.php?action=deposit-correct" "{\"id\":$DEPID,\"amount\":\"4500\",
+     \"received_on\":\"2026-09-01\",\"method\":\"Cash\",\"reason\":\"again\"}")" "409"
+
+get "bookings.php?action=get&id=$BID" >/dev/null
+has "the wrong figure is still on the record" '"amount":5000,"received_on":"2026-09-01","method":"Cash","reference":null,"status":"voided"'
+
+# Put it back, so what follows is testing the refund rather than the
+# correction above it.
+DEPID=$(curl -s -b "$JAR" "$BASE/api/bookings.php?action=get&id=$BID" \
+  | tr '{' '\n' | grep '"received_on"' | grep '"status":"active"' \
+  | sed -n 's/.*"id":\([0-9]*\).*/\1/p' | head -1)
+check "and a correction can itself be corrected" \
+  "$(post "payments.php?action=deposit-correct" "{\"id\":$DEPID,\"amount\":\"5000\",
+     \"received_on\":\"2026-09-01\",\"method\":\"Cash\",\"reason\":\"5000 was right after all\"}")" "200"
+has "5000 held again" '"deposit_held":5000'
 
 echo
 echo "-- km --"
@@ -142,6 +184,19 @@ has "now 800 km driven"            '"total_km":800'
 has "200 km over"                  '"extra_km":200'
 has "extra charge falls to 1600"   '"extra_km_charge":"1600.00"'
 
+# The fuel level and the condition note were written at the counter too, and
+# until now could not be put right at all.
+KMID=$(curl -s -b "$JAR" "$BASE/api/bookings.php?action=get&id=$BID" \
+  | tr '{' '\n' | grep '"leg":"return"' | sed -n 's/.*"id":"\{0,1\}\([0-9]*\).*/\1/p' | head -1)
+check "the fuel level can be corrected with it" \
+  "$(post "km.php?action=correct" "{\"id\":$KMID,\"odometer_km\":50800,
+     \"fuel_level\":\"1/4\",\"condition_note\":\"Scratch on rear bumper\",
+     \"reason\":\"Gauge read 1/4, not 1/2\"}")" "200"
+get "bookings.php?action=get&id=$BID" >/dev/null
+has "the corrected fuel level is shown"  '"fuel_level":"1\\/4"'
+has "and the condition note with it"     'Scratch on rear bumper'
+has "the distance is untouched"          '"total_km":800'
+
 echo
 echo "-- refunding the deposit --"
 check "deducting more than is held is refused" \
@@ -158,9 +213,91 @@ has "nothing still held"   '"deposit_held":0'
 has "revenue still excludes the deposit" '"total":9100'
 
 echo
+echo "-- and a refund entered wrongly --"
+REFID=$(curl -s -b "$JAR" "$BASE/api/bookings.php?action=get&id=$BID" \
+  | tr '{' '\n' | grep '"refunded_on"' | grep '"status":"active"' \
+  | sed -n 's/.*"id":\([0-9]*\).*/\1/p' | head -1)
+check "more than the deposit cannot be settled" \
+  "$(post "payments.php?action=refund-correct" "{\"id\":$REFID,\"refund_amount\":\"5000\",
+     \"deduction\":\"1000\",\"deduction_reason\":\"Damage\",\"refunded_on\":\"2026-09-04\",
+     \"method\":\"UPI\",\"reason\":\"Typo\"}")" "422"
+check "keeping money back still needs explaining" \
+  "$(post "payments.php?action=refund-correct" "{\"id\":$REFID,\"refund_amount\":\"4000\",
+     \"deduction\":\"1000\",\"refunded_on\":\"2026-09-04\",
+     \"method\":\"UPI\",\"reason\":\"Typo\"}")" "422"
+check "corrected to 4000 given back and 1000 kept" \
+  "$(post "payments.php?action=refund-correct" "{\"id\":$REFID,\"refund_amount\":\"4000\",
+     \"deduction\":\"1000\",\"deduction_reason\":\"Bumper, not a scratch\",
+     \"refunded_on\":\"2026-09-04\",\"method\":\"UPI\",\"reason\":\"Deduction was 1000\"}")" "200"
+get "bookings.php?action=get&id=$BID" >/dev/null
+has "4000 went back"        '"deposit_refunded":4000'
+has "1000 was kept"         '"deposit_deducted":1000'
+has "and nothing is held"   '"deposit_held":0'
+has "the first refund is still on the record" '"refund_amount":4250'
+
+echo
 echo "-- completing --"
 check "completion now allowed" "$(post "bookings.php?action=complete" "{\"id\":$BID}")" "200"
 has "outstanding balance is flagged" 'Outstanding balance'
+
+echo
+echo "-- charges raised after the booking was priced --"
+# Its own booking, so the figures above are not moved by what is added here.
+post "bookings.php?action=save" "{\"customer_name\":\"Charges Test\",\"phone\":\"9$(date +%d%H%M%S)\",
+  \"licence_number\":\"TN0120230088888\",\"vehicle_id\":$VID,
+  \"start_at\":\"2026-10-01 10:00\",\"return_at\":\"2026-10-03 10:00\",
+  \"base_rental\":\"5000\",\"km_limit_per_day\":200,\"extra_km_rate\":\"8\"}" >/dev/null
+CID=$(body | sed -n 's/.*"id":\([0-9]*\).*/\1/p')
+
+check "a cleaning charge of 500 is raised" \
+  "$(post "booking-extras.php?action=add-extra" "{\"booking_id\":$CID,\"kind\":\"cleaning\",
+     \"amount\":\"500\",\"note\":\"Sand all through it\"}")" "200"
+has "the total follows it up to 5500" '"total":"5500.00"'
+
+XID=$(curl -s -b "$JAR" "$BASE/api/bookings.php?action=get&id=$CID" \
+  | tr '{' '\n' | grep '"kind":"cleaning"' | sed -n 's/.*"id":\([0-9]*\).*/\1/p' | head -1)
+check "changing it needs a reason" \
+  "$(post "booking-extras.php?action=edit-extra" "{\"id\":$XID,\"kind\":\"cleaning\",
+     \"amount\":\"300\",\"note\":\"Sand all through it\"}")" "422"
+check "a charge of nothing is refused" \
+  "$(post "booking-extras.php?action=edit-extra" "{\"id\":$XID,\"kind\":\"cleaning\",
+     \"amount\":\"0\",\"note\":\"x\",\"reason\":\"y\"}")" "422"
+check "corrected down to 300" \
+  "$(post "booking-extras.php?action=edit-extra" "{\"id\":$XID,\"kind\":\"cleaning\",
+     \"amount\":\"300\",\"note\":\"Sand in the boot\",\"reason\":\"Charged the full valet by mistake\"}")" "200"
+has "and the total follows back down to 5300" '"total":"5300.00"'
+check "the superseded charge cannot be corrected again" \
+  "$(post "booking-extras.php?action=edit-extra" "{\"id\":$XID,\"kind\":\"cleaning\",
+     \"amount\":\"400\",\"note\":\"x\",\"reason\":\"y\"}")" "409"
+
+get "bookings.php?action=get&id=$CID" >/dev/null
+has "one charge is listed, not two" '"note":"Sand in the boot"'
+body | grep -q 'Sand all through it' && bad "the wrong one is off the booking" "still listed" \
+  || ok "the wrong one is off the booking"
+
+echo
+echo "-- damage is an estimate, and an estimate can be reread --"
+check "damage recorded" \
+  "$(post "booking-extras.php?action=add-damage" "{\"booking_id\":$CID,
+     \"description\":\"Dent on the near-side door\",\"estimated_cost\":\"3000\",
+     \"noticed_at\":\"return\"}")" "200"
+DID=$(body | sed -n 's/.*"damage_id":\([0-9]*\).*/\1/p')
+has "it does not move what the customer owes" '"total":"5300.00"'
+
+check "the estimate is changed in place" \
+  "$(post "booking-extras.php?action=edit-damage" "{\"id\":$DID,
+     \"description\":\"Dent on the near-side door\",\"estimated_cost\":\"1800\",
+     \"noticed_at\":\"return\",\"note\":\"Garage quoted 1800\"}")" "200"
+get "bookings.php?action=get&id=$CID" >/dev/null
+has "the new estimate is shown"    '"estimated_cost":1800'
+has "with the note beside it"      'Garage quoted 1800'
+has "and the total is unmoved"     '"total":5300'
+
+check "a removed damage record cannot be changed" \
+  "$(post "booking-extras.php?action=void-damage" "{\"id\":$DID}")" "200"
+check "and says so" \
+  "$(post "booking-extras.php?action=edit-damage" "{\"id\":$DID,\"description\":\"x\",
+     \"estimated_cost\":\"1\",\"noticed_at\":\"return\"}")" "409"
 
 rm -f "$JAR"
 echo

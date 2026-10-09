@@ -114,6 +114,26 @@ check('staff may NOT view payments',           !role_can('staff', 'payment.view'
 check('staff may NOT read the audit log',      !role_can('staff', 'audit.view'));
 check('unknown role gets nothing',             !role_can('nonsense', 'booking.view'));
 
+// The public website is the business's shopfront. Everyone signed in could
+// rewrite it, including the read-only Auditor, because the two screens that
+// edit it guarded nothing but being signed in.
+check('admin may edit the website',             role_can('admin', 'content.edit'));
+check('admin may edit the places',              role_can('admin', 'place.edit'));
+check('auditor may read the website copy',      role_can('auditor', 'content.view'));
+check('auditor may NOT rewrite it',            !role_can('auditor', 'content.edit'));
+check('auditor may NOT change the places',     !role_can('auditor', 'place.edit'));
+check('staff may not reach the website at all',
+    !role_can('staff', 'content.view') && !role_can('staff', 'content.edit'));
+check('nor may accounts',
+    !role_can('accounts', 'content.view') && !role_can('accounts', 'place.view'));
+
+// Correcting a deposit or a refund moves a figure that has already been
+// counted, so it belongs with the rest of the money, not with the booking.
+check('accounts may correct a deposit',         role_can('accounts', 'deposit.correct'));
+check('accounts may correct a refund',          role_can('accounts', 'refund.correct'));
+check('admin may NOT correct a deposit',       !role_can('admin', 'deposit.correct'));
+check('auditor may NOT correct a refund',      !role_can('auditor', 'refund.correct'));
+
 echo "\n-- the permission catalogue --\n";
 
 // A tick that changes nothing is worse than no tick, because somebody will
