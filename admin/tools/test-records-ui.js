@@ -51,20 +51,39 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
   console.log('\n-- something to list --');
   const made = await p.evaluate(async ({ stamp }) => {
     const token = document.querySelector('meta[name="csrf-token"]').content;
-    const vehicles = await (await fetch('api/vehicles.php?action=list')).json();
-    const id = vehicles.vehicles[0].id;
+    const send = (url, body) => fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+      body: JSON.stringify(body),
+    });
+
+    // A car of this run's own. Taking whichever vehicle happened to be first
+    // meant every run booked the same twelve dates against the same car, so
+    // the second run clashed with the first and eleven of its twelve
+    // bookings came back 409.
+    const car = await (await send('api/vehicles.php?action=save', {
+      name: `List Test Car ${stamp}`, brand: 'Maruti', reg_number: `LS${stamp}`,
+      body_type: 'Hatchback', fuel: 'Petrol', transmission: 'Manual', seats: 5,
+      model_year: 2024, colour: '#334455', status: 'Available', current_km: 10000,
+      rate_daily: '1500', km_limit_per_day: 200, extra_km_rate: '5',
+      security_deposit: '3000',
+    })).json();
+    const id = car.vehicle && car.vehicle.id;
+    if (!id) return 0;
     let count = 0;
     for (let i = 0; i < 12; i++) {
       const day = String(3 + i * 2).padStart(2, '0');
-      const r = await fetch('api/bookings.php?action=save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-        body: JSON.stringify({
-          customer_name: `List Test ${stamp}-${i}`, phone: '90000' + String(10000 + i),
-          licence_number: 'TN75LIST' + i, vehicle_id: id,
-          start_at: `2027-03-${day}T10:00`, return_at: `2027-03-${day}T18:00`,
-          base_rental: String(1000 + i * 100), km_limit_per_day: '200', extra_km_rate: '5',
-        }),
+      const r = await send('api/bookings.php?action=save', {
+        // The phone is how a customer is recognised, so it has to carry
+        // this run's stamp as well. With a fixed number, every run matched
+        // the customer the first run created and the list went on showing
+        // that run's name -- which is why searching for this run's stamp
+        // found nothing at all.
+        customer_name: `List Test ${stamp}-${i}`,
+        phone: '9' + stamp + String(i).padStart(3, '0'),
+        licence_number: 'TN75LIST' + i, vehicle_id: id,
+        start_at: `2027-03-${day}T10:00`, return_at: `2027-03-${day}T18:00`,
+        base_rental: String(1000 + i * 100), km_limit_per_day: '200', extra_km_rate: '5',
       });
       if (r.ok) count++;
     }
@@ -102,8 +121,15 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
   await p.waitForTimeout(500);
 
   console.log('\n-- search --');
+  // Waited for rather than slept through. Typing debounces for a quarter of
+  // a second and then fetches the whole list again, which on a database
+  // several suites have been writing to takes longer than any fixed pause
+  // worth writing down.
   await p.fill('#bookingSearch', `List Test ${stamp}-7`);
-  await p.waitForTimeout(600);
+  await p.waitForFunction(
+    () => document.querySelectorAll('#bookingListWrap tbody tr').length === 1,
+    null, { timeout: 10000 },
+  ).catch(() => {});
   is('search narrows to the one', await p.locator('#bookingListWrap tbody tr').count(), 1);
   await p.click('#bookingReset');
   await p.waitForTimeout(600);
@@ -220,10 +246,21 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
   is('Cancel leaves it alone',
     Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore);
 
+  // Waited for, not slept through: deleting re-fetches the list, and how
+  // long that takes depends on how much the other suites have left in it.
+  const waitForTotal = (pager, want) => p.waitForFunction(
+    ([sel, n]) => {
+      const m = (document.querySelector(sel) || {}).innerText || '';
+      const found = m.match(/Total (\d+)/);
+      return !!found && Number(found[1]) === n;
+    },
+    [pager, want], { timeout: 10000 },
+  ).catch(() => {});
+
   await p.locator('#bookingListWrap tbody tr [data-act="delete"]').first().click();
   await p.waitForTimeout(400);
   await p.click('#nsDialog [data-ns="go"]');
-  await p.waitForTimeout(1800);
+  await waitForTotal('#bookingPager', rowsBefore - 1);
   is('confirming removes it',
     Number((await p.locator('#bookingPager').innerText()).match(/Total (\d+)/)[1]), rowsBefore - 1);
   ((await p.locator('#bookingListWrap').innerText()).includes(doomed))
@@ -235,11 +272,18 @@ const has = (l, text, needle) => (String(text).toLowerCase().includes(String(nee
   await p.click('.admin-tab[data-tab="inquiries"]');
   await p.waitForTimeout(1100);
   const inqBefore = Number((await p.locator('#enquiryPager').innerText()).match(/Total (\d+)/)[1]);
-  await p.locator('#inquiriesWrap tbody tr [data-act="delete"]').first().click();
+  // Not whichever is first. An enquiry that became a booking cannot be
+  // deleted -- the booking points at it -- and after the enquiry suite has
+  // run, the newest enquiry in the list is exactly that one.
+  await p.locator('#inquiriesWrap tbody tr')
+    .filter({ hasNotText: 'CONVERTED' })
+    .first()
+    .locator('[data-act="delete"]')
+    .click();
   await p.waitForTimeout(400);
   has('an inquiry asks the same way', await p.locator('#nsDialog .modal').innerText(), 'ENQ-');
   await p.click('#nsDialog [data-ns="go"]');
-  await p.waitForTimeout(1600);
+  await waitForTotal('#enquiryPager', inqBefore - 1);
   is('and goes when confirmed',
     Number((await p.locator('#enquiryPager').innerText()).match(/Total (\d+)/)[1]), inqBefore - 1);
 

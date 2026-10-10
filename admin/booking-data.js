@@ -15,6 +15,20 @@ const PAYMENT_TYPE_LABELS = {
   extra_km: 'Extra KM',
 };
 
+// The three lists the server validates against, written once here rather
+// than in each <select> that offers them. src/booking.php holds the same
+// values and refuses anything else; these are what the edit dialogs build
+// their dropdowns from.
+const PAYMENT_METHODS = ['Cash', 'UPI', 'Card', 'Bank Transfer', 'Other'];
+const FUEL_LEVELS     = ['Full', '3/4', '1/2', '1/4', 'Empty'];
+const EXTRA_KINDS     = [
+  ['cleaning', 'Cleaning'],
+  ['fuel', 'Fuel'],
+  ['damage', 'Damage'],
+  ['late', 'Late return'],
+  ['other', 'Other'],
+];
+
 const SCHEDULE_TONES = { neutral: 'neutral', due: 'due', live: 'live', late: 'late' };
 
 function isSameDay(a, b) {

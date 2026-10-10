@@ -57,6 +57,53 @@ switch ($action) {
         json_out(['ok' => true, 'files' => customer_files($customerId)]);
     }
 
+    // What the document is and when it runs out, without re-uploading it.
+    //
+    // A licence photographed into the wrong slot, or filed with the expiry
+    // read off the wrong line, used to mean removing the file and finding it
+    // again on whichever phone took it. The file itself is never changed
+    // here: replacing it is a removal and a fresh upload, which is what the
+    // record should say happened.
+    case 'edit': {
+        $user = api_guard('booking.create', true);
+        $body = json_input();
+
+        $id      = (int) ($body['id'] ?? 0);
+        $kind    = (string) ($body['kind'] ?? '');
+        $caption = trim((string) ($body['caption'] ?? ''));
+        $expires = trim((string) ($body['expires_on'] ?? ''));
+
+        if ($id <= 0) {
+            json_error('Which document to change was not sent.', 422);
+        }
+        if (!isset(CUSTOMER_FILE_KINDS[$kind])) {
+            json_error('Please correct the highlighted fields.', 422,
+                ['fields' => ['kind' => 'That is not one of the documents this keeps.']]);
+        }
+        if ($expires !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $expires)) {
+            json_error('Please correct the highlighted fields.', 422,
+                ['fields' => ['expires_on' => 'A date, as year-month-day.']]);
+        }
+
+        $row = fetch_one('SELECT * FROM customer_files WHERE id = ?', [$id]);
+        if ($row === null) {
+            json_error('That document is no longer on file.', 404);
+        }
+
+        query('UPDATE customer_files SET kind = ?, caption = ?, expires_on = ? WHERE id = ?',
+            [$kind, $caption === '' ? null : mb_substr($caption, 0, 160),
+             $expires === '' ? null : $expires, $id]);
+
+        audit_log('customer_document_changed', 'bookings', 'customer',
+            (int) $row['customer_id'],
+            ['kind' => $row['kind'], 'caption' => $row['caption'],
+             'expires_on' => $row['expires_on']],
+            ['kind' => $kind, 'caption' => $caption, 'expires_on' => $expires],
+            null, (int) $user['id'], $user['name'], null, (int) $row['customer_id']);
+
+        json_out(['ok' => true, 'files' => customer_files((int) $row['customer_id'])]);
+    }
+
     case 'delete': {
         $user = api_guard('booking.create', true);
         $body = json_input();

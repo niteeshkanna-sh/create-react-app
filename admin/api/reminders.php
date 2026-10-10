@@ -39,11 +39,18 @@ switch ($action) {
 
     // ---------------------------------------------------------------- save --
     case 'save': {
-        // Guarded once, for what this call actually is. Editing somebody
-        // else's reminder is a different permission to writing your own.
+        // Guarded for what this call actually is. Editing somebody else's
+        // reminder is a different permission to writing your own.
+        //
+        // Written out as two calls rather than one with a conditional
+        // argument so that the permission names are literals: the Users
+        // screen offers only abilities something enforces, and the check
+        // that keeps that honest reads this file for them.
         $input = json_input();
         $id    = (int) ($input['id'] ?? 0);
-        $user  = api_guard($id > 0 ? 'reminder.edit' : 'reminder.create', true);
+        $user  = $id > 0
+            ? api_guard('reminder.edit', true)
+            : api_guard('reminder.create', true);
 
         if (!reminders_ready()) {
             json_error('This panel is a database update behind. Reload it and try again.', 409);

@@ -13,6 +13,28 @@
 (function () {
   'use strict';
 
+  /**
+   * What this account may do, as the shell published it.
+   *
+   * The server decides permission -- every page and every endpoint guards
+   * itself. This is so the panel does not draw a button whose only outcome is
+   * "You do not have permission to do that", and does not fetch what it will
+   * be refused: a refusal is written to the audit log, and a dashboard that
+   * asked for the month's expenses on every load was putting two of them
+   * there each time a Counter Staff account signed in.
+   */
+  var ABLE = (function () {
+    var meta = document.querySelector('meta[name="abilities"]');
+    var list = (meta && meta.content ? meta.content : '').split(' ');
+    var set  = {};
+    for (var i = 0; i < list.length; i++) {
+      if (list[i]) set[list[i]] = true;
+    }
+    return set;
+  }());
+
+  window.nsCan = function (ability) { return ABLE[ability] === true; };
+
   var side   = document.getElementById('nsSide');
   var scrim  = document.getElementById('nsScrim');
   var burger = document.getElementById('nsBurger');
@@ -161,7 +183,7 @@
         + '<span class="ns-bell-msg">' + esc(a.message) + '</span>'
         + '</button>';
 
-      if (mine) {
+      if (mine && window.nsCan('reminder.edit')) {
         row += '<span class="ns-bell-tools">'
           + '<button type="button" class="ns-bell-tick" data-done="' + a.reminder_id + '"'
           + ' title="Mark as done" aria-label="Mark &ldquo;' + esc(a.subject) + '&rdquo; as done">'
@@ -233,8 +255,19 @@
 
   function closeForm() { if (overlay) overlay.hidden = true; }
 
+  // Only for an account that may set one. An Auditor is read-only, and was
+  // still offered "+ Add" and a pencil on every reminder -- both of which
+  // the server refuses.
+  var addBtn = document.getElementById('nsBellAdd');
+  if (addBtn) {
+    if (window.nsCan('reminder.create')) {
+      addBtn.addEventListener('click', function () { openForm(null); });
+    } else {
+      addBtn.hidden = true;
+    }
+  }
+
   if (overlay) {
-    document.getElementById('nsBellAdd').addEventListener('click', function () { openForm(null); });
     document.getElementById('nsReminderCancel').addEventListener('click', closeForm);
     // Clicking away from a half-written reminder asks before it throws it
     // away, the same as every other form in the panel. See dialog.js.

@@ -53,10 +53,17 @@ must be listed in `public_site_origin` in `config.php`.
 point and a rental business cannot afford figures that drift.
 
 **Financial records are added, never edited.** Payments, deposits, refunds,
-expenses and KM readings are only ever inserted. A mistake is corrected by a
-new row that cites the one it corrects, and cancelling is a status change with
-a reason. Nothing is deleted, so the trail an auditor follows is the trail of
-what actually happened.
+charges, expenses and KM readings are only ever inserted. A mistake is
+corrected by a new row that cites the one it corrects, and cancelling is a
+status change with a reason. Nothing is deleted, so the trail an auditor
+follows is the trail of what actually happened.
+
+Every one of them has an **Edit** on the booking that holds it, and none of
+those edits overwrites anything. Asked for the figure that should have been
+recorded, the panel works out the difference and the server writes it as a
+correction — an adjustment row beside a payment or an expense, a replacement
+row citing the old one for a deposit, refund, charge or odometer reading. The
+wrong figure stays on the record with the reason it was wrong against it.
 
 **Income is never typed in.** The Finance tab sums the payments already
 recorded against bookings, so it cannot disagree with the bookings it
@@ -73,6 +80,28 @@ only on a real pickup or return, so it is never marked Active without the
 odometer reading its extra-KM charge depends on. Alongside it, a schedule chip
 derived from the clock reads Upcoming, Awaiting Pickup, On Rent, Overdue
 Return and so on.
+
+## Who may do what
+
+Five roles, set per account on the Users screen, which only a Super Admin
+sees:
+
+- **Super Admin** — everything, including who else may sign in
+- **Admin** — the day's work and the public website; sees the money, does not
+  move it
+- **Accounts** — the money: payments, deposits, refunds, expenses and the
+  corrections to all four
+- **Staff** — the counter: bookings, the fleet, enquiries, KM readings
+- **Auditor** — reads everything and changes nothing
+
+A role is the starting point, not the whole answer. Any one permission can be
+added to or taken from one person, and what is stored is the difference — so
+an account reads as "Accounts, and may also cancel a booking" and stays that
+way when the role itself is adjusted later.
+
+Every screen and every endpoint checks for itself. The navigation only shows
+what the signed-in account may open, which is a courtesy rather than the
+guard: typing the address of a screen you may not use gets a 403 either way.
 
 ## Security
 

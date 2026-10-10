@@ -78,28 +78,40 @@ const has = (l, text, needle) =>
 
   // Local suites all post from 127.0.0.1 and share one rate-limit window; an
   // earlier run would otherwise throttle this one.
-  execFileSync('php', [__dirname + '/clear-enquiry-throttle.php'], { stdio: 'ignore' });
+  //
+  // Its output is shown rather than swallowed. It needs the same database
+  // this panel is reading, and when it could not find one it used to say so
+  // into /dev/null -- which read, three assertions later, as the public form
+  // refusing a perfectly good enquiry.
+  try {
+    execFileSync('php', [__dirname + '/clear-enquiry-throttle.php'], { stdio: 'inherit' });
+  } catch {
+    bad('the rate-limit window could not be cleared',
+      'set NITESHA_CONFIG to the panel config this server is using');
+  }
 
   const stamp = Date.now().toString().slice(-6);
   const customer = `Meena R ${stamp}`;
 
   // An enquiry arrives from the public site, exactly as the form would send it.
-  // The fetch runs from a page on the same origin, as a visitor's browser would.
-  await p.goto(`${BASE}/index.php`, { waitUntil: 'networkidle' });
-  const submitted = await p.evaluate(async ({ base, name }) => {
-    const r = await fetch(`${base}/api/enquiry-submit.php`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name, phone: '9876500' + Math.floor(Math.random() * 900 + 100),
-        email: 'meena@example.com',
-        message: 'Need a car for three days in December',
-        pickup_location: 'Nagercoil',
-        start_date: '2026-12-10', return_date: '2026-12-13',
-      }),
-    });
-    return { status: r.status, body: await r.json() };
-  }, { base: BASE, name: customer });
+  //
+  // Posted from outside a page rather than with fetch() inside one. The
+  // endpoint refuses an Origin that is not the public site's, which is the
+  // point of it -- and a browser posting from the panel's own address sends
+  // exactly such an Origin. A request with no Origin is what the endpoint
+  // allows through, and is as close to the visitor's post as this can get
+  // without serving the public site here too.
+  const posted = await p.request.post(`${BASE}/api/enquiry-submit.php`, {
+    headers: { 'Content-Type': 'application/json' },
+    data: {
+      name: customer, phone: '9876500' + Math.floor(Math.random() * 900 + 100),
+      email: 'meena@example.com',
+      message: 'Need a car for three days in December',
+      pickup_location: 'Nagercoil',
+      start_date: '2026-12-10', return_date: '2026-12-13',
+    },
+  });
+  const submitted = { status: posted.status(), body: await posted.json().catch(() => ({})) };
 
   submitted.status === 201 ? ok('public form accepted the enquiry') : bad('public form accepted', submitted.status);
   submitted.body.enquiry_number ? ok(`reference issued (${submitted.body.enquiry_number})`) : bad('reference issued');
@@ -123,11 +135,18 @@ const has = (l, text, needle) =>
   has('and one for the new ones', stats, 'New');
 
   console.log('\n-- search and filter --');
-  await p.fill('#enquirySearch', stamp);
-  await p.waitForTimeout(800);
+  // Waited for rather than slept through: typing debounces for 300ms and
+  // then fetches, and a fixed 800ms was close enough to that to fail on a
+  // slow morning.
+  const searched = (q) => p.waitForResponse(
+    (r) => r.url().includes('enquiries.php') && r.url().includes(`q=${q}`),
+    { timeout: 10000 },
+  );
+  await Promise.all([searched(stamp), p.fill('#enquirySearch', stamp)]);
+  await p.waitForTimeout(400);
   has('search narrows the list', await p.locator('#inquiriesWrap').innerText(), customer);
   await p.fill('#enquirySearch', '');
-  await p.waitForTimeout(800);
+  await p.waitForTimeout(900);
   await p.click('#enquiryChips [data-chip="Converted"]');
   await p.waitForTimeout(800);
   const converted = await p.locator('#inquiriesWrap').innerText();
@@ -213,6 +232,15 @@ const has = (l, text, needle) =>
 
   await p.click('.admin-tab[data-tab="bookings"]');
   await p.waitForTimeout(900);
+  // Asked for by name. The list shows one page of thirty by hire date, and
+  // the other suites leave bookings dated into 2027 -- enough to push this
+  // one off the page and fail a test of the enquiry, not of the list.
+  await p.fill('#bookingSearch', customer);
+  await p.waitForFunction(
+    (name) => [...document.querySelectorAll('#bookingListWrap tbody tr')]
+      .some((r) => r.innerText.includes(name)),
+    customer, { timeout: 10000 },
+  ).catch(() => {});
   has('the booking exists under the customer', await p.locator('#bookingListWrap').innerText(), customer);
 
   console.log('\n-- other tabs still render --');

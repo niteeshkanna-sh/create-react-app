@@ -742,6 +742,10 @@ function present_booking(array $row, bool $detailed): array
             'refund_amount' => (float) $r['refund_amount'],
             'refunded_on'   => $r['refunded_on'],
             'method'        => $r['method'],
+            'reference'     => $r['reference'],
+            // So the screen can tell a refund that stands from one that was
+            // corrected, and offer to change only the first.
+            'status'        => $r['status'],
         ], fetch_all('SELECT * FROM refunds WHERE booking_id = ? ORDER BY id', [$id])),
         'pickup' => km_leg($id, 'pickup'),
         'return' => km_leg($id, 'return'),

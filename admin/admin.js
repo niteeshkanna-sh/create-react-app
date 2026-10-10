@@ -1,13 +1,43 @@
 // The server decides who is signed in; by the time this page renders, the
 // session has already been checked. Signing out is a form post to logout.php.
 
+/**
+ * May this account do that? Published by the shell; see shell.js.
+ *
+ * Guarded so this file still works if shell.js has not run -- in which case
+ * nothing is hidden, and the server refuses what it must, as it always did.
+ */
+function can(ability) {
+  return typeof window.nsCan !== 'function' || window.nsCan(ability);
+}
+
+/**
+ * Takes the card or column an element sits in off the page unless the account
+ * may see what is in it. The whole card, not the figure: a "Total Income"
+ * label above an empty space is worse than no card at all.
+ */
+function hideUnless(ability, ...ids) {
+  if (can(ability)) return;
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) (el.closest('.stat-card, .dashboard-col') || el).hidden = true;
+  });
+}
+
+/**
+ * Every panel was drawn on load, whatever the account was allowed to see.
+ * On a Counter Staff account that meant four requests the server refused,
+ * four errors in the console, four rows in the audit log, and a Finance
+ * screen reading "Could not load finance: You do not have permission to do
+ * that" -- for a tab that should not have been offered in the first place.
+ */
 function showDashboard() {
   renderOverview();
-  renderCarAdminGrid();
-  renderInquiries();
-  renderFinance();
-  renderBookingList();
-  renderReport();
+  if (can('vehicle.view')) renderCarAdminGrid();
+  if (can('enquiry.view')) renderInquiries();
+  if (can('expense.view')) renderFinance();
+  if (can('booking.view')) renderBookingList();
+  if (can('report.view')) renderReport();
 }
 
 /**
@@ -26,7 +56,7 @@ function showError(err) {
 // loadCars(), so they are fetched once here and cached for the page.
 async function boot() {
   try {
-    await refreshVehicles();
+    if (can('vehicle.view')) await refreshVehicles();
   } catch (err) {
     showError(err);
     return;
@@ -471,6 +501,8 @@ function syncOwnerFields() {
 }
 document.getElementById('carOwnership').addEventListener('change', syncOwnerFields);
 
+// Hidden rather than offered and refused, the same as the quick actions.
+hideUnless('vehicle.edit', 'addCarBtn');
 document.getElementById('addCarBtn').addEventListener('click', () => openCarModal(null));
 document.getElementById('carModalCancel').addEventListener('click', closeCarModal);
 // Closing by clicking away asks first when the form has been filled in.
@@ -970,7 +1002,13 @@ function formatINR(amount) {
   // Coerced rather than trusted: money arrives from the API as a number, but
   // a string slipping through would format as 2000.00 instead of ₹2,000.
   const value = Number(amount) || 0;
-  return `₹${value.toLocaleString('en-IN')}`;
+  // The sign in front of the symbol, and a real minus rather than a hyphen.
+  // A correction that takes money back off a booking is a negative row in
+  // the payments list, and "₹-500" hides its own sign against the rupee
+  // mark at the size this is read on a phone.
+  return value < 0
+    ? `\u2212\u202f₹${Math.abs(value).toLocaleString('en-IN')}`
+    : `₹${value.toLocaleString('en-IN')}`;
 }
 
 /**
@@ -1205,6 +1243,7 @@ function closeExpenseModal() {
 }
 
 // ---- Finance wiring ----
+hideUnless('expense.create', 'addExpenseBtn');
 document.getElementById('addExpenseBtn')?.addEventListener('click', openExpenseModal);
 document.getElementById('expenseModalCancel')?.addEventListener('click', closeExpenseModal);
 document.getElementById('expenseModalClose')?.addEventListener('click', closeExpenseModal);
@@ -1267,21 +1306,27 @@ async function renderOverview() {
   // The dashboard shows the current month, which is the figure someone means
   // when they ask how the business is doing.
   let money = { income: { total: 0 }, expenses: { total: 0, pending_approval: { count: 0 } }, net: 0 };
-  try {
-    money = await api.expenses.summary({});
-    FINANCE_SUMMARY = money;
-  } catch {
-    // The rest of the dashboard should still paint if this one call fails.
+  // Not asked for at all without the permission to see it: the figures below
+  // are hidden in that case, and asking anyway would log a refusal.
+  if (can('report.view')) {
+    try {
+      money = await api.expenses.summary({});
+      FINANCE_SUMMARY = money;
+    } catch {
+      // The rest of the dashboard should still paint if this one call fails.
+    }
   }
 
   // Enquiries still needing attention, rather than every one ever received —
   // a count that only ever grows tells you nothing.
   let inquiries = [];
-  try {
-    inquiries = (await api.enquiries.list()).enquiries
-      .filter((e) => ['New', 'Contacted', 'Pending'].includes(e.status));
-  } catch {
-    // The dashboard should still render its other figures if this one fails.
+  if (can('enquiry.view')) {
+    try {
+      inquiries = (await api.enquiries.list()).enquiries
+        .filter((e) => ['New', 'Contacted', 'Pending'].includes(e.status));
+    } catch {
+      // The dashboard should still render its other figures if this one fails.
+    }
   }
 
   carCountEl.textContent = cars.length;
@@ -1289,6 +1334,13 @@ async function renderOverview() {
   document.getElementById('statIncome').textContent = formatINR(money.income.total);
   document.getElementById('statExpense').textContent = formatINR(money.expenses.total);
   document.getElementById('statBalance').textContent = formatINR(money.net);
+
+  // A zero is a figure, and a figure somebody will act on. An account that
+  // may not see the money must be shown nothing rather than ₹0.
+  hideUnless('report.view', 'statIncome', 'statExpense', 'statBalance');
+  hideUnless('vehicle.view', 'statCarCount');
+  hideUnless('enquiry.view', 'statInquiryCount', 'recentInquiries');
+  hideUnless('expense.view', 'recentTransactions');
 
   const recentInquiries = document.getElementById('recentInquiries');
   recentInquiries.innerHTML = inquiries.length
@@ -1304,10 +1356,12 @@ async function renderOverview() {
 
   const recentTransactions = document.getElementById('recentTransactions');
   let recent = [];
-  try {
-    recent = (await api.expenses.list({})).expenses.slice(0, 5);
-  } catch {
-    // Same again: a failure here should not take the whole dashboard down.
+  if (can('expense.view')) {
+    try {
+      recent = (await api.expenses.list({})).expenses.slice(0, 5);
+    } catch {
+      // Same again: a failure here should not take the whole dashboard down.
+    }
   }
   recentTransactions.innerHTML = recent.length
     ? recent.map((e) => expenseCardHTML(e, { actions: false })).join('')
@@ -1985,6 +2039,7 @@ function closeBookingModal() {
   convertingEnquiry = null;
 }
 
+hideUnless('booking.create', 'addBookingBtn');
 document.getElementById('addBookingBtn').addEventListener('click', () => openBookingModal(null));
 document.getElementById('bookingModalCancel').addEventListener('click', closeBookingModal);
 nsModal.guard(bookingModalOverlay, closeBookingModal);
@@ -2141,6 +2196,12 @@ async function renderBookingDetail(id) {
   const charges = booking.charges || {};
   const km = booking.km || {};
   const open = booking.status !== 'Completed' && booking.status !== 'Cancelled';
+  // Whether something already on the booking can still be put right. A
+  // closed booking takes nothing new -- that is what `open` is for -- but a
+  // figure found to be wrong a week later has to be correctable, which is
+  // why Void has never been gated on `open` either. A cancelled booking is
+  // the exception the server also makes: its charges are settled.
+  const amendable = booking.status !== 'Cancelled';
 
   // Payments that have been voided stay listed, struck through: the record of
   // what was entered is part of the trail, not something to hide.
@@ -2154,9 +2215,19 @@ async function renderBookingDetail(id) {
             ${p.status !== 'active' ? `<em>${p.status}</em>` : ''}
           </span>
           <span class="amount">${formatINR(p.amount)}</span>
-          ${p.status === 'active' ? `<button class="btn btn-ghost btn-sm void-payment" data-id="${p.id}">Void</button>` : ''}
+          ${p.status === 'active' ? `
+            <span class="row-acts">
+              <button class="btn btn-ghost btn-sm edit-payment" data-id="${p.id}">Edit</button>
+              <button class="btn btn-ghost btn-sm void-payment" data-id="${p.id}">Void</button>
+            </span>` : ''}
         </div>`).join('')
     : '<p class="detail-empty">No payments recorded yet.</p>';
+
+  // Only what still stands. A corrected deposit leaves the wrong row behind
+  // on purpose; offering to correct that one again is offering to correct
+  // history.
+  const depositRows = (booking.deposits || []).filter((d) => d.status === 'active');
+  const refundRows  = (booking.refunds || []).filter((r) => (r.status || 'active') === 'active');
 
   const row = (k, v) => `<div class="info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
 
@@ -2167,6 +2238,7 @@ async function renderBookingDetail(id) {
         <div class="info-card-head">
           <span class="info-card-ico">${recIcon('user')}</span>
           <h3>Customer</h3>
+          ${open ? '<button class="btn btn-ghost btn-sm card-edit" id="edit-customer">Edit</button>' : ''}
         </div>
         ${row('Name', escapeHTML(booking.customer_name))}
         ${row('Phone', `<a href="tel:${escapeHTML(booking.customer_phone)}">${escapeHTML(booking.customer_phone)}</a>`)}
@@ -2181,6 +2253,7 @@ async function renderBookingDetail(id) {
         <div class="info-card-head">
           <span class="info-card-ico">${recIcon('car')}</span>
           <h3>Rental</h3>
+          ${open ? '<button class="btn btn-ghost btn-sm card-edit" id="edit-rental">Edit</button>' : ''}
         </div>
         ${row('Vehicle', escapeHTML(booking.vehicle_name))}
         ${row('Reg. Number', escapeHTML(booking.vehicle_reg) || '—')}
@@ -2193,6 +2266,7 @@ async function renderBookingDetail(id) {
         <div class="info-card-head">
           <span class="info-card-ico">${recIcon('rupee')}</span>
           <h3>Agreed terms</h3>
+          ${open ? '<button class="btn btn-ghost btn-sm card-edit" id="edit-terms">Edit</button>' : ''}
         </div>
         ${row('Rental amount', formatINR(charges.base_rental || 0))}
         ${row('KM limit', `${charges.km_limit_per_day || 0}/day`)}
@@ -2237,14 +2311,29 @@ async function renderBookingDetail(id) {
         ${open ? '<button class="btn btn-outline btn-sm" id="detailAddPaymentBtn">+ Add Payment</button>' : ''}
       </div>
       ${paymentRows}
+
+      ${(booking.extras || []).length ? `
+        <p class="modal-section-label">Charges added later</p>
+        ${booking.extras.map((x) => `
+          <div class="payment-row">
+            <span class="payment-meta">${escapeHTML(x.label)}
+              ${x.note ? `<span class="payment-note">${escapeHTML(x.note)}</span>` : ''}
+            </span>
+            <span class="amount">+ ${formatINR(x.amount)}</span>
+            ${amendable ? `
+              <span class="row-acts">
+                <button class="btn btn-ghost btn-sm edit-extra" data-id="${x.id}">Edit</button>
+                <button class="btn btn-ghost btn-sm void-extra" data-id="${x.id}">Remove</button>
+              </span>` : ''}
+          </div>`).join('')}
+      ` : ''}
+
       <div class="detail-grid" style="margin-top:12px">
         <div class="detail-field"><span class="k">Rental Amount</span><span class="v">${formatINR(charges.base_rental || 0)}</span></div>
         ${Number(booking.extra_km_charge) ? `
           <div class="detail-field"><span class="k">Extra KM (${Number(booking.extra_km || 0).toLocaleString('en-IN')} km)</span><span class="v">+ ${formatINR(booking.extra_km_charge)}</span></div>` : ''}
         ${Number(charges.other_charges) ? `
           <div class="detail-field"><span class="k">Other Charges</span><span class="v">+ ${formatINR(charges.other_charges)}</span></div>` : ''}
-        ${(booking.extras || []).map((x) => `
-          <div class="detail-field"><span class="k">${escapeHTML(x.label)}${x.note ? ' — ' + escapeHTML(x.note) : ''}</span><span class="v">+ ${formatINR(x.amount)}</span></div>`).join('')}
         ${Number(charges.discount) ? `
           <div class="detail-field"><span class="k">Discount</span><span class="v">- ${formatINR(charges.discount)}</span></div>` : ''}
         <div class="detail-field"><span class="k">Rental Amount Due</span><span class="v">${formatINR(booking.total)}</span></div>
@@ -2272,13 +2361,32 @@ async function renderBookingDetail(id) {
         <p class="field-hint">Tracked separately — never counted as rental revenue.</p>
         ${booking.deposit_held > 0 ? '<button class="btn btn-outline btn-sm" id="detailRefundBtn">Refund Deposit</button>' : ''}
       ` : '<p class="detail-empty">No security deposit recorded yet.</p>'}
-      ${booking.refunds.length ? `
-        <p class="modal-section-label">Refunds</p>
-        ${booking.refunds.map((r) => `
+
+      ${depositRows.length ? `
+        <p class="modal-section-label">What was taken</p>
+        ${depositRows.map((d) => `
           <div class="payment-row">
-            <span>${formatDate(r.refunded_on)} · ${r.method}${r.reason ? ` · ${r.reason}` : ''}
-              ${r.deduction > 0 ? `· deduction ${formatINR(r.deduction)}` : ''}</span>
+            <span class="payment-meta">${formatDate(d.received_on)} · ${escapeHTML(d.method)}
+              ${d.reference ? `<span class="payment-note">${escapeHTML(d.reference)}</span>` : ''}
+            </span>
+            <span class="amount">${formatINR(d.amount)}</span>
+            <span class="row-acts">
+              <button class="btn btn-ghost btn-sm edit-deposit" data-id="${d.id}">Edit</button>
+            </span>
+          </div>`).join('')}
+      ` : ''}
+
+      ${refundRows.length ? `
+        <p class="modal-section-label">Refunds</p>
+        ${refundRows.map((r) => `
+          <div class="payment-row">
+            <span class="payment-meta">${formatDate(r.refunded_on)} · ${escapeHTML(r.method)}${r.reason ? ` · ${escapeHTML(r.reason)}` : ''}
+              ${r.deduction > 0 ? `<span class="payment-note">deduction ${formatINR(r.deduction)}</span>` : ''}
+            </span>
             <span class="amount">${formatINR(r.refund_amount)}</span>
+            <span class="row-acts">
+              <button class="btn btn-ghost btn-sm edit-refund" data-id="${r.id}">Edit</button>
+            </span>
           </div>`).join('')}
       ` : ''}
       ${attachmentsHTML(booking.files, 'deposit', 'Deposit proof')}
@@ -2300,7 +2408,8 @@ async function renderBookingDetail(id) {
           <div class="detail-field"><span class="k">Condition</span><span class="v">${booking.pickup.condition_note || '—'}</span></div>
         </div>
         ${checklistHTML(booking.pickup.checklist)}
-        ${open ? `<button class="btn btn-ghost btn-sm correct-km" data-id="${booking.pickup.id}" data-current="${booking.pickup.odometer_km}">Correct reading</button>` : ''}
+        ${amendable ? `<button class="btn btn-ghost btn-sm edit-km" data-id="${booking.pickup.id}"
+            data-leg="pickup">Edit this record</button>` : ''}
       ` : '<p class="detail-empty">Not recorded yet.</p>'}
       ${attachmentsHTML(booking.files, 'pickup', 'Pickup photos')}
     </div>
@@ -2325,7 +2434,8 @@ async function renderBookingDetail(id) {
           <div class="detail-field"><span class="k">Extra KM Charge</span><span class="v">${formatINR(km.extra_km_charge || 0)}</span></div>
         </div>
         ${checklistHTML(booking.return.checklist)}
-        ${open ? `<button class="btn btn-ghost btn-sm correct-km" data-id="${booking.return.id}" data-current="${booking.return.odometer_km}">Correct reading</button>` : ''}
+        ${amendable ? `<button class="btn btn-ghost btn-sm edit-km" data-id="${booking.return.id}"
+            data-leg="return">Edit this record</button>` : ''}
       ` : `<p class="detail-empty">${booking.pickup ? 'Not recorded yet.' : 'Record pickup first.'}</p>`}
       ${attachmentsHTML(booking.files, 'return', 'Return photos')}
     </div>
@@ -2339,7 +2449,11 @@ async function renderBookingDetail(id) {
             <span class="payment-note">noticed at ${d.noticed_at}${d.note ? ' · ' + escapeHTML(d.note) : ''}</span>
           </span>
           <span class="amount">${formatINR(d.estimated_cost)}</span>
-          ${open ? `<button class="btn btn-ghost btn-sm void-damage" data-id="${d.id}">Remove</button>` : ''}
+          ${amendable ? `
+            <span class="row-acts">
+              <button class="btn btn-ghost btn-sm edit-damage" data-id="${d.id}">Edit</button>
+              <button class="btn btn-ghost btn-sm void-damage" data-id="${d.id}">Remove</button>
+            </span>` : ''}
         </div>`).join('')}
       ${attachmentsHTML(booking.files, 'damage', 'Damage photos')}
     </div>` : ''}`;
@@ -2631,38 +2745,317 @@ function wireDetailActions(booking) {
     });
   });
 
-  document.querySelectorAll('.correct-km').forEach((btn) => {
+  // Pickup and return: the odometer, the fuel, the condition and the time
+  // the car actually changed hands, in one go. It used to be the odometer
+  // alone, which meant a fuel level written down wrong at the counter could
+  // not be put right at all.
+  document.querySelectorAll('.edit-km').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const current = btn.dataset.current;
-      const corrected = await nsDialog.ask('Corrected odometer reading (km)', {
-        title: 'Correct this reading',
-        body: `It currently reads ${current} km.`,
-        confirmLabel: 'Next',
-        type: 'number',
-        value: current,
-        required: true,
-        validate: (v) => (Number(v) >= 0 ? null : 'A reading in kilometres.'),
+      const leg = btn.dataset.leg;
+      const record = booking[leg];
+      if (!record) return;
+
+      const answer = await nsDialog.form([
+        { name: 'odometer_km', label: 'Odometer (km)', type: 'number', half: true,
+          value: record.odometer_km, required: true,
+          hint: `Recorded as ${Number(record.odometer_km).toLocaleString('en-IN')} km`,
+          validate: (v) => (Number(v) >= 0 ? null : 'A reading in kilometres.') },
+        { name: 'recorded_at', label: 'Date and time', type: 'datetime-local', half: true,
+          value: String(record.recorded_at || '').replace(' ', 'T').slice(0, 16) },
+        // The blank is first so a reading taken without a fuel level keeps
+        // saying so, rather than silently becoming Full on its way through
+        // a dropdown that had no way to say "not noted".
+        { name: 'fuel_level', label: 'Fuel level', type: 'select', half: true,
+          value: record.fuel_level || '',
+          options: [{ value: '', label: 'Not noted' }]
+            .concat(FUEL_LEVELS.map((f) => ({ value: f, label: f }))) },
+        { name: 'condition_note', label: 'Condition', half: true,
+          value: record.condition_note || '', placeholder: 'e.g. Clean, no visible damage' },
+        { name: 'reason', label: 'Why is it being changed?', required: true,
+          placeholder: 'e.g. Read off the trip meter by mistake' },
+      ], {
+        title: leg === 'pickup' ? 'Edit the pickup record' : 'Edit the return record',
+        body: 'The record you are replacing stays on the booking, marked, with '
+            + 'this reason against it.',
+        confirmLabel: 'Save the correction',
       });
-      if (corrected === null) return;
-      const reason = await nsDialog.ask('Why is this reading being corrected?', {
-        title: 'Correct this reading',
-        confirmLabel: 'Correct it',
-        required: true,
-        validate: (v) => (v.trim() ? null : 'A reason is required to correct a reading.'),
-      });
-      if (reason === null) return;
+      if (answer === null) return;
+
       try {
         const result = await api.km.correct({
           id: Number(btn.dataset.id),
-          odometer_km: Number(corrected),
-          reason: reason.trim(),
+          odometer_km: Number(answer.odometer_km),
+          recorded_at: answer.recorded_at ? answer.recorded_at.replace('T', ' ') : '',
+          fuel_level: answer.fuel_level,
+          condition_note: answer.condition_note,
+          reason: answer.reason.trim(),
         });
         nsDialog.tell(`Reading corrected by ${result.difference} km. `
-          + 'The original reading is kept on the record.', { title: 'Reading corrected' });
+          + 'The original reading is kept on the record.', { title: 'Record corrected' });
         await refreshAfterBookingChange();
       } catch (err) { showError(err); }
     });
   });
+
+  // ---- Correcting what is already on the record ------------------------
+  //
+  // Every one of these says the same thing in the same way: what it is now,
+  // what it should be, and why. None of them overwrites a figure -- the
+  // server keeps the wrong row, marked, and puts the right one in its place,
+  // so the booking can still be read as it stood on any past day.
+
+  const methodOptions = PAYMENT_METHODS.map((m) => ({ value: m, label: m }));
+
+  document.querySelectorAll('.edit-payment').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const payment = (booking.payments || []).find((p) => p.id === id);
+      if (!payment) return;
+      const was = Number(payment.amount);
+
+      const answer = await nsDialog.form([
+        { name: 'amount', label: 'What the amount should be (₹)', type: 'number', half: true,
+          value: was, required: true, hint: `Entered as ${formatINR(was)}`,
+          validate: (v) => {
+            if (!Number.isFinite(Number(v)) || Number(v) < 0) return 'An amount in rupees.';
+            return Number(v) === was ? 'That is the figure already recorded.' : null;
+          } },
+        { name: 'paid_on', label: 'Date', type: 'date', half: true, value: payment.paid_on,
+          required: true },
+        { name: 'method', label: 'Method', type: 'select', half: true,
+          value: payment.method, options: methodOptions },
+        { name: 'reference', label: 'Reference', half: true, value: payment.reference || '',
+          placeholder: 'UPI ref / UTR' },
+        { name: 'reason', label: 'Why is it being changed?', required: true,
+          placeholder: 'e.g. ₹8,000 typed for ₹3,000' },
+      ], {
+        title: 'Edit this payment',
+        body: 'The entry stays on the booking and an adjustment is recorded against '
+            + 'it, so both the figure that was taken and the fix are on the record.',
+        confirmLabel: 'Save the correction',
+      });
+      if (answer === null) return;
+
+      // The server takes the difference, not the new total: the correction is
+      // a row of its own and the original is never touched.
+      const adjustment = (Number(answer.amount) - was).toFixed(2);
+      try {
+        await api.payments.correct({
+          corrects_id: id,
+          amount: adjustment,
+          paid_on: answer.paid_on,
+          method: answer.method,
+          reference: answer.reference,
+          reason: answer.reason.trim(),
+        });
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
+
+  document.querySelectorAll('.edit-deposit').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const deposit = (booking.deposits || []).find((d) => d.id === id);
+      if (!deposit) return;
+
+      const answer = await nsDialog.form([
+        { name: 'amount', label: 'What was taken (₹)', type: 'number', half: true,
+          value: deposit.amount, required: true,
+          hint: `Entered as ${formatINR(deposit.amount)}`,
+          validate: (v) => (Number(v) > 0 ? null : 'A deposit is more than nothing.') },
+        { name: 'received_on', label: 'Date', type: 'date', half: true,
+          value: deposit.received_on, required: true },
+        { name: 'method', label: 'Method', type: 'select', half: true,
+          value: deposit.method, options: methodOptions },
+        { name: 'reference', label: 'Reference', half: true,
+          value: deposit.reference || '', placeholder: 'UPI ref / UTR' },
+        { name: 'reason', label: 'Why is it being changed?', required: true },
+      ], {
+        title: 'Edit this deposit',
+        body: 'The figure you are replacing stays on the booking, marked, with this '
+            + 'reason against it.',
+        confirmLabel: 'Save the correction',
+      });
+      if (answer === null) return;
+      try {
+        await api.payments.correctDeposit({
+          id,
+          amount: answer.amount,
+          received_on: answer.received_on,
+          method: answer.method,
+          reference: answer.reference,
+          reason: answer.reason.trim(),
+        });
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
+
+  document.querySelectorAll('.edit-refund').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const refund = (booking.refunds || []).find((r) => r.id === id);
+      if (!refund) return;
+
+      const answer = await nsDialog.form([
+        { name: 'refund_amount', label: 'Given back (₹)', type: 'number', half: true,
+          value: refund.refund_amount, required: true,
+          hint: `Entered as ${formatINR(refund.refund_amount)}`,
+          validate: (v) => (Number(v) >= 0 ? null : 'An amount in rupees.') },
+        { name: 'deduction', label: 'Kept back (₹)', type: 'number', half: true,
+          value: refund.deduction || 0,
+          validate: (v) => (Number(v || 0) >= 0 ? null : 'An amount in rupees.') },
+        { name: 'deduction_reason', label: 'Why any was kept',
+          value: refund.reason || '', placeholder: 'Needed only if something is kept back' },
+        { name: 'refunded_on', label: 'Date', type: 'date', half: true,
+          value: refund.refunded_on, required: true },
+        { name: 'method', label: 'Method', type: 'select', half: true,
+          value: refund.method, options: methodOptions },
+        { name: 'reason', label: 'Why is it being changed?', required: true },
+      ], {
+        title: 'Edit this refund',
+        body: 'The refund you are replacing stays on the booking, marked, with this '
+            + 'reason against it.',
+        confirmLabel: 'Save the correction',
+        validate: (v) => (Number(v.deduction || 0) > 0 && !String(v.deduction_reason).trim()
+          ? 'Money kept back from a customer has to be explained.' : null),
+      });
+      if (answer === null) return;
+      try {
+        await api.payments.correctRefund({
+          id,
+          refund_amount: answer.refund_amount,
+          deduction: answer.deduction || '0',
+          deduction_reason: answer.deduction_reason,
+          refunded_on: answer.refunded_on,
+          method: answer.method,
+          reference: refund.reference || '',
+          reason: answer.reason.trim(),
+        });
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
+
+  document.querySelectorAll('.edit-extra').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const extra = (booking.extras || []).find((x) => x.id === id);
+      if (!extra) return;
+
+      const answer = await nsDialog.form([
+        { name: 'kind', label: 'What it is for', type: 'select', half: true,
+          value: extra.kind, options: EXTRA_KINDS.map(([v, l]) => ({ value: v, label: l })) },
+        { name: 'amount', label: 'Amount (₹)', type: 'number', half: true,
+          value: extra.amount, required: true, hint: `Charged as ${formatINR(extra.amount)}`,
+          validate: (v) => (Number(v) > 0 ? null : 'A charge is more than nothing.') },
+        { name: 'note', label: 'Note', value: extra.note || '',
+          placeholder: 'What the customer is being charged for' },
+        { name: 'reason', label: 'Why is it being changed?', required: true },
+      ], {
+        title: 'Edit this charge',
+        body: 'The charge you are replacing stays on the booking, marked, with this '
+            + 'reason against it.',
+        confirmLabel: 'Save the correction',
+      });
+      if (answer === null) return;
+      try {
+        await api.extras.edit({
+          id,
+          kind: answer.kind,
+          amount: answer.amount,
+          note: answer.note,
+          reason: answer.reason.trim(),
+        });
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
+
+  document.querySelectorAll('.void-extra').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const reason = await nsDialog.ask('Why is this charge being dropped?', {
+        title: 'Remove this charge',
+        body: 'It stays on the booking, struck through, and stops counting towards '
+            + 'what the customer owes.',
+        confirmLabel: 'Remove it',
+        tone: 'danger',
+        required: true,
+      });
+      if (!reason) return;
+      try {
+        await api.extras.void(Number(btn.dataset.id), reason.trim());
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
+
+  // Not money, and nothing is summed from it, so this one is changed in
+  // place. What it said before is in the timeline.
+  document.querySelectorAll('.edit-damage').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const damage = (booking.damages || []).find((d) => d.id === id);
+      if (!damage) return;
+
+      const answer = await nsDialog.form([
+        { name: 'description', label: 'What is damaged', value: damage.description,
+          required: true },
+        { name: 'estimated_cost', label: 'Estimated cost (₹)', type: 'number', half: true,
+          value: damage.estimated_cost,
+          validate: (v) => (Number(v || 0) >= 0 ? null : 'An amount in rupees.') },
+        { name: 'noticed_at', label: 'Noticed at', type: 'select', half: true,
+          value: damage.noticed_at,
+          options: [{ value: 'pickup', label: 'Pickup' }, { value: 'return', label: 'Return' }] },
+        { name: 'note', label: 'Note', type: 'textarea', value: damage.note || '' },
+      ], {
+        title: 'Edit this damage record',
+        body: 'An estimate, not a charge. Changing it does not change what the '
+            + 'customer owes — a charge raised for it is edited on the Payments tab.',
+        confirmLabel: 'Save',
+      });
+      if (answer === null) return;
+      try {
+        await api.extras.editDamage({
+          id,
+          description: answer.description,
+          estimated_cost: answer.estimated_cost || '0',
+          noticed_at: answer.noticed_at,
+          note: answer.note,
+        });
+        await refreshAfterBookingChange();
+      } catch (err) { showError(err); }
+    });
+  });
+
+  document.querySelectorAll('.edit-doc').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const answer = await nsDialog.form([
+        { name: 'kind', label: 'What it is', type: 'select', value: btn.dataset.kind,
+          options: DOCUMENT_KINDS.map(([v, l]) => ({ value: v, label: l })) },
+        { name: 'expires_on', label: 'Expires on', type: 'date', half: true,
+          value: btn.dataset.expires || '' },
+        { name: 'caption', label: 'Note', half: true, value: btn.dataset.caption || '' },
+      ], {
+        title: 'Edit this document',
+        body: 'What it is and when it runs out. To put a different file in its '
+            + 'place, remove this one and upload the new one.',
+        confirmLabel: 'Save',
+      });
+      if (answer === null) return;
+      try {
+        await api.customerFiles.edit(Number(btn.dataset.id), answer.kind,
+          answer.caption, answer.expires_on);
+        await renderBookingDetail(booking.id);
+      } catch (err) { showError(err); }
+    });
+  });
+
+  // The three cards on Overview are all fields of the one booking form, so
+  // all three open it rather than inventing three smaller ones.
+  ['edit-customer', 'edit-rental', 'edit-terms']
+    .forEach((id) => on(id, () => openBookingModal(booking)));
 }
 
 function todayStr() {
@@ -2705,6 +3098,10 @@ function documentsHTML(documents) {
               ${expired ? 'Expired' : 'Expires'} ${formatDate(d.expires_on)}</span>` : ''}
           <span class="doc-actions">
             <a class="btn btn-ghost btn-sm" href="${d.url}" target="_blank" rel="noopener">Open</a>
+            <button class="btn btn-ghost btn-sm edit-doc" data-id="${d.id}"
+              data-kind="${escapeHTML(d.kind || 'other')}"
+              data-caption="${escapeHTML(d.caption || '')}"
+              data-expires="${escapeHTML(d.expires_on || '')}">Edit</button>
             <button class="btn btn-ghost btn-sm remove-doc" data-id="${d.id}">Remove</button>
           </span>
         </div>`;
@@ -2829,7 +3226,26 @@ document.addEventListener('click', (e) => {
 });
 
 // ---- The six things started most often ----
+//
+// Each one needs the permission the screen behind it needs; a Counter Staff
+// account was offered "+ Add expense" and a Finance shortcut, one of which
+// opened a form the server would refuse and the other of which did nothing
+// at all, because the tab it jumps to is not in that account's navigation.
+const QUICK_NEEDS = {
+  booking:   'booking.create',
+  vehicle:   'vehicle.edit',
+  expense:   'expense.create',
+  inquiries: 'enquiry.view',
+  bookings:  'booking.view',
+  finance:   'expense.view',
+};
+
 document.querySelectorAll('[data-quick]').forEach((btn) => {
+  const needs = QUICK_NEEDS[btn.dataset.quick];
+  if (needs && !can(needs)) {
+    btn.hidden = true;
+    return;
+  }
   btn.addEventListener('click', () => {
     switch (btn.dataset.quick) {
       case 'booking':   openBookingModal(null); break;
@@ -3486,6 +3902,11 @@ function renderRentalOverview() {
   document.getElementById('statTotalKm').textContent = totalKm.toLocaleString('en-IN');
   document.getElementById('statTotalExpenses').textContent = formatINR(totalExpenses);
   document.getElementById('statNetRevenue').textContent = formatINR(netRevenue);
+
+  // Both of these are worked out from the month's expenses, which an account
+  // without the permission never fetched -- so they would read ₹0 spent and
+  // a net revenue equal to the gross. Two wrong figures rather than none.
+  hideUnless('report.view', 'statTotalExpenses', 'statNetRevenue');
 
   const activeUpcoming = bookings
     .filter((b) => b.status === 'Active' || (b.status === 'Confirmed' && b.start_at >= today))

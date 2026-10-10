@@ -62,7 +62,7 @@ export function Tariff() {
                           like" -- so the name is the way through to the
                           page that answers it. */}
                       {modelPath(car) ? (
-                        <Link to={modelPath(car)!} className="transition hover:text-gold-deep">
+                        <Link to={modelPath(car)!} className="tap-target transition hover:text-gold-deep">
                           {car.brand} {car.name}
                         </Link>
                       ) : (

@@ -22,7 +22,11 @@ require_once __DIR__ . '/src/shell.php';
  * to the copy shipped with the site.
  */
 
-$me = require_login();
+// Seeing what the website says and changing it are separate permissions: an
+// Auditor may read this screen, and the save below is refused without the
+// second one. See abilities.php.
+$me      = require_can('content.view');
+$mayEdit = user_can('content.edit');
 
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
@@ -39,6 +43,7 @@ $error  = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_can('content.edit');
 
     $action  = (string) ($_POST['action'] ?? '');
     $section = (string) ($_POST['section'] ?? '');
@@ -140,6 +145,15 @@ function field_input(string $name, array $spec, mixed $value, string $scope = ''
 admin_shell_open($me, 'content.php', 'Website content');
 ?>
 
+<?php if (!$mayEdit): ?>
+  <!-- Every control on the page at once, rather than a condition on each of
+       the hundred-odd fields. A disabled fieldset disables everything inside
+       it, so what is left is the page as it reads -- which is the whole point
+       of an account that may look and not touch. The server refuses the post
+       either way; this is so nobody fills a form that will be refused. -->
+  <fieldset class="c-readonly" disabled>
+<?php endif; ?>
+
   <div class="c-top">
     <div>
       <p class="c-note">
@@ -149,6 +163,11 @@ admin_shell_open($me, 'content.php', 'Website content');
     </div>
     <a class="btn btn-outline btn-sm" href="/" target="_blank" rel="noopener">See the site &rarr;</a>
   </div>
+
+  <?php if (!$mayEdit): ?>
+    <div class="c-msg">This is what the website says. Changing it needs the
+      &ldquo;<?= e(ability_label('content.edit')) ?>&rdquo; permission.</div>
+  <?php endif; ?>
 
   <?php if ($notice !== null): ?>
     <div class="c-msg c-ok"><?= e($notice) ?></div>
@@ -384,6 +403,10 @@ admin_shell_open($me, 'content.php', 'Website content');
     </div>
   </div>
 </div>
+
+<?php if (!$mayEdit): ?>
+  </fieldset>
+<?php endif; ?>
 
 <script src="<?= asset('content.js') ?>"></script>
 <?php admin_shell_close(); ?>

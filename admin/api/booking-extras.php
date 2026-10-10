@@ -83,6 +83,66 @@ switch ($action) {
         json_out(['ok' => true, 'money' => booking_money((int) $row['booking_id'])]);
     }
 
+    // ---------------------------------------------------- correct a charge --
+    //
+    // The wrong row is kept, marked, and cited by the one that replaces it.
+    // See sql/018_extra_corrections.sql for why this is not an UPDATE.
+    case 'edit-extra': {
+        $user  = api_guard('payment.correct', true);
+        $input = json_input();
+
+        $data = (new Validator($input))
+            ->integer('id', 'Charge', 1)
+            ->inList('kind', 'Charge type', array_keys(EXTRA_KINDS))
+            ->money('amount', 'Amount')
+            ->optional('note', 255)
+            ->required('reason', 'Reason')
+            ->orFail();
+
+        if (money_cmp($data['amount'], '0.00') <= 0) {
+            json_error('Please correct the highlighted fields.', 422,
+                ['fields' => ['amount' => 'A charge has to be more than nothing.']]);
+        }
+        if (!booking_extras_ready()) {
+            json_error('The charges table is still missing from the database.', 500);
+        }
+
+        $row = fetch_one('SELECT * FROM booking_extras WHERE id = ?', [(int) $data['id']]);
+        if ($row === null) {
+            json_error('That charge no longer exists.', 404);
+        }
+        if ($row['status'] !== 'active') {
+            json_error('That charge has been voided. Raise a fresh one instead.', 409);
+        }
+
+        $booking = fetch_one('SELECT * FROM bookings WHERE id = ?', [$row['booking_id']]);
+        if ($booking === null) {
+            json_error('That booking no longer exists.', 404);
+        }
+        if ($booking['status'] === 'Cancelled') {
+            json_error('A cancelled booking cannot have its charges changed.', 409);
+        }
+
+        $newId = transaction(function () use ($data, $row, $user) {
+            query("UPDATE booking_extras SET status = 'voided', status_reason = ? WHERE id = ?",
+                [$data['reason'], $row['id']]);
+
+            query('INSERT INTO booking_extras (booking_id, kind, amount, note, corrects_id, created_by)
+                   VALUES (?,?,?,?,?,?)',
+                [$row['booking_id'], $data['kind'], $data['amount'], $data['note'],
+                 $row['id'], $user['id']]);
+            return last_insert_id();
+        });
+
+        audit_log('booking_extra_corrected', 'bookings', 'booking', (int) $row['booking_id'],
+            ['kind' => $row['kind'], 'amount' => $row['amount'], 'note' => $row['note']],
+            ['kind' => $data['kind'], 'amount' => $data['amount'], 'note' => $data['note']],
+            $data['reason'], (int) $user['id'], $user['name'], (int) $row['booking_id']);
+
+        json_out(['ok' => true, 'extra_id' => $newId,
+                  'money' => booking_money((int) $row['booking_id'])]);
+    }
+
     // ------------------------------------------------------- record damage --
     case 'add-damage': {
         $user  = api_guard('booking.create', true);
@@ -142,6 +202,50 @@ switch ($action) {
         audit_log('booking_damage_removed', 'bookings', 'booking', (int) $row['booking_id'],
             ['description' => $row['description']], null, null,
             (int) $user['id'], $user['name'], (int) $row['booking_id']);
+
+        json_out(['ok' => true, 'money' => booking_money((int) $row['booking_id'])]);
+    }
+
+    // ---------------------------------------------------- correct a damage --
+    //
+    // Changed in place, where a charge is superseded. An estimate is not
+    // money -- nothing is summed from it and no total moves when it changes
+    // -- so a second row describing the same dent would be a worse record
+    // than one line that says what the dent is. What it said before is in
+    // the audit log either way.
+    case 'edit-damage': {
+        $user  = api_guard('booking.create', true);
+        $input = json_input();
+
+        $data = (new Validator($input))
+            ->integer('id', 'Damage', 1)
+            ->required('description', 'What is damaged')
+            ->money('estimated_cost', 'Estimated cost', false)
+            ->inList('noticed_at', 'Noticed at', ['pickup', 'return'])
+            ->optional('note', 2000)
+            ->orFail();
+
+        $row = fetch_one('SELECT * FROM booking_damages WHERE id = ?', [(int) $data['id']]);
+        if ($row === null) {
+            json_error('That damage record no longer exists.', 404);
+        }
+        if ($row['status'] !== 'active') {
+            json_error('That damage record has been removed.', 409);
+        }
+
+        query('UPDATE booking_damages
+                  SET description = ?, estimated_cost = ?, noticed_at = ?, note = ?
+                WHERE id = ?',
+            [$data['description'], $data['estimated_cost'] ?? '0.00',
+             $data['noticed_at'], $data['note'], $row['id']]);
+
+        audit_log('booking_damage_changed', 'bookings', 'booking', (int) $row['booking_id'],
+            ['description' => $row['description'], 'estimated_cost' => $row['estimated_cost'],
+             'noticed_at' => $row['noticed_at']],
+            ['description' => $data['description'],
+             'estimated_cost' => $data['estimated_cost'] ?? '0.00',
+             'noticed_at' => $data['noticed_at']],
+            null, (int) $user['id'], $user['name'], (int) $row['booking_id']);
 
         json_out(['ok' => true, 'money' => booking_money((int) $row['booking_id'])]);
     }
