@@ -20,6 +20,11 @@ require_once __DIR__ . '/../src/booking.php';
  * BLOCKING_STATUSES rather than a list written out again here, so this and the
  * check that refuses a double booking can never disagree about what "taken"
  * means.
+ *
+ * Temporary cars are left out entirely, matching public-vehicles.php. One the
+ * site does not list cannot be the car a visitor picked, so its diary answers
+ * a question nobody asked -- and counting it in the fleet would make a day
+ * look open because a car nobody can see is free on it.
  */
 
 // ---- CORS: the same allowlist the other public endpoints use ----
@@ -56,6 +61,17 @@ if (!table_has_column('bookings', 'start_at')) {
     json_out(['ok' => true, 'vehicles' => [], 'busy' => []]);
 }
 
+// Which cars are not advertised. Read as a set rather than joined in, so the
+// booking query keeps the shape it had: this filters who is reported on,
+// without changing which bookings the database considers.
+$hasTemporary = table_has_column('vehicles', 'is_temporary');
+$temporaryIds = [];
+if ($hasTemporary) {
+    foreach (fetch_all('SELECT id FROM vehicles WHERE is_temporary = 1') as $row) {
+        $temporaryIds[(string) $row['id']] = true;
+    }
+}
+
 // Yesterday onward. A booking that ended last month cannot affect a date
 // anyone is able to choose, and sending every row since opening would grow
 // without limit.
@@ -86,6 +102,9 @@ $counts     = [];
 
 foreach ($rows as $row) {
     $id = (string) $row['vehicle_id'];
+    if (isset($temporaryIds[$id])) {
+        continue;
+    }
     $perVehicle[$id][] = [$row['from_day'], $row['to_day']];
 
     // Expanded to days for the tally. Ranges are short -- a hire is days or
@@ -100,8 +119,13 @@ foreach ($rows as $row) {
 }
 
 // How many vehicles could be hired at all, so "every one is out" is a fact
-// rather than a guess. Available only, matching what the site lists.
-$fleet = (int) (fetch_one("SELECT COUNT(*) AS n FROM vehicles WHERE status = 'Available'")['n'] ?? 0);
+// rather than a guess. Available and advertised, matching what the site lists:
+// counting a car the site never shows would mean a fully booked weekend still
+// looked open.
+$notTemporary = $hasTemporary ? ' AND is_temporary = 0' : '';
+$fleet = (int) (fetch_one(
+    "SELECT COUNT(*) AS n FROM vehicles WHERE status = 'Available'$notTemporary"
+)['n'] ?? 0);
 
 $allBusy = [];
 if ($fleet > 0) {

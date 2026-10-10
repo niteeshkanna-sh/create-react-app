@@ -24,6 +24,14 @@ require_once __DIR__ . '/../src/vehicle-photos.php';
  * Maintenance and Inactive are all excluded, so the site never advertises a
  * car that cannot be given out today.
  *
+ * A temporary car is excluded as well, whatever its status. One brought in
+ * from another owner for a hire or two is not part of what the business
+ * offers: advertising it wins enquiries for a car that will be gone next
+ * week, and the photograph and the price on the site would be somebody
+ * else's. It stays fully usable inside the panel, where a booking can be
+ * made against it like any other -- it is the shop window it stays out of,
+ * not the business.
+ *
  * Rates come from the dated rate card the same way the admin reads them: the
  * newest row not dated in the future, so a price scheduled for next month does
  * not leak out early.
@@ -72,6 +80,13 @@ $bandColumn = table_has_column('vehicle_rates', 'rate_daily_max')
     ? 'r.rate_daily_max,'
     : 'NULL AS rate_daily_max,';
 
+// And the same again for the temporary flag, added by 009. Naming a column
+// that is not there yet would not list one car too many -- it would fail the
+// query and empty the fleet on the live site.
+$notTemporary = table_has_column('vehicles', 'is_temporary')
+    ? 'AND v.is_temporary = 0'
+    : '';
+
 $rows = fetch_all(
     "SELECT v.id,
             v.name,
@@ -98,6 +113,7 @@ $rows = fetch_all(
             ORDER BY effective_from DESC, id DESC LIMIT 1
             )
       WHERE v.status = 'Available'
+            $notTemporary
    ORDER BY v.brand, v.name"
 );
 

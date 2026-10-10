@@ -868,6 +868,16 @@ label.finance-toggle {
   letter-spacing: 0.02em;
 }
 
+/* Said once, beside the badge that explains it. A temporary car is kept off
+   the website, which is worth knowing at a glance and not worth shouting -- so
+   it reads as a note rather than as a second label competing with the first. */
+.owner-badge-quiet {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink-dim);
+  font-weight: 600;
+}
+
 /* Thumbnails: the files chosen in a form before they are sent, and the ones
    already attached to a booking. Same strip in both places, so what you see
    after saving looks like what you saw before it. */

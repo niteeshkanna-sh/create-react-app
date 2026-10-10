@@ -196,7 +196,8 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div class="panel-header">
           <div>
             <h2>Vehicle Management</h2>
-            <p>Fleet, rates, KM limits, and status. Available cars also show in "Popular Rentals" on the public site.</p>
+            <p>Fleet, rates, KM limits, and status. An available car with a rate shows on
+              the public site too &mdash; unless it is marked temporary, which keeps it here only.</p>
           </div>
           <button class="btn btn-primary" id="addCarBtn">+ Add Vehicle</button>
         </div>
@@ -477,8 +478,10 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
               <input type="checkbox" id="carTemporary" />
               Temporary — brought in for a hire or two
             </label>
-            <p class="field-hint">Ticked, it shows as temporary in the fleet so it can
-              be found and retired once the hire is over.</p>
+            <p class="field-hint">Ticked, it is never shown on the website — no fleet
+              page, no tariff, no car list on the enquiry form. It still books here
+              like any other car. It also shows as temporary in the fleet below, so it
+              can be found and retired once the hire is over.</p>
           </div>
         </div>
 
