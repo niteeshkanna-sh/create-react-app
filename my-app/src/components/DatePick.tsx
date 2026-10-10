@@ -107,6 +107,8 @@ export function DatePick({
   labelledBy,
   placeholder = 'Choose a date',
   size = 'md',
+  invalid = false,
+  describedBy,
 }: {
   id: string;
   name: string;
@@ -120,6 +122,10 @@ export function DatePick({
   placeholder?: string;
   /** 'sm' for the banner card, where every row is tighter. */
   size?: 'md' | 'sm';
+  /** The server refused this date. Shown the same way a clash is. */
+  invalid?: boolean;
+  /** The element holding the reason, so it is read out with the field. */
+  describedBy?: string;
 }) {
   const today = iso(new Date());
   const floor = min ?? today;
@@ -304,6 +310,9 @@ export function DatePick({
   // Only reachable by choosing dates and then choosing a vehicle that is out
   // on them: the grid itself will not hand back a booked day.
   const clash = value !== '' && busy.has(value);
+  // A day that is taken and a day the server refused look the same to the
+  // person reading the form, so they look the same here.
+  const wrong = clash || invalid;
 
   return (
     <div
@@ -330,13 +339,14 @@ export function DatePick({
         // one or the other. A <label for> alone would name it after the label
         // and never say which day is in it.
         aria-labelledby={labelledBy ? `${labelledBy} ${id}` : undefined}
-        aria-invalid={clash || undefined}
+        aria-invalid={wrong || undefined}
+        aria-describedby={describedBy}
         onClick={() => (open ? setOpen(false) : show())}
         className={`flex w-full items-center border bg-white text-left outline-none transition focus:ring-2 focus:ring-navy/15 ${
           size === 'sm'
             ? 'gap-1.5 rounded-lg px-3 py-1.5 text-[14px] sm:py-2'
             : 'gap-2 rounded-xl px-3.5 py-2.5'
-        } ${clash ? 'border-danger' : open ? 'border-navy' : 'border-line hover:border-navy/40'}`}
+        } ${wrong ? 'border-danger' : open ? 'border-navy' : 'border-line hover:border-navy/40'}`}
       >
         <svg
           width={size === 'sm' ? 15 : 17}

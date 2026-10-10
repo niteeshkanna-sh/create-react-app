@@ -13,7 +13,24 @@ type Status =
 
 const field =
   'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-ink outline-none transition placeholder:text-ink-faint focus:border-navy focus:ring-2 focus:ring-navy/15';
+// What "please correct the highlighted fields" means. Border and tint, never
+// colour alone: the reason is written under the box as well, and the box
+// carries aria-invalid so it is announced rather than merely seen.
+const fieldWrong =
+  'w-full rounded-xl border border-danger bg-danger/[0.04] px-3.5 py-2.5 text-ink outline-none transition placeholder:text-ink-faint focus:border-danger focus:ring-2 focus:ring-danger/20';
 const label = 'block text-sm font-semibold text-ink-dim';
+
+// The server names the field it refused; the form has to know which box that
+// is. Only the keys enquiry-submit.php can actually return are here.
+const BOX: Record<string, string> = {
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  pickup_location: 'pickup',
+  message: 'message',
+  requirements: 'car',
+  return_date: 'return',
+};
 
 export function Enquiry() {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
@@ -60,8 +77,24 @@ export function Enquiry() {
 
     if (result.ok) {
       setStatus({ kind: 'sent', enquiryNumber: result.enquiryNumber });
-    } else {
-      setStatus({ kind: 'error', message: result.error, fields: result.fields });
+      return;
+    }
+
+    setStatus({ kind: 'error', message: result.error, fields: result.fields });
+
+    // Highlighting the box is no use to somebody who cannot see it, and no
+    // use to anybody if it is off the bottom of the screen. Moving to it does
+    // both jobs: it scrolls into view and its reason is read out.
+    const first = Object.keys(result.fields ?? {}).find((k) => k in BOX);
+    if (first) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(BOX[first]);
+        // focus() scrolls on its own, abruptly and only just into view. Taking
+        // that off it and scrolling deliberately puts the box in the middle,
+        // where the reason under it is on screen too.
+        el?.focus({ preventScroll: true });
+        el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
     }
   }
 
@@ -99,6 +132,33 @@ export function Enquiry() {
     status.kind === 'error' ? status.fields?.[name] : undefined;
   const sending = status.kind === 'sending';
 
+  /**
+   * Everything a refused box needs, in one place: the red border, the link to
+   * its reason, and the flag that makes a screen reader say "invalid". Spread
+   * onto the input so none of the three can be forgotten on one field and
+   * present on the next.
+   */
+  const wrong = (key: string) => {
+    const message = fieldError(key);
+    const id = BOX[key];
+    return {
+      className: `mt-1.5 ${message ? fieldWrong : field}`,
+      'aria-invalid': message ? true : undefined,
+      'aria-describedby': message ? `${id}-why` : undefined,
+    } as const;
+  };
+
+  /** The reason, under the box it belongs to and tied to it by id. */
+  const why = (key: string) => {
+    const message = fieldError(key);
+    if (!message) return null;
+    return (
+      <p id={`${BOX[key]}-why`} className="mt-1 text-sm font-medium text-danger">
+        {message}
+      </p>
+    );
+  };
+
   return (
     // A card the page places, not a section of its own: /contact stands it in
     // the right-hand column beside the ways to reach us. The id stays here,
@@ -128,10 +188,8 @@ export function Enquiry() {
             <label className={label} htmlFor="name">
               Your name <span className="text-danger">*</span>
             </label>
-            <input id="name" name="name" required className={`mt-1.5 ${field}`} />
-            {fieldError('name') ? (
-              <p className="mt-1 text-sm text-danger">{fieldError('name')}</p>
-            ) : null}
+            <input id="name" name="name" required {...wrong('name')} />
+            {why('name')}
           </div>
 
           <div>
@@ -144,11 +202,9 @@ export function Enquiry() {
               type="tel"
               inputMode="tel"
               required
-              className={`mt-1.5 ${field}`}
+              {...wrong('phone')}
             />
-            {fieldError('phone') ? (
-              <p className="mt-1 text-sm text-danger">{fieldError('phone')}</p>
-            ) : null}
+            {why('phone')}
           </div>
         </div>
 
@@ -156,10 +212,8 @@ export function Enquiry() {
           <label className={label} htmlFor="email">
             Email <span className="text-ink-faint">(optional)</span>
           </label>
-          <input id="email" name="email" type="email" className={`mt-1.5 ${field}`} />
-          {fieldError('email') ? (
-            <p className="mt-1 text-sm text-danger">{fieldError('email')}</p>
-          ) : null}
+          <input id="email" name="email" type="email" {...wrong('email')} />
+          {why('email')}
         </div>
 
         {cars.length === 0 ? null : (
@@ -172,7 +226,7 @@ export function Enquiry() {
             name="car"
             value={selectedCar}
             onChange={(e) => setSelectedCar(e.target.value)}
-            className={`mt-1.5 ${field}`}
+            {...wrong('requirements')}
           >
             <option value="">No preference</option>
             {cars.map((c) => (
@@ -181,6 +235,7 @@ export function Enquiry() {
               </option>
             ))}
           </select>
+          {why('requirements')}
         </div>
         )}
 
@@ -217,11 +272,11 @@ export function Enquiry() {
                 onChange={setReturnDate}
                 busy={busy}
                 min={startDate || undefined}
+                invalid={fieldError('return_date') !== undefined}
+                describedBy={fieldError('return_date') ? 'return-why' : undefined}
               />
             </div>
-            {fieldError('return_date') ? (
-              <p className="mt-1 text-sm text-danger">{fieldError('return_date')}</p>
-            ) : null}
+            {why('return_date')}
           </div>
         </div>
 
@@ -229,7 +284,8 @@ export function Enquiry() {
           <label className={label} htmlFor="pickup">
             Pickup location
           </label>
-          <input id="pickup" name="pickup" className={`mt-1.5 ${field}`} />
+          <input id="pickup" name="pickup" {...wrong('pickup_location')} />
+          {why('pickup_location')}
         </div>
 
         <div>
@@ -238,7 +294,8 @@ export function Enquiry() {
               ? 'What kind of car do you need?'
               : 'Anything else?'}
           </label>
-          <textarea id="message" name="message" rows={3} className={`mt-1.5 ${field}`} />
+          <textarea id="message" name="message" rows={3} {...wrong('message')} />
+          {why('message')}
         </div>
 
         {status.kind === 'error' ? (
