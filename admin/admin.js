@@ -175,6 +175,9 @@ function renderCarAdminGrid() {
       ${car.ownership === 'partner' ? `
         <div class="meta">
           <span class="owner-badge">${car.isTemporary ? 'Temporary' : "Someone else's"}</span>
+          ${car.isTemporary
+            ? '<span class="owner-badge owner-badge-quiet">Not on the website</span>'
+            : ''}
           <span>${car.ownerName ? escapeHTML(car.ownerName) : 'Owner not named'}</span>
           ${car.ownerPhone ? `<span>${escapeHTML(car.ownerPhone)}</span>` : ''}
         </div>` : ''}

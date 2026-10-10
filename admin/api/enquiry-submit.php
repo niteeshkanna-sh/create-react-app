@@ -92,17 +92,32 @@ $data = (new Validator($input))
     ->optional('requirements', 2000)
     ->orFail();
 
+// The checks the Validator cannot make, gathered rather than answered one at
+// a time. A form that says "the highlighted fields" and then highlights the
+// phone, waits for it to be fixed, and only then mentions the email, sends
+// somebody round the loop once per mistake. Every reason goes back together,
+// and the form marks every box it names.
+$wrong = [];
+
 // Phone is how the business calls back, so it has to be usable. Digits are
 // counted after stripping the punctuation people naturally type.
 $phoneDigits = preg_replace('/\D/', '', $data['phone']);
 if (strlen($phoneDigits) < 10 || strlen($phoneDigits) > 15) {
-    json_error('Please correct the highlighted fields.', 422,
-        ['fields' => ['phone' => 'Please enter a valid phone number.']]);
+    $wrong['phone'] = 'Please enter a valid phone number.';
 }
 
 if ($data['email'] !== null && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-    json_error('Please correct the highlighted fields.', 422,
-        ['fields' => ['email' => 'That email address does not look right.']]);
+    $wrong['email'] = 'That email address does not look right.';
+}
+
+$startDate  = valid_date($input['start_date'] ?? null);
+$returnDate = valid_date($input['return_date'] ?? null);
+if ($startDate !== null && $returnDate !== null && $returnDate < $startDate) {
+    $wrong['return_date'] = 'The return date is before the start date.';
+}
+
+if ($wrong !== []) {
+    json_error('Please correct the highlighted fields.', 422, ['fields' => $wrong]);
 }
 
 // A vehicle may be named, but an unknown id is ignored rather than refused —
@@ -112,13 +127,6 @@ $vehicleId = null;
 if (!empty($input['vehicle_id'])) {
     $vehicle = fetch_one('SELECT id FROM vehicles WHERE id = ?', [(int) $input['vehicle_id']]);
     $vehicleId = $vehicle === null ? null : (int) $vehicle['id'];
-}
-
-$startDate  = valid_date($input['start_date'] ?? null);
-$returnDate = valid_date($input['return_date'] ?? null);
-if ($startDate !== null && $returnDate !== null && $returnDate < $startDate) {
-    json_error('Please correct the highlighted fields.', 422,
-        ['fields' => ['return_date' => 'The return date is before the start date.']]);
 }
 
 try {

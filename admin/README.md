@@ -39,12 +39,32 @@ must be listed in `public_site_origin` in `config.php`.
 - **Dashboard** — fleet and finance figures, active and upcoming rentals
 - **Bookings** — create, take payments, record deposits and refunds, log
   pickup and return, and track KM with automatic extra-KM charges
-- **Vehicles** — fleet, rate card, KM policy, deposit, odometer, status
+- **Vehicles** — fleet, rate card, KM policy, deposit, odometer, status,
+  and whose car it is
 - **Enquiries** — what the public form sends, tracked until it becomes a
   booking or is turned down with a reason
 - **Finance** — expenses by category and vehicle, against income taken
   straight from the payments recorded on bookings
 - **Reports** — booking, revenue, vehicle, KM, deposit and payment reports
+
+### Cars the website never shows
+
+The website's fleet comes from `api/public-vehicles.php`, which lists a car
+only when its status is Available, it has a rate card, **and it is not
+marked temporary**.
+
+Temporary is for a car brought in from another owner for a hire or two.
+Ticking it on the car means:
+
+- it never appears on the website — not the fleet page, not the tariff
+  table, not the car list on either enquiry form
+- it is not counted when the site works out whether a day is fully booked,
+  so a car nobody can see being free never makes a full weekend look open
+- it behaves like any other car inside the panel: it can be booked, paid
+  for, handed over and returned
+
+So it is the shop window a temporary car stays out of, not the business.
+Retire it when the hire is over and it leaves the fleet list too.
 
 ## How it is built
 
@@ -139,6 +159,7 @@ bash tools/test-bookings.sh  <url> <email> <password>
 bash tools/test-ledger.sh    <url> <email> <password>
 bash tools/test-enquiries.sh <url> <email> <password>
 bash tools/test-expenses.sh  <url> <email> <password>
+bash tools/test-public.sh    <url> <email> <password>   # what the website sees
 node tools/test-ui.js         <url> <email> <password>
 node tools/test-booking-ui.js <url> <email> <password>
 node tools/test-enquiry-ui.js <url> <email> <password>
@@ -149,11 +170,12 @@ node tools/test-brand-ui.js   <url> <email> <password>
 node tools/test-install-ui.js <url> <db-name> <db-user>   # on a spare database
 ```
 
-Around 455 checks, covering the money arithmetic, the append-only ledger,
+Around 475 checks, covering the money arithmetic, the append-only ledger,
 price freezing, double-booking, the KM audit trail, the enquiry defences,
 expense corrections and voiding, getting from one panel to another, sorting,
 searching and paging the record lists, what deleting a booking takes with it,
-which brand images are framed and which are kept whole,
+which brand images are framed and which are kept whole, what the public
+endpoints show the website and what they keep back,
 what a crashed endpoint replies, and the booking, enquiry and finance flows
 driven through a real browser.
 
