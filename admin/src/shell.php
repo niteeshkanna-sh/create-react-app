@@ -304,6 +304,10 @@ function admin_shell_close(): void
 <!-- Before everything else: every other script on the page asks questions
      through it. -->
 <script src="<?= asset('dialog.js') ?>"></script>
+<!-- Loaded from the shell rather than per page, so every file input in the
+     panel gets the camera button and the pictures, including the ones on
+     pages that have no script of their own and the ones not written yet. -->
+<script src="<?= asset('photo-input.js') ?>"></script>
 <script src="<?= asset('shell.js') ?>"></script>
 <?php
 }

@@ -858,7 +858,8 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
               the same size, so the cards line up.</p>
             </div>
 
-            <input type="file" id="carPhoto" accept="image/jpeg,image/png,image/webp,image/avif" />
+            <input type="file" id="carPhoto" accept="image/jpeg,image/png,image/webp,image/avif"
+                   data-photo-preview="off" />
             <p class="field-note">Shown on the website's fleet cards. JPG, PNG, WebP or AVIF,
             up to 6&nbsp;MB. A landscape photo of the whole car works best.</p>
           </div>
@@ -1042,7 +1043,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div class="field-group"><label for="paymentNotes">Notes</label><input type="text" id="paymentNotes" placeholder="Optional" /></div>
         <div class="field-group">
           <label for="paymentProof">Payment Screenshot / Receipt</label>
-          <input type="file" id="paymentProof" accept="image/*" />
+          <input type="file" id="paymentProof" accept="image/*" data-photo-preview="off" />
           <div class="proof-preview" id="paymentProofPreview"></div>
         </div>
         <div class="modal-actions">
@@ -1079,7 +1080,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div class="field-group"><label for="depositNotes">Notes</label><input type="text" id="depositNotes" placeholder="Optional" /></div>
         <div class="field-group">
           <label for="depositProof">Deposit Proof</label>
-          <input type="file" id="depositProof" accept="image/*" />
+          <input type="file" id="depositProof" accept="image/*" data-photo-preview="off" />
           <div class="proof-preview" id="depositProofPreview"></div>
         </div>
         <p class="field-hint">This is tracked separately and is <strong>not</strong> counted as rental revenue.</p>
@@ -1120,7 +1121,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         <div class="field-group"><label for="refundNotes">Notes</label><input type="text" id="refundNotes" placeholder="Optional" /></div>
         <div class="field-group">
           <label for="refundProof">Refund Proof</label>
-          <input type="file" id="refundProof" accept="image/*" />
+          <input type="file" id="refundProof" accept="image/*" data-photo-preview="off" />
           <div class="proof-preview" id="refundProofPreview"></div>
         </div>
         <div class="modal-actions">
@@ -1216,7 +1217,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         </div>
         <div class="field-group">
           <label for="pickupPhotos">Pickup Photos</label>
-          <input type="file" id="pickupPhotos" accept="image/*" multiple />
+          <input type="file" id="pickupPhotos" accept="image/*" multiple data-photo-preview="off" />
           <div class="proof-preview" id="pickupPhotosPreview"></div>
         </div>
         <div class="modal-actions">
@@ -1307,7 +1308,7 @@ admin_shell_open($me, 'dashboard', 'Dashboard', true, $migrationError);
         </div>
         <div class="field-group">
           <label for="returnPhotos">Return Photos</label>
-          <input type="file" id="returnPhotos" accept="image/*" multiple />
+          <input type="file" id="returnPhotos" accept="image/*" multiple data-photo-preview="off" />
           <div class="proof-preview" id="returnPhotosPreview"></div>
         </div>
         <p class="field-hint" id="returnKmPreview"></p>
