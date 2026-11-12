@@ -308,6 +308,9 @@ function admin_shell_close(): void
      panel gets the camera button and the pictures, including the ones on
      pages that have no script of their own and the ones not written yet. -->
 <script src="<?= asset('photo-input.js') ?>"></script>
+<!-- Same reason: the red star on compulsory fields and the errors that sit
+     against them are found from the markup, so every form gets both. -->
+<script src="<?= asset('form-marks.js') ?>"></script>
 <script src="<?= asset('shell.js') ?>"></script>
 <?php
 }
