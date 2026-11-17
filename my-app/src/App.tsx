@@ -4,6 +4,7 @@ import { useSeo } from './lib/useSeo';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { SceneDefs } from './components/art/SectionArt';
+import { PlaceSceneDefs } from './components/art/PlaceScene';
 import { FloatingActions } from './components/FloatingActions';
 import { Home } from './pages/Home';
 
@@ -71,6 +72,7 @@ function App() {
       {/* The gradients the illustrated cards paint with, once for the page
           rather than once per drawing. See SectionArt. */}
       <SceneDefs />
+      <PlaceSceneDefs />
       <Header />
       {/* Keyed on the path so React remounts on navigation and the entrance
           animation replays; without the key the DOM is reused and nothing
