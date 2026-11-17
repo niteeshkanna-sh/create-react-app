@@ -346,6 +346,12 @@ body {
 
 .how-n {
   flex: none;
+  /* A fixed width, and figures of a fixed width inside it. Poppins sets 1
+     narrower than 0, 2 and 3, so "01" measured less than "02" and the four
+     steps began at four different places -- a ragged left edge down a list
+     whose whole job is to look like a sequence. */
+  width: 2.1em;
+  font-variant-numeric: tabular-nums;
   font-size: 2.5rem;
   font-weight: 800;
   line-height: 0.85;
@@ -2014,7 +2020,12 @@ body {
   position: absolute;
   top: 50%;
   z-index: 40;
-  display: grid;
+  /* Not on a phone. The card is nearly the width of the screen there, so an
+     arrow pinned to the middle of each side lands on the card itself -- on
+     the car's own name, which came out as "MW - 2013". The swipe is the
+     affordance on a phone, as it is for every other rail on this site, and
+     the dots underneath still reach any car directly. */
+  display: none;
   place-items: center;
   width: 44px;
   height: 44px;
@@ -2030,6 +2041,12 @@ body {
     border-color 0.15s ease,
     transform 0.15s ease;
 }
+@media (min-width: 640px) {
+  .fleet-arrow {
+    display: grid;
+  }
+}
+
 .fleet-arrow:hover {
   border-color: var(--color-gold);
   transform: scale(1.06);
@@ -2770,13 +2787,15 @@ a.offer-card:hover {
    stops three cards at three angles reading as one card with a thick edge. */
 /* The fan is a share of the pile's own width, so on a phone -- where two
    piles share the screen -- the cards behind do not swing out past the edge
-   of the band and get clipped by it. */
+   of the band and get clipped by it. The rotation counts too: seven degrees
+   on a card that tall threw its corner twenty-odd points sideways, which was
+   enough to slice the leftmost pile against the edge of the screen. */
 .snap-2 {
-  transform: rotate(-7deg) translate(-7%, 5px);
+  transform: rotate(-5deg) translate(-4%, 5px);
 }
 
 .snap-1 {
-  transform: rotate(6deg) translate(7.5%, 2px);
+  transform: rotate(4.5deg) translate(4.5%, 2px);
 }
 
 @media (min-width: 1024px) {
@@ -2994,4 +3013,56 @@ a.offer-card:hover {
   place-items: center;
   min-height: 70vh;
   background: var(--color-navy);
+}
+
+/* The group buttons above the questions.
+ *
+ * These were lost once already: a bulk edit to the closing band sliced from
+ * one banner comment to the next, and this block and the one below it were
+ * written with short comments rather than banners, so they were inside the
+ * cut. The questions kept their buttons and the buttons lost their pills --
+ * seven words of plain text in a row, which is what it looked like on a
+ * phone for two releases. The suite checked that the buttons existed, which
+ * is why nothing said so; it checks that they are drawn now.
+ */
+.faq-chip {
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.07);
+  color: rgb(255 255 255 / 0.8);
+  padding: 0.4rem 0.9rem;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.faq-chip:hover {
+  border-color: rgb(212 175 55 / 0.5);
+  color: #fff;
+}
+
+.faq-chip[aria-pressed='true'] {
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold-mid));
+  border-color: transparent;
+  color: var(--color-navy);
+}
+
+.faq-chip:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* The picture between the steps is drawn 400 by 200, and the leaf it sits in
+   is 4:5 -- so on a phone the frame slice-crops a quarter of the drawing's
+   width and the result is an abstract shape rather than a scene. Landscape
+   below the tablet, where the column is the whole screen and there is width
+   to give it. Lost in the same cut as the buttons above. */
+@media (max-width: 639px) {
+  .art-frame.how-leaf {
+    aspect-ratio: 5 / 4;
+  }
 }

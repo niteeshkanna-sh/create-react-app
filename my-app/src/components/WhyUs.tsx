@@ -54,7 +54,7 @@ export function WhyUs() {
         {/* The photographs. Two columns of frames offset against each other,
             which is what stops a grid of snapshots reading as a contact
             sheet. The odd ones sit a little lower. */}
-        <Reveal>
+        <Reveal className="order-2 lg:order-1">
           <div className="relative">
           <ul className="why-collage grid grid-cols-2 gap-3 sm:gap-4">
             {photos.map((src, i) => (
@@ -87,8 +87,11 @@ export function WhyUs() {
           </div>
         </Reveal>
 
-        {/* The claims. */}
-        <div>
+        {/* The claims. First on a phone: in one column the photographs came
+            before the heading, so the section opened with two pictures and
+            no reason for them. Beside them again from the laptop up, where
+            they are a column of their own. */}
+        <div className="order-1 lg:order-2">
           <Reveal>
             <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold tracking-wide text-navy uppercase shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
               <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
@@ -145,7 +148,7 @@ export function WhyUs() {
             give each of them about 300 points, and a review card at that
             width is four words a line. */}
         {hasReviews ? (
-          <div className="lg:col-span-2 xl:col-span-1">
+          <div className="order-3 lg:col-span-2 xl:col-span-1">
             <Reviews />
           </div>
         ) : null}
