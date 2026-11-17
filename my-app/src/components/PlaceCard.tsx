@@ -1,4 +1,5 @@
 import type { Place } from '../lib/places';
+import { PlaceScene } from './art/PlaceScene';
 
 /**
  * One place, as a card.
@@ -36,12 +37,15 @@ export function PlaceCard({ place, decorative = false }: { place: Place; decorat
             className="h-full w-full object-cover"
           />
         ) : (
-          <div
-            aria-hidden="true"
-            className="grid h-full w-full place-items-center bg-navy/5 text-sm text-ink-faint"
-          >
-            {place.category || 'Kanyakumari'}
-          </div>
+          /* A drawing rather than a grey panel with the category written
+             across it. Ten of the nineteen places have no photograph, and a
+             page where half the cards say "Waterfalls & hills" in grey reads
+             as a page that is still being built. */
+          <PlaceScene
+            name={place.name}
+            category={place.category}
+            className="h-full w-full"
+          />
         )}
       </div>
 

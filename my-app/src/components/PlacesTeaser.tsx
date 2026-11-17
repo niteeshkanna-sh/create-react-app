@@ -4,6 +4,7 @@ import type { Place } from '../lib/places';
 import { Reveal } from './Reveal';
 import { useReveal } from '../lib/useReveal';
 import { Skyline } from './art/Skyline';
+import { PlaceScene } from './art/PlaceScene';
 
 /**
  * Where people go, as a handful of snapshots pinned to a board.
@@ -103,7 +104,11 @@ function Pile({ kind, places, at }: { kind: string; places: Place[]; at: number 
                       className="snap-photo"
                     />
                   ) : (
-                    <span className="snap-blank" />
+                    <PlaceScene
+                      name={place.name}
+                      category={place.category}
+                      className="snap-drawn"
+                    />
                   )}
                 </span>
                 <span className="snap-caption">{place.name}</span>
