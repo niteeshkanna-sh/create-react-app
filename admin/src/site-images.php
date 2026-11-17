@@ -346,6 +346,73 @@ function site_image_save(string $slot, array $file, int $userId): ?string
     return null;
 }
 
+/**
+ * Whether a picture is smaller than the space it is drawn in.
+ *
+ * The panel took whatever was handed to it and said nothing. The tariff
+ * banner is 390 by 280 and is drawn 1600 wide, so it has been stretched to
+ * four times its size on that page since the day it went up -- visibly soft,
+ * and nothing anywhere said why. A picture cannot be made bigger than it
+ * was taken, so the only moment this can be caught is the moment it is
+ * uploaded, and the only person who can fix it is the one standing there.
+ *
+ * Kept apart from the slot and the file so it can be tested without a
+ * database: give it a path and a target and it measures.
+ *
+ * Returns [width, height] when the picture is short, and null when it is
+ * fine, unreadable, or a format this PHP cannot measure -- saying nothing is
+ * the right answer for all three.
+ */
+function image_is_short(string $path, int $wantW, int $wantH): ?array
+{
+    if ($wantW < 1 || $wantH < 1 || !is_file($path)) {
+        return null;
+    }
+
+    $size = @getimagesize($path);
+    if (!is_array($size) || ($size[0] ?? 0) < 1) {
+        return null;
+    }
+
+    [$w, $h] = $size;
+
+    // A tenth short is not visible, and a slot whose crop is a hair off its
+    // nominal size would otherwise warn on every upload for ever.
+    if ($w >= $wantW * 0.9 && $h >= $wantH * 0.9) {
+        return null;
+    }
+
+    return [$w, $h];
+}
+
+/**
+ * The note to show under a slot whose picture is too small, or nothing.
+ *
+ * Says the two numbers and what follows from them, because "low resolution"
+ * is a judgement and "390 by 280, drawn 1600 wide" is a fact somebody can
+ * act on.
+ */
+function site_image_warning(string $slot, string $file): ?string
+{
+    if (!isset(SITE_IMAGE_SLOTS[$slot]) || $file === '' || str_contains($file, '/')) {
+        return null;
+    }
+
+    [, , $wantW, $wantH] = site_image_shape($slot);
+    $short = image_is_short(site_image_dir() . '/' . $file, $wantW, $wantH);
+    if ($short === null) {
+        return null;
+    }
+
+    return sprintf(
+        'This picture is %d×%d and the space it fills is %d×%d, so it is being stretched and will look soft. Replace it with a larger one when you have it.',
+        $short[0],
+        $short[1],
+        $wantW,
+        $wantH
+    );
+}
+
 /** Clears a slot and removes its file. */
 function site_image_clear(string $slot): void
 {

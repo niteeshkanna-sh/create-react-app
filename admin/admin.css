@@ -557,6 +557,20 @@ button { font-family: inherit; }
   margin: 0; font-size: 0.7rem; color: var(--ink-faint); font-variant-numeric: tabular-nums;
 }
 
+/* Said under the slot whose picture is smaller than the space it fills.
+   Amber rather than red: the upload worked, and this is a thing worth
+   knowing rather than a thing that failed. */
+.brand-slot-warn {
+  display: flex; align-items: flex-start; gap: 0.35rem;
+  margin: 0.4rem 0 0; padding: 0.4rem 0.5rem;
+  border-radius: 0.4rem;
+  background: rgb(200 135 58 / 0.12);
+  color: #8a5a00;
+  font-size: 0.7rem; line-height: 1.35;
+}
+
+.brand-slot-warn svg { flex: none; margin-top: 0.1rem; }
+
 /* Present for the chooser it opens and for a screen reader, never drawn. */
 .brand-slot-file {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
