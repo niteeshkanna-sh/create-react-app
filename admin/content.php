@@ -271,6 +271,24 @@ admin_shell_open($me, 'content.php', 'Website content');
               ? 'Kept whole &middot; scaled to fit ' . $ow . '&times;' . $oh
               : $rw . ':' . $rh . ' &middot; saved ' . $ow . '&times;' . $oh ?></p>
 
+          <?php
+          // A picture cannot be made bigger than it was taken, so the only
+          // moment this can be caught is the moment somebody is standing
+          // here looking at it. Shown for what is already uploaded as well
+          // as for a new one: the tariff banner has been stretched to four
+          // times its size since the day it went up, and nothing said so.
+          $warning = isset($brand[$slot]) ? site_image_warning($slot, $brand[$slot]) : null;
+          ?>
+          <?php if ($warning !== null): ?>
+            <p class="brand-slot-warn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.4A2 2 0 0 0 4.2 20.4h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+              </svg>
+              <?= e($warning) ?>
+            </p>
+          <?php endif; ?>
+
           <input class="brand-slot-file" type="file" name="image"
                  accept="image/jpeg,image/png,image/webp,image/avif"
                  aria-label="<?= e($label) ?>">
