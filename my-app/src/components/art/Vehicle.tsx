@@ -75,6 +75,11 @@ export function ScooterSilhouette({ className }: Props) {
   );
 }
 
+/** True when this name has a drawing, so callers can decide before rendering. */
+export function hasVehicleArt(art: string | undefined): boolean {
+  return art === 'car' || art === 'scooter';
+}
+
 /** The drawing a chooser tile asks for by name, or none. */
 export function VehicleArt({ art, className }: { art?: string; className?: string }) {
   if (art === 'car') return <CarSilhouette className={className} />;

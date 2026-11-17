@@ -1,6 +1,6 @@
 import { useHome, useSiteImageLookup } from '../content';
 import { ContentLink } from './ContentLink';
-import { VehicleArt } from './art/Vehicle';
+import { VehicleArt, hasVehicleArt } from './art/Vehicle';
 
 /**
  * "What are you looking for?" -- the card in the banner.
@@ -58,6 +58,11 @@ export function Chooser() {
           const lead = i === 0;
           const photo = imageFor(`chooser-${i + 1}`);
           const art = artFor(item, i);
+          // A tile can have neither: no photograph uploaded for it and no
+          // drawing asked for. Without this the box below was rendered
+          // empty, and the trails that run behind the vehicle ran behind
+          // nothing -- three dashes drifting across a tile on their own.
+          const rides = Boolean(photo) || hasVehicleArt(art);
 
           return (
             <li key={item.label} className={wide ? 'col-span-2' : ''}>
@@ -69,9 +74,15 @@ export function Chooser() {
                     : 'border border-line bg-cream/70 text-navy hover:border-gold/50 hover:bg-white'
                 }`}
               >
+                {/* The words keep clear of the vehicle. The picture is faded
+                    out on its left, so overlapping that part is fine and
+                    overlapping the car is not -- the fade reaches full
+                    strength around seven tenths across, which is where this
+                    stops. On a narrow tile it was the difference between a
+                    line of type and a line of type across a bonnet. */}
                 <span
                   className={`relative z-10 flex flex-col ${
-                    wide ? 'max-w-[58%]' : 'w-full'
+                    wide ? 'max-w-[58%]' : rides ? 'max-w-[70%]' : 'w-full'
                   } ${item.ribbon ? 'pr-7' : ''}`}
                 >
                   <span
@@ -111,19 +122,32 @@ export function Chooser() {
                 </span>
 
                 {/* The picture, which is decoration: the label beside it
-                    carries the meaning, so it is never announced. */}
-                {photo ? (
-                  <img
-                    src={photo}
-                    alt=""
+                    carries the meaning, so it is never announced.
+
+                    In a box of its own, because two things move here and
+                    they cannot share a transform: the box drives the vehicle
+                    in from the right, and the vehicle inside it rides. One
+                    element doing both would mean two animations writing to
+                    the same property, where the later one simply wins. */}
+                {rides ? (
+                  <span
                     aria-hidden="true"
-                    loading="lazy"
-                    decoding="async"
-                    className="chooser-photo"
-                  />
-                ) : (
-                  <VehicleArt art={art} className="chooser-art" />
-                )}
+                    className={`chooser-ride${photo ? ' has-photo' : ''}`}
+                    style={{ ['--ride-delay' as string]: `${i * 130}ms` }}
+                  >
+                    {photo ? (
+                      <img
+                        src={photo}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="chooser-photo"
+                      />
+                    ) : (
+                      <VehicleArt art={art} className="chooser-art" />
+                    )}
+                  </span>
+                ) : null}
 
                 {item.ribbon ? (
                   <span aria-hidden="true" className="chooser-ribbon">
