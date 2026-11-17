@@ -2346,46 +2346,51 @@ body {
     linear-gradient(135deg, #16214a 0%, #0a0e20 62%);
 }
 
-/* The box the drawing is fitted into, rather than the drawing's own size.
+/* The box the vehicle sits in, rather than the vehicle's own size.
    Sized by width alone it was taller than the tile on a wide one and the
-   roof of the car was cut off -- 37 pixels of it at tablet width. With a top
-   and a bottom the box can never exceed the tile, and preserveAspectRatio
-   on the drawing scales it down to fit and parks it in the bottom-right
-   corner rather than stretching it. */
-.chooser-art {
+   roof of the car was cut off -- 37 pixels of it at tablet width. With a
+   width and a height the box can never exceed the tile, and the drawing's
+   preserveAspectRatio scales it down to fit and parks it in the bottom-right
+   corner rather than stretching it.
+
+   This box is also what drives in; see the animations below. */
+.chooser-ride {
   position: absolute;
   right: 6px;
   bottom: 6px;
-  /* Both, explicitly. An svg is a replaced element: given a top and a bottom
-     but no height it takes its height from its own proportions and ignores
-     the bottom, which is how the roof of the car came to be 75 pixels above
-     the tile. preserveAspectRatio on the drawing fits it inside this box and
-     parks it in the bottom-right corner. */
   width: 54%;
   height: 74%;
   pointer-events: none;
 }
 
-.chooser-photo {
-  position: absolute;
+/* A photograph is cropped to its box rather than fitted inside it, so it
+   gets a slightly different one -- these are the proportions the uploads in
+   the panel were framed against. */
+.chooser-ride.has-photo {
   right: 0;
   bottom: 2px;
   width: 50%;
-  max-width: 220px;
-  pointer-events: none;
+  height: 86%;
 }
 
 /* The lead tile is twice as wide, so the same share of it would draw a car
    across half the card. */
-.chooser-tile-lead .chooser-art {
+.chooser-tile-lead .chooser-ride {
   width: 40%;
   height: 78%;
 }
 
-.chooser-tile-lead .chooser-photo {
-  width: 42%;
+.chooser-tile-lead .chooser-ride.has-photo {
   right: 4px;
   bottom: 6px;
+  width: 42%;
+}
+
+.chooser-art,
+.chooser-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* An ordinary photograph is a rectangle, and a rectangle dropped in the
@@ -2393,11 +2398,125 @@ body {
    sits in the tile, and the owner can upload whatever they actually have
    rather than a cut-out on transparency. */
 .chooser-photo {
-  height: 86%;
   object-fit: cover;
   border-radius: 10px;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 48%);
   mask-image: linear-gradient(to right, transparent, #000 48%);
+}
+
+/* ---------------------------------------------------------------------------
+   The vehicles, running
+
+   Three things, all of them transform or opacity so none of them costs a
+   layout: the vehicle drives in from the right as the banner lands, then
+   rides -- a small bob and a smaller lean, the way a car does over a road --
+   and a pair of streaks runs past behind it.
+
+   Staggered by tile, because four vehicles bobbing in lockstep reads as the
+   page breathing rather than as four cars moving.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Only once the page says it has script. Without it the drive-in would
+     leave every vehicle parked off to the right of its tile. */
+  :root[data-js] .chooser-ride {
+    animation: ride-in 900ms cubic-bezier(0.2, 0.84, 0.32, 1) both;
+    animation-delay: calc(360ms + var(--ride-delay, 0ms));
+  }
+
+  .chooser-ride > * {
+    animation: ride-along 2.7s ease-in-out infinite;
+    /* After the drive-in has finished, so the handover is from a standing
+       car rather than mid-slide. */
+    animation-delay: calc(1.26s + var(--ride-delay, 0ms));
+  }
+
+  /* The road going past. Two of them at different heights and speeds: one
+     streak reads as a scratch on the tile. */
+  .chooser-ride::before,
+  .chooser-ride::after {
+    content: '';
+    position: absolute;
+    left: -22%;
+    height: 2px;
+    border-radius: 2px;
+    /* currentColor, so it is white on the navy tile and navy on the cream
+       ones -- gold is unreadable on cream, which is the rule everywhere else
+       on this site. */
+    background: repeating-linear-gradient(to right, currentColor 0 9px, transparent 9px 25px);
+    /* Fading out behind, so a still frame reads as a trail rather than as a
+       dashed rule across the tile -- which is what the first version looked
+       like with the animation paused. */
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 72%);
+    mask-image: linear-gradient(to right, transparent, #000 72%);
+    opacity: 0.22;
+  }
+
+  .chooser-ride::before {
+    right: 26%;
+    bottom: 34%;
+    animation: ride-streak 1.1s linear infinite;
+  }
+
+  .chooser-ride::after {
+    right: 40%;
+    bottom: 22%;
+    opacity: 0.14;
+    animation: ride-streak 1.7s linear infinite;
+  }
+
+  /* Under the pointer the vehicle pulls away and the road speeds up. */
+  .chooser-tile:hover .chooser-ride > *,
+  .chooser-tile:focus-visible .chooser-ride > * {
+    animation-duration: 1.5s;
+  }
+
+  .chooser-tile:hover .chooser-ride::before,
+  .chooser-tile:focus-visible .chooser-ride::before {
+    animation-duration: 0.5s;
+  }
+
+  .chooser-tile:hover .chooser-ride::after,
+  .chooser-tile:focus-visible .chooser-ride::after {
+    animation-duration: 0.8s;
+  }
+
+  @keyframes ride-in {
+    from {
+      transform: translateX(62%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes ride-along {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    26% {
+      transform: translateY(-2.6%) rotate(-0.45deg);
+    }
+    58% {
+      transform: translateY(1.6%) rotate(0.38deg);
+    }
+    80% {
+      transform: translateY(-0.8%) rotate(-0.16deg);
+    }
+  }
+
+  /* One period of the repeating gradient, so the loop has no seam. */
+  @keyframes ride-streak {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-34px);
+    }
+  }
 }
 
 .chooser-ribbon {
