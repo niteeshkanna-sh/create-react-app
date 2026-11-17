@@ -2176,8 +2176,11 @@ body {
 
 .chooser-tile {
   /* Tall enough that a one-line label with a two-line note still leaves the
-     arrow its row, so a pair of tiles matches whichever of them wraps. */
-  min-height: 112px;
+     arrow its row, so a pair of tiles matches whichever of them wraps.
+     Raised from 112 once there were photographs in them: the panel frames an
+     upload 4:3, and in a box two and a bit times wider than it was tall the
+     crop took the top and the bottom off the vehicle. */
+  min-height: 132px;
 }
 
 .chooser-tile-lead {
@@ -2232,6 +2235,7 @@ body {
   right: 4px;
   bottom: 6px;
   width: 42%;
+  height: 88%;
 }
 
 .chooser-art,
