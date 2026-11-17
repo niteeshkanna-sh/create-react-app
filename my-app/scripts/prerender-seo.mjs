@@ -244,8 +244,13 @@ function shareImageFor(route) {
 const COMMITTED_LOGO = '/nitesha-cars-and-bikes-logo-nagercoil-v2.webp';
 
 function pictureFor(slot, fallback) {
-  // Uploaded URLs are already absolute; committed ones are site-relative.
-  if (slot && typeof uploaded[slot] === 'string') return uploaded[slot];
+  // Both kinds are site-relative now: the build stores what the panel said
+  // so that the address in the HTML matches the one the browser works out.
+  // Structured data wants them absolute.
+  if (slot && typeof uploaded[slot] === 'string') {
+    const url = uploaded[slot];
+    return url.startsWith('/') ? seo.site.origin + url : url;
+  }
   if (slot && typeof photos[slot] === 'string') return seo.site.origin + photos[slot];
   return fallback ? seo.site.origin + fallback : undefined;
 }

@@ -95,10 +95,14 @@ if (process.env.CONTENT_API !== 'off') {
     // the browser asks the panel on every page load -- but a sitemap is written
     // once, here, and an image nobody lists is an image image-search will be
     // slow to find. Absolute, because that is what both consumers need.
+    // Stored exactly as the panel gives them, which is how the site resolves
+    // them in the browser too -- lib/api panelUrl passes a root-relative path
+    // straight through. Resolving to an absolute URL here would bake the
+    // domain into the build, and worse: the address in the built HTML would
+    // differ by a prefix from the one the browser works out a moment later,
+    // so every picture would be swapped and fetched a second time on load.
     for (const [slot, value] of Object.entries(body.brand ?? {})) {
-      if (typeof value === 'string' && value !== '') {
-        brand[slot] = new URL(value, `${API.replace(/\/api\/[^/]*$/, '')}/`).toString();
-      }
+      if (typeof value === 'string' && value !== '') brand[slot] = value;
     }
 
     if (body.ready === false) {

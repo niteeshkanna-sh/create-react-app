@@ -4,6 +4,7 @@ import { useFleet } from '../lib/useFleet';
 import { useAvailability, busyForVehicle } from '../lib/useAvailability';
 import { DatePick } from './DatePick';
 import { WhatsAppButton } from './WhatsAppButton';
+import { LoaderDot } from './Loader';
 
 /**
  * The short enquiry card in the home page banner.
@@ -265,7 +266,14 @@ export function HeroEnquiry({
               bar ? 'lg:w-auto lg:px-7' : ''
             }`}
           >
-            {sending ? 'Sending…' : 'Check availability'}
+            {sending ? (
+              <span className="inline-flex items-center gap-2">
+                <LoaderDot />
+                Sending…
+              </span>
+            ) : (
+              'Check availability'
+            )}
           </button>
         </div>
 

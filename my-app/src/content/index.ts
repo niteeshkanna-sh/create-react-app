@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import live from './live.json';
+import bakedBrand from '../data/brand.json';
 import { apiUrl, panelUrl } from '../lib/api';
 import { photoFor } from '../lib/photos';
 // @ts-expect-error -- plain ESM, shared verbatim with the build script so the
@@ -44,7 +45,30 @@ export type Brand = Record<string, string | undefined>;
 // page, none of which can change it, so a provider would be ceremony around a
 // value that is effectively global. One fetch serves all of them.
 let current: Content = live;
-let brand: Brand = {};
+
+/**
+ * The pictures uploaded in the panel as of the last build.
+ *
+ * This used to start empty, and that was the whole of a bug worth naming:
+ * every page painted the drawn fallbacks first and swapped them for the
+ * owner's photographs once the panel answered, so a refresh showed a flash
+ * of illustrations on every tile, every service card and every place. It is
+ * the same mistake the fleet and the places lists were fixed for long ago --
+ * start from what the build knows, then replace it with anything newer.
+ *
+ * Resolved through panelUrl, the same function the live answer goes through,
+ * so a picture that has not changed since the build comes out byte for byte
+ * identical and the browser is never asked to fetch it twice.
+ */
+const BAKED_BRAND: Brand = Object.freeze(
+  Object.fromEntries(
+    Object.entries(bakedBrand as Record<string, string>)
+      .filter(([, value]) => typeof value === 'string' && value !== '')
+      .map(([slot, value]) => [slot, panelUrl(value)]),
+  ),
+);
+
+let brand: Brand = BAKED_BRAND;
 let started = false;
 const listeners = new Set<() => void>();
 
@@ -130,20 +154,17 @@ export function useAbout(): Content['about'] {
   );
 }
 
-/** Images uploaded in the panel, empty until it answers. */
+/** Images uploaded in the panel, starting from the set the build baked in. */
 export function useBrand(): Brand {
   return useSyncExternalStore(
     subscribe,
     () => brand,
-    // Prerendering has no panel to ask, so the drawn versions go into the HTML
-    // -- which is right: a crawler should not wait on an image request.
-    () => EMPTY_BRAND,
+    // Prerendering has no panel to ask, so it uses the same baked set -- which
+    // is what puts the owner's photographs into the HTML a crawler reads
+    // rather than the drawings that stand in for them.
+    () => BAKED_BRAND,
   );
 }
-
-// A stable identity: useSyncExternalStore compares snapshots by reference, and
-// a fresh {} each call would loop forever.
-const EMPTY_BRAND: Brand = {};
 
 /**
  * One uploaded image, falling back to a file committed under public/photos.
