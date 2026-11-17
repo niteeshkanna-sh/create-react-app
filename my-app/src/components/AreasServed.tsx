@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import pickupData from '../data/pickups.json';
 import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
-import { DistrictMap, DISTRICT_ROUTE_D } from './art/DistrictMap';
 
 /**
  * Where a vehicle can be handed over, named on the page and marked on a map.
@@ -113,7 +112,11 @@ export function AreasServed() {
       ) : null}
       <span aria-hidden="true" className="deliver-veil" />
 
-      <div className="deliver-inner mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 lg:px-12 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-14">
+      {/* One column. The drawn map used to hold the right-hand half; with
+          it gone the three pickup groups get the width instead, which is
+          what they wanted anyway -- they were a column of chips half the
+          band wide and three deep. */}
+      <div className="deliver-inner mx-auto max-w-[86rem] px-5 sm:px-8 lg:px-12">
         <div>
           <Reveal>
             <p className="deliver-eyebrow">
@@ -129,7 +132,7 @@ export function AreasServed() {
             <p className="deliver-intro">{intro}</p>
           </Reveal>
 
-          <div className="mt-8">
+          <div className="mt-9 grid gap-x-10 gap-y-2 lg:grid-cols-3">
             {pickupData.groups.map((group, g) => (
               <Reveal key={group.town} delay={g * 150} className="route-stop">
                 <span aria-hidden="true" className="route-dot" />
@@ -183,34 +186,6 @@ export function AreasServed() {
           </Reveal>
         </div>
 
-        <Reveal delay={80} className="deliver-map-wrap">
-          {/* Decorative, and it says the heading again in fewer words, so it
-              stays out of the accessibility tree rather than being read twice
-              to somebody who cannot see it. */}
-          <p className="deliver-script" aria-hidden="true">
-            <span className="deliver-script-1">Explore Kanyakumari</span>
-            <span className="deliver-script-2">
-              with <strong>NiteSha</strong>
-            </span>
-            <svg className="deliver-swoosh" viewBox="0 0 170 16" fill="none">
-              <path
-                pathLength="1"
-                d="M3 11C34 15 92 13 167 4"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            </svg>
-          </p>
-
-          <DistrictMap
-            className="deliver-map"
-            // The car's path, handed to the stylesheet rather than written out
-            // there as well: one definition of the route, in the file that
-            // works it out from the coordinates.
-            style={{ '--route-d': `path('${DISTRICT_ROUTE_D}')` } as React.CSSProperties}
-          />
-        </Reveal>
       </div>
     </section>
   );
