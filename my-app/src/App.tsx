@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { SceneDefs } from './components/art/SectionArt';
 import { PlaceSceneDefs } from './components/art/PlaceScene';
+import { Loader } from './components/Loader';
 import { FloatingActions } from './components/FloatingActions';
 import { Home } from './pages/Home';
 
@@ -82,7 +83,10 @@ function App() {
             this site is a few kilobytes and arrives in well under the time a
             spinner takes to stop looking like a fault; what matters is that
             the header does not jump, so the fallback holds the height. */}
-        <Suspense fallback={<div aria-hidden="true" className="min-h-[70vh] bg-navy" />}>
+        {/* A wheel turning rather than a navy rectangle. On a slow
+            connection a blank block is indistinguishable from a page
+            that has failed to arrive. */}
+        <Suspense fallback={<div className="route-loading"><Loader label="Loading the page" /></div>}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

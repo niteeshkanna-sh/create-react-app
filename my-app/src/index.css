@@ -2908,3 +2908,86 @@ a.offer-card:hover {
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   The wheel that turns while something is fetched
+
+   Not for the first paint: these pages are prerendered, so a spinner there
+   would be a spinner over a finished page. It covers a route being opened
+   from another one -- each is its own chunk -- and a form waiting on the
+   server. See components/Loader.
+--------------------------------------------------------------------------- */
+
+.loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--color-gold);
+}
+
+.loader-wheel {
+  display: block;
+  transform-origin: 50% 50%;
+}
+
+/* A short strip of road under the wheel, so it reads as rolling rather than
+   as a thing spinning on the spot. */
+.loader-road {
+  display: block;
+  width: 5.5rem;
+  height: 2px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(to right, currentColor 0 10px, transparent 10px 24px);
+  opacity: 0.4;
+}
+
+.loader-dot {
+  display: inline-flex;
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loader-wheel {
+    animation: wheel-roll 0.9s linear infinite;
+  }
+
+  .loader-dot .loader-wheel {
+    animation-duration: 0.7s;
+  }
+
+  .loader-road {
+    animation: wheel-road 0.6s linear infinite;
+  }
+
+  @keyframes wheel-roll {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* One period of the repeating gradient, so the loop has no seam. */
+  @keyframes wheel-road {
+    to {
+      transform: translateX(-24px);
+    }
+  }
+}
+
+/* Standing still, the bright spoke is still enough to say which way is up
+   and the road is still a road. */
+@media (prefers-reduced-motion: reduce) {
+  .loader-road {
+    opacity: 0.3;
+  }
+}
+
+/* The block the route loader fills while a page's chunk comes down. It was a
+   bare navy rectangle, which on a slow connection is indistinguishable from
+   a page that has failed to arrive. */
+.route-loading {
+  display: grid;
+  place-items: center;
+  min-height: 70vh;
+  background: var(--color-navy);
+}
