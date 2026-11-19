@@ -144,9 +144,9 @@ export function Hero() {
                         leave a hole in the row. */}
                     <span
                       aria-hidden="true"
-                      className="grid size-9 shrink-0 place-items-center rounded-full border border-gold/35 bg-gold/10 text-gold-light sm:size-11"
+                      className="hero-stat-badge grid shrink-0 place-items-center text-gold-light"
                     >
-                      <Icon name={s.icon} size={20} />
+                      <Icon name={s.icon} strokeWidth={2} />
                     </span>
                     <span>
                       <span className="block text-lg leading-none font-bold text-white min-[420px]:text-xl sm:text-2xl">
