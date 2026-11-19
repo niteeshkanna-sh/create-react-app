@@ -25,22 +25,23 @@ import { WhatsAppButton } from './WhatsAppButton';
  * connection. 22 KB of AVIF, loaded lazily, buys the same thing.
  *
  * It is a photograph of the banner, so it goes out of date when the banner
- * changes. Re-shoot it then: 390 by 720 at twice the scale, scrolled so the
- * four tiles sit under the header, resized to 520 wide. 720 rather than a
- * real handset's 844 because the picture leans out of the panel at a tilt,
- * and at the true proportion it climbs into the section above.
+ * changes. Re-shoot it then: 390 by 790 at twice the scale, scrolled so the
+ * four tiles sit under the header, resized to 520 wide. 790 and not 844
+ * because the frame draws the status strip itself; the two together are a
+ * real handset's proportion, which is the thing that makes a mock-up read
+ * as a phone rather than as a slab.
  */
 const PHONE = '/self-drive-car-rental-nagercoil-on-a-phone';
 
 export function CtaBand() {
   const c = useHome().closingCta;
 
-  // Taller above than below from the laptop up. The phone leans about a
-  // hundred and thirty points past the top of the panel, and that has to be
-  // the section's own space -- at py-20 it was reaching into the questions
-  // band above and sitting on the answers.
+  // Taller above than below from the laptop up. A handset at a real
+  // proportion leans about a hundred and eighty points past the top of the
+  // panel, and that has to be the section's own space -- at py-20 it was
+  // reaching into the questions band above and sitting on the answers.
   return (
-    <section className="mx-auto max-w-[86rem] px-5 pt-20 pb-20 sm:px-8 lg:px-12 lg:pt-36">
+    <section className="mx-auto max-w-[86rem] px-5 pt-20 pb-20 sm:px-8 lg:px-12 lg:pt-48">
       <Reveal>
         <div className="cta-wrap relative">
           <div className="cta-band relative isolate overflow-hidden rounded-[22px] px-6 py-10 text-white sm:px-10 sm:py-12 lg:px-14 lg:py-14">
@@ -91,19 +92,41 @@ export function CtaBand() {
               them. */}
           <div aria-hidden="true" className="cta-phone">
             <span className="cta-phone-body">
-              <span className="cta-phone-notch" />
-              <picture>
-                <source type="image/avif" srcSet={`${PHONE}.avif`} />
-                <img
-                  src={`${PHONE}.webp`}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  width={520}
-                  height={960}
-                  className="cta-phone-screen"
-                />
-              </picture>
+              {/* The light along the top-left edge of the case. One element
+                  rather than a border, because a border is the same weight
+                  the whole way round and a metal edge is not. */}
+              <span className="cta-phone-rim" />
+
+              {/* The buttons. Nothing about the mock-up says "phone" as
+                  cheaply as four small bars on the two edges. */}
+              <span className="cta-phone-btn is-silent" />
+              <span className="cta-phone-btn is-up" />
+              <span className="cta-phone-btn is-down" />
+              <span className="cta-phone-btn is-power" />
+
+              <span className="cta-phone-screen">
+                {/* The strip the status bar lives in, in the site's own
+                    header colour so the two meet seamlessly, with the
+                    island in the middle of it. The picture starts below
+                    it -- drawn over the top of the page, the island sat on
+                    the logo. */}
+                <span className="cta-phone-bar">
+                  <span className="cta-phone-island" />
+                </span>
+
+                <picture>
+                  <source type="image/avif" srcSet={`${PHONE}.avif`} />
+                  <img
+                    src={`${PHONE}.webp`}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    width={520}
+                    height={1053}
+                    className="cta-phone-shot"
+                  />
+                </picture>
+              </span>
             </span>
           </div>
         </div>
