@@ -16,7 +16,7 @@
  * dist/404.html stays a copy of the root page: it is what Pages serves for
  * anything unmatched, and the router resolves the URL once the app boots.
  */
-import { readFileSync, readdirSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -453,7 +453,7 @@ function enrichJsonLd(html) {
         name: SERVICE_ROUTES.get(r.path),
         serviceType: SERVICE_ROUTES.get(r.path),
         provider: { '@id': seo.site.origin + '#business' },
-        url: seo.site.origin + r.path,
+        url: address(r.path),
       },
     }));
   if (offers.length > 0) {
@@ -570,7 +570,7 @@ function breadcrumbFor(route) {
     '@type': 'ListItem',
     position: trail.length + 1,
     name: leaf,
-    item: seo.site.origin + route.path,
+    item: address(route.path),
   });
 
   return { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: trail };
@@ -602,7 +602,7 @@ function townServiceFor(route) {
         name: `${seo.site.district} district`,
       },
     },
-    url: seo.site.origin + route.path,
+    url: address(route.path),
   };
 }
 
@@ -643,7 +643,7 @@ function faqFor(route) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    '@id': seo.site.origin + route.path + '#faq',
+    '@id': address(route.path) + '#faq',
     mainEntity: items.map((item) => ({
       '@type': 'Question',
       name: String(item.question).trim(),
@@ -670,13 +670,13 @@ function articleFor(route) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    '@id': seo.site.origin + route.path + '#article',
+    '@id': address(route.path) + '#article',
     headline: post.title,
     description: post.description,
     datePublished: post.date,
     dateModified: post.updated ?? post.date,
     inLanguage: 'en-IN',
-    mainEntityOfPage: { '@type': 'WebPage', '@id': seo.site.origin + route.path },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': address(route.path) },
     // #business rather than #organization: the AutoRental block is on every
     // page, so this reference resolves on the page it is read from. The
     // Organization node is on the home page alone, and a reference to an @id
@@ -824,8 +824,28 @@ function preloadFor(route) {
   return links.join('');
 }
 
+/**
+ * The address the host actually serves a route at.
+ *
+ * Apache adds a trailing slash to a directory and 301s to it, and every page
+ * on this site is a directory with an index.html in it. So /tariff is a
+ * redirect and /tariff/ is the page. Built without the slash, as it was, the
+ * canonical tag on /tariff/ pointed at /tariff -- a URL that redirects back
+ * to the page the tag is on -- and all 32 sitemap entries were redirects
+ * too. Google resolves it, but it is a conflicting signal on every page of
+ * the site and it spends a redirect on every crawl.
+ *
+ * Match the server rather than reconfigure it: the slash form is what is
+ * actually served, and it is one function rather than eight call sites that
+ * each remembered to do it.
+ */
+function address(path) {
+  if (path === '/') return seo.site.origin + '/';
+  return seo.site.origin + path.replace(/\/$/, '') + '/';
+}
+
 let written = 0;for (const route of routes) {
-  const url = seo.site.origin + route.path;
+  const url = address(route.path);
   let html = rewrite(template, {
     title: escape(route.title),
     description: escape(route.description),
@@ -896,8 +916,30 @@ let written = 0;for (const route of routes) {
   written++;
 }
 
-// The SPA fallback must carry the root page's tags, not the last route's.
-copyFileSync(join(dist, 'index.html'), join(dist, '404.html'));
+// 404.html, which Apache serves through ErrorDocument for an address that
+// does not exist.
+//
+// It was a byte-identical copy of the home page, which is what GitHub Pages
+// needed when this site was hosted there: Pages has no rewrite rules, so the
+// fallback had to be a working copy of the app. On Apache it meant every
+// address that does not exist answered 200 with a full copy of the home page
+// -- a soft 404, which is the one thing the comment on the rewrite rule in
+// .htaccess said it existed to avoid.
+//
+// It still carries the app, because the client re-renders it for whatever
+// address the visitor actually asked for and shows them the Not Found page.
+// What changes is what it tells a crawler: its own title, no canonical
+// pointing at the home page, and noindex, so that if it is ever served with
+// a 200 by mistake it still cannot be indexed.
+const notFound = readFileSync(join(dist, 'index.html'), 'utf8')
+  .replace(/(<title[^>]*>)[^<]*(<\/title>)/, '$1Page not found$2')
+  .replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/, '')
+  .replace(
+    /(<meta\s+name="description"\s+content=")[^"]*(")/,
+    '$1The page you asked for is not here. Everything we rent is a click away.$2',
+  )
+  .replace('</head>', '    <meta name="robots" content="noindex, follow" />\n  </head>');
+writeFileSync(join(dist, '404.html'), notFound);
 
 // Which photograph belongs to which route, so the sitemap can name it.
 //
@@ -928,7 +970,7 @@ const sitemap =
   routes
     .map(
       (r) =>
-        `  <url>\n    <loc>${seo.site.origin}${r.path}</loc>\n` +
+        `  <url>\n    <loc>${address(r.path)}</loc>\n` +
         `    <lastmod>${today}</lastmod>\n` +
         `    <priority>${r.priority}</priority>` +
         imagesFor(r) +
