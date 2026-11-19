@@ -24,13 +24,11 @@ const SITE_IMAGE_SLOTS = [
 
     // The wide photograph across the top of each page. The names match what
     // the site asks for, so adding one here and adding one there is the same
-    // decision rather than two that can disagree.
-    'cars-hero'     => 'Cars page banner',
-    'bikes-hero'    => 'Bikes page banner',
-    'wedding-hero'  => 'Wedding cars banner',
-    'tourist-hero'  => 'Tourist vehicles banner',
-    'monthly-hero'  => 'Monthly rental banner',
-    'nri-hero'      => 'NRI page banner',
+    // decision rather than two that can disagree -- and five of these went
+    // when the service pages did. A slot for a page that no longer exists is
+    // a door that opens on nothing: five photographs were uploaded to those
+    // and none of them was ever displayed anywhere.
+    'cars-hero'     => 'Areas page banner',
     'tariff-hero'   => 'Tariff page banner',
     'about-hero'    => 'About page banner',
     'contact-hero'  => 'Contact page banner',
@@ -116,11 +114,6 @@ const SITE_IMAGE_SHAPES = [
 
     // The wide band across the top of a page.
     'cars-hero'     => [16, 5, 1600, 500],
-    'bikes-hero'    => [16, 5, 1600, 500],
-    'wedding-hero'  => [16, 5, 1600, 500],
-    'tourist-hero'  => [16, 5, 1600, 500],
-    'monthly-hero'  => [16, 5, 1600, 500],
-    'nri-hero'      => [16, 5, 1600, 500],
     'tariff-hero'   => [16, 5, 1600, 500],
     'about-hero'    => [16, 5, 1600, 500],
     'contact-hero'  => [16, 5, 1600, 500],
@@ -185,11 +178,6 @@ const SITE_IMAGE_KEYWORDS = [
     'logo'  => 'NiteSha Cars and Bikes logo Nagercoil',
 
     'cars-hero'     => 'self drive car rental Nagercoil',
-    'bikes-hero'    => 'bike rental Nagercoil Kanyakumari',
-    'wedding-hero'  => 'wedding car rental Kanyakumari district',
-    'tourist-hero'  => 'tourist vehicle hire with driver Kanyakumari',
-    'monthly-hero'  => 'monthly car rental Nagercoil',
-    'nri-hero'      => 'car rental for NRI visitors Kanyakumari',
     'tariff-hero'   => 'self drive car rental tariff Kanyakumari',
     'about-hero'    => 'about NiteSha Cars and Bikes Nagercoil',
     'contact-hero'  => 'contact self drive car rental Nagercoil',
@@ -411,6 +399,55 @@ function site_image_warning(string $slot, string $file): ?string
         $wantW,
         $wantH
     );
+}
+
+/**
+ * Pictures stored against a slot this list no longer names.
+ *
+ * Removing a slot does not remove what was uploaded to it: the row stays in
+ * the table and the file stays on the disk, and site_images() filters both
+ * out, so they become invisible rather than gone. Five banners for the
+ * removed service pages are in exactly that state.
+ *
+ * Surfaced rather than deleted on sight. A slot can disappear for a release
+ * and come back, and a page load is not a decision -- the panel lists these
+ * with a button beside each one and the owner presses it.
+ */
+function site_images_orphaned(): array
+{
+    if (!table_has_column('site_images', 'file')) {
+        return [];
+    }
+    try {
+        $out = [];
+        foreach (fetch_all('SELECT slot, file FROM site_images') as $row) {
+            if (!isset(SITE_IMAGE_SLOTS[$row['slot']])) {
+                $out[(string) $row['slot']] = (string) $row['file'];
+            }
+        }
+        return $out;
+    } catch (Throwable $e) {
+        error_log('site_images orphan read failed: ' . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Forgets a picture stored against a slot that no longer exists.
+ *
+ * The mirror of site_image_clear, and guarded the opposite way round on
+ * purpose: that one refuses anything but a live slot, this one refuses
+ * anything but a dead one. Neither can be handed the other's argument and
+ * do something surprising with it.
+ */
+function site_image_forget(string $slot): void
+{
+    if ($slot === '' || isset(SITE_IMAGE_SLOTS[$slot])) {
+        return;
+    }
+    $file = site_images_orphaned()[$slot] ?? null;
+    query('DELETE FROM site_images WHERE slot = ?', [$slot]);
+    site_image_delete_file($file);
 }
 
 /** Clears a slot and removes its file. */

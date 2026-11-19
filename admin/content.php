@@ -48,7 +48,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action  = (string) ($_POST['action'] ?? '');
     $section = (string) ($_POST['section'] ?? '');
 
-    if ($action === 'brand-upload' || $action === 'brand-clear') {
+    if ($action === 'brand-forget') {
+        // A picture left behind by a slot that no longer exists. Guarded by
+        // site_image_forget, which refuses anything the list still names.
+        $slot = (string) ($_POST['slot'] ?? '');
+        if (isset(SITE_IMAGE_SLOTS[$slot])) {
+            $error = 'That picture is still in use.';
+        } else {
+            site_image_forget($slot);
+            audit_log('site_image_forgotten', 'content', 'site_image', null, null,
+                ['slot' => $slot], null, (int) $me['id'], (string) $me['name']);
+            $notice = 'Removed a picture that was no longer used anywhere.';
+        }
+    } elseif ($action === 'brand-upload' || $action === 'brand-clear') {
         // Handled before the section check below, which would otherwise reject
         // these for not naming a section -- they do not have one.
         $slot = (string) ($_POST['slot'] ?? '');
@@ -321,6 +333,33 @@ admin_shell_open($me, 'content.php', 'Website content');
         </form>
       <?php endforeach; ?>
     </div>
+
+    <?php $orphans = site_images_orphaned(); ?>
+    <?php if ($orphans !== []): ?>
+      <div class="brand-orphans">
+        <h3>No longer used</h3>
+        <p class="c-note">
+          These were uploaded to parts of the site that have since been removed, so nothing
+          displays them any more. They are still taking up space on the server. Removing one
+          here deletes it for good.
+        </p>
+        <ul class="brand-orphan-list">
+          <?php foreach ($orphans as $slot => $file): ?>
+            <li>
+              <img src="<?= e((string) site_image_url($file)) ?>" alt=""
+                   onerror="this.onerror=null;this.src='brand.php?f=<?= e(rawurlencode($file)) ?>'">
+              <span class="brand-orphan-name"><?= e($slot) ?></span>
+              <form method="post">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="brand-forget">
+                <input type="hidden" name="slot" value="<?= e($slot) ?>">
+                <button class="btn btn-danger btn-sm" type="submit">Remove</button>
+              </form>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+    <?php endif; ?>
     </div>
   </details>
 

@@ -2602,3 +2602,40 @@ input.is-wrong, select.is-wrong, textarea.is-wrong {
   box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
 }
 .photo-input.is-wrong .photo-pick { border-color: var(--danger); color: var(--danger); }
+
+/* Pictures left behind by a slot that no longer exists. Set apart from the
+   grid above rather than mixed into it: these are not places to upload to,
+   they are things to clear out. */
+.brand-orphans {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.brand-orphans h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+.brand-orphan-list {
+  display: flex; flex-wrap: wrap; gap: 0.6rem;
+  margin: 0.75rem 0 0; padding: 0; list-style: none;
+}
+
+.brand-orphan-list li {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line); border-radius: 0.55rem;
+  background: var(--surface);
+}
+
+.brand-orphan-list img {
+  width: 54px; height: 34px; object-fit: cover; border-radius: 0.25rem; flex: none;
+}
+
+.brand-orphan-name {
+  font-size: 0.75rem; color: var(--ink-dim); font-family: ui-monospace, monospace;
+}
+
+.brand-orphan-list form { margin: 0; }
