@@ -235,7 +235,7 @@ export function About() {
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <a
                   href={`tel:${seo.site.phone}`}
-                  className="rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-navy transition hover:bg-gold-light sm:text-base"
+                  className="btn-amber rounded-xl px-5 py-2.5 text-sm sm:text-base"
                 >
                   Call {readablePhone(seo.site.phone)}
                 </a>

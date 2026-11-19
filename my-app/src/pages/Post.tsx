@@ -117,7 +117,7 @@ export function Post() {
                     {link.label}
                     <span
                       aria-hidden="true"
-                      className="text-gold transition group-hover:translate-x-0.5"
+                      className="text-gold-deep transition group-hover:translate-x-0.5"
                     >
                       →
                     </span>

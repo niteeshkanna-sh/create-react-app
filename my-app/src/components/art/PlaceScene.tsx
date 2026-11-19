@@ -82,11 +82,11 @@ export function PlaceSceneDefs() {
     <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
       <defs>
         <linearGradient id="pl-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0a0e20" />
+          <stop offset="0%" stopColor="#1a1407" />
           <stop offset="38%" stopColor="#1f2a52" />
           <stop offset="64%" stopColor="#5d4a63" />
           <stop offset="84%" stopColor="#c8873a" />
-          <stop offset="100%" stopColor="#f0d060" />
+          <stop offset="100%" stopColor="#ffc53d" />
         </linearGradient>
         <linearGradient id="pl-water" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#f6e4a8" />
@@ -94,8 +94,8 @@ export function PlaceSceneDefs() {
         </linearGradient>
         <radialGradient id="pl-sun">
           <stop offset="0%" stopColor="#fff3cf" stopOpacity="0.95" />
-          <stop offset="45%" stopColor="#f0d060" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#f0d060" stopOpacity="0" />
+          <stop offset="45%" stopColor="#ffc53d" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#ffc53d" stopOpacity="0" />
         </radialGradient>
       </defs>
     </svg>
@@ -118,7 +118,7 @@ function Water({ line = 182, sun = 300 }: { line?: number; sun?: number }) {
   return (
     <>
       <rect y={line} width="400" height={250 - line} fill="#141d3a" />
-      <g fill="#f0d060" opacity="0.4">
+      <g fill="#ffc53d" opacity="0.4">
         {[0, 1, 2, 3, 4].map((i) => (
           <rect
             key={i}
@@ -138,7 +138,7 @@ function Water({ line = 182, sun = 300 }: { line?: number; sun?: number }) {
   );
 }
 
-const DARK = '#05070f';
+const DARK = '#0d0903';
 
 function Waterfall() {
   return (
@@ -266,9 +266,9 @@ function Church() {
         <rect y="196" width="400" height="54" />
       </g>
       {/* The rose window and the door, lit from inside. */}
-      <circle cx="200" cy="118" r="15" fill="#f0d060" opacity="0.65" />
+      <circle cx="200" cy="118" r="15" fill="#ffc53d" opacity="0.65" />
       <path d="M184 196 V152 A16 16 0 0 1 216 152 V196Z" fill="#c8873a" opacity="0.6" />
-      <g fill="#f0d060" opacity="0.4">
+      <g fill="#ffc53d" opacity="0.4">
         <rect x="130" y="112" width="12" height="26" rx="6" />
         <rect x="258" y="112" width="12" height="26" rx="6" />
       </g>
@@ -325,7 +325,7 @@ function Palace() {
         <rect x="196" y="40" width="8" height="18" rx="3" />
       </g>
       {/* Shuttered windows under each eave. */}
-      <g fill="#f0d060" opacity="0.4">
+      <g fill="#ffc53d" opacity="0.4">
         {[156, 180, 204, 228].map((x) => (
           <rect key={`u${x}`} x={x} y="112" width="12" height="16" rx="3" />
         ))}
@@ -404,7 +404,7 @@ function Viewpoint() {
         <rect x="230" y="14" width="64" height="24" rx="4" />
         <rect x="258" y="2" width="7" height="14" rx="3" />
       </g>
-      <g fill="#f0d060" opacity="0.45">
+      <g fill="#ffc53d" opacity="0.45">
         <rect x="240" y="20" width="14" height="13" rx="3" />
         <rect x="262" y="20" width="14" height="13" rx="3" />
       </g>

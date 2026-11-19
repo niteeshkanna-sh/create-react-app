@@ -173,7 +173,7 @@ export function Tariff() {
                 className="tap-target group inline-flex items-baseline gap-2 font-semibold text-navy transition hover:text-gold-deep"
               >
                 KM limits, extra-KM rates and deposits, explained plainly
-                <span aria-hidden="true" className="text-gold transition group-hover:translate-x-0.5">
+                <span aria-hidden="true" className="text-gold-deep transition group-hover:translate-x-0.5">
                   →
                 </span>
               </Link>
@@ -184,7 +184,7 @@ export function Tariff() {
                 className="tap-target group inline-flex items-baseline gap-2 font-semibold text-navy transition hover:text-gold-deep"
               >
                 What documents you need to take a self-drive car
-                <span aria-hidden="true" className="text-gold transition group-hover:translate-x-0.5">
+                <span aria-hidden="true" className="text-gold-deep transition group-hover:translate-x-0.5">
                   →
                 </span>
               </Link>

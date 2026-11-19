@@ -262,7 +262,7 @@ export function HeroEnquiry({
           <button
             type="submit"
             disabled={sending}
-            className={`w-full rounded-lg bg-navy px-2 py-2.5 text-[13px] font-semibold whitespace-nowrap text-white transition hover:bg-navy-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy disabled:opacity-60 sm:text-[14px] ${
+            className={`btn-amber w-full rounded-lg px-2 py-2.5 text-[13px] whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy disabled:opacity-60 sm:text-[14px] ${
               bar ? 'lg:w-auto lg:px-7' : ''
             }`}
           >

@@ -164,7 +164,7 @@ export function Hero() {
             <div data-hero-item="" style={{ ['--hero-delay' as string]: '340ms' }} className="mt-8 grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap">
               <ContentLink
                 to={h.primaryHref}
-                className="rounded-xl bg-gold px-3 py-3 text-center text-[14px] font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-6 sm:text-base"
+                className="btn-amber rounded-xl px-3 py-3 text-center text-[14px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-6 sm:text-base"
               >
                 {h.primaryLabel}
               </ContentLink>

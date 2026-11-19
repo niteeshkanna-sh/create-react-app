@@ -12,7 +12,7 @@ export function NotFound() {
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             to="/"
-            className="rounded-xl bg-navy px-6 py-3 font-semibold text-white transition hover:bg-navy/90"
+            className="btn-amber rounded-xl px-6 py-3"
           >
             Back to home
           </Link>

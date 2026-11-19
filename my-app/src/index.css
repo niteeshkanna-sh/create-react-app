@@ -108,29 +108,43 @@
 /* Brand tokens carried over from the admin panel (admin.css :root), so the
    public site and the admin share one palette. */
 @theme {
-  /* Taken from the logo: metallic gold on near-black, not the flatter #F5A500
-     used before. These read well on dark and badly on light -- #D4AF37 is
-     9.11:1 on navy but 1.99:1 on cream -- so gold belongs on dark surfaces,
-     and light sections use navy or gold-deep for text. */
-  --color-gold: #d4af37;
-  --color-gold-light: #f0d060;
-  --color-gold-mid: #c9a227;
-  --color-bronze: #c8873a;
-  /* The only gold dark enough to be read on a light background. */
-  --color-gold-deep: #8a5a00;
+  /* Sampled from the logo file rather than guessed. The dominant opaque
+     pixels in it are #ffaa00 and #ee9900, with highlights to #ffee44 and
+     shadows to #dd8800 -- a warm amber, not the duller olive #d4af37 that
+     was here before.
 
-  /* The logo bar's near-black, slightly bluer than pure black. */
-  --color-navy: #0a0e20;
-  --color-navy-deep: #070a16;
+     The rule that matters: amber is a FILL, never small text on white.
+     #ffaa00 is 1.91:1 on white, so a label on an amber button has to be
+     near-black (8.98:1), and amber text on a light background has to be
+     --color-gold-deep (5.43:1). Measured, not estimated. */
+  --color-gold: #ffaa00;
+  --color-gold-light: #ffc53d;
+  --color-gold-mid: #ee9900;
+  /* White text sits on this in the benefit cards, and at #c8873a that was
+     3.01:1 -- under AA. #a35f1c carries it at 4.99:1. */
+  --color-bronze: #a35f1c;
+  /* The only amber dark enough to be read as text on a light background. */
+  --color-gold-deep: #9a5b00;
+  /* The palest wash of it, for tinted cards and badges on white. */
+  --color-gold-pale: #fff3d6;
 
-  --color-ink: #14100d;
-  --color-ink-dim: #5c5348;
-  --color-ink-faint: #948b80;
+  /* Warm near-black, not the blue-black it was. The page is white and the
+     accent is amber, and a blue-black heading over that reads as a different
+     brand to the logo above it. Still the header's colour: the logo's
+     "CARS & BIKES" line is white, so the bar behind it stays dark. */
+  --color-navy: #1a1407;
+  --color-navy-deep: #120d04;
 
-  --color-cream: #fff8ea;
+  --color-ink: #231a0d;
+  --color-ink-dim: #6b6052;
+  /* Was #948b80, which is 3.35:1 on white -- under AA for body text, and the
+     single largest source of unreadable text on the old site. */
+  --color-ink-faint: #7a7164;
+
+  --color-cream: #fffaf2;
   --color-sand: #fff8ea;
   --color-surface: #ffffff;
-  --color-line: #efdfc2;
+  --color-line: #efe4d2;
 
   --color-danger: #b3261e;
   --color-ok: #2f6b4f;
@@ -148,7 +162,9 @@ html {
 }
 
 body {
-  background: var(--color-cream);
+  /* White, with --color-cream kept as the warm band that alternates
+     against it. Both were cream before, so the bands did not show. */
+  background: var(--color-surface);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
@@ -884,7 +900,7 @@ body {
 .benefit-3 {
   --benefit-bg: var(--color-gold);
   --benefit-fg: var(--color-navy);
-  --benefit-badge: linear-gradient(140deg, #16204a, var(--color-navy-deep));
+  --benefit-badge: linear-gradient(140deg, #44330f, var(--color-navy-deep));
   --benefit-mark: var(--color-gold-light);
   --benefit-beat: 900ms;
 }
@@ -1947,6 +1963,42 @@ body {
   }
 }
 
+/* The button that asks for the booking.
+
+   Amber fill, near-black label, turning white on hover -- the behaviour the
+   owner asked for. It is one class rather than the nine copies of the same
+   utility string that were drifting apart across the site: three of them had
+   already ended up with different hovers (gold-light, gold/90, none).
+
+   The label is near-black and not white on purpose. White on #ffaa00 is
+   1.91:1, which is unreadable; near-black on it is 8.98:1.
+
+   The border is amber in both states and the same width in both, so the
+   button does not resize on hover -- and so that when it turns white it is
+   still a button on a white page rather than a hole in it. */
+.btn-amber {
+  background-color: var(--color-gold);
+  color: var(--color-navy);
+  border: 2px solid var(--color-gold);
+  font-weight: 700;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.btn-amber:hover {
+  background-color: #fff;
+  color: var(--color-gold-deep);
+  border-color: var(--color-gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-amber {
+    transition: none;
+  }
+}
+
 /* The three badges under the headline.
    A tinted glass pill on a photograph: the gold hairline ties it to the brand
    and the eighth of white behind it lifts the words off whatever part of the
@@ -2302,7 +2354,7 @@ body {
 --------------------------------------------------------------------------- */
 
 .chooser-card {
-  border: 1px solid rgba(212, 175, 55, 0.22);
+  border: 1px solid rgba(255, 170, 0, 0.22);
 }
 
 .chooser-tile {
@@ -2318,14 +2370,14 @@ body {
   /* The glow sits behind the drawing rather than behind the words, so the
      label keeps its contrast on navy while the corner still lifts. */
   background:
-    radial-gradient(120% 150% at 86% 16%, rgba(212, 175, 55, 0.32), transparent 62%),
-    linear-gradient(135deg, #111a38 0%, #0a0e20 62%);
+    radial-gradient(120% 150% at 86% 16%, rgba(255, 170, 0, 0.32), transparent 62%),
+    linear-gradient(135deg, #3a2c10 0%, #1a1407 62%);
 }
 
 .chooser-tile-lead:hover {
   background:
-    radial-gradient(120% 150% at 86% 16%, rgba(212, 175, 55, 0.42), transparent 62%),
-    linear-gradient(135deg, #16214a 0%, #0a0e20 62%);
+    radial-gradient(120% 150% at 86% 16%, rgba(255, 170, 0, 0.42), transparent 62%),
+    linear-gradient(135deg, #44330f 0%, #1a1407 62%);
 }
 
 /* The box the vehicle sits in, rather than the vehicle's own size.
@@ -2558,9 +2610,9 @@ body {
 .offer-card {
   min-height: 15rem;
   background:
-    radial-gradient(130% 120% at 85% 0%, rgba(212, 175, 55, 0.28), transparent 58%),
-    linear-gradient(140deg, #16214a 0%, #0a0e20 58%);
-  border: 1px solid rgba(212, 175, 55, 0.26);
+    radial-gradient(130% 120% at 85% 0%, rgba(255, 170, 0, 0.28), transparent 58%),
+    linear-gradient(140deg, #44330f 0%, #1a1407 58%);
+  border: 1px solid rgba(255, 170, 0, 0.26);
   box-shadow: 0 10px 30px rgba(16, 24, 40, 0.14);
   transition:
     transform 0.25s ease,
@@ -2570,7 +2622,7 @@ body {
 
 a.offer-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(212, 175, 55, 0.6);
+  border-color: rgba(255, 170, 0, 0.6);
   box-shadow: 0 16px 40px rgba(16, 24, 40, 0.2);
 }
 
@@ -2588,8 +2640,8 @@ a.offer-card:hover {
 
 /* A dashed rule says "copy this" the way a torn-off coupon does. */
 .offer-code {
-  border: 1px dashed rgba(240, 208, 96, 0.65);
-  background: rgba(212, 175, 55, 0.12);
+  border: 1px dashed rgba(255, 197, 61, 0.65);
+  background: rgba(255, 170, 0, 0.12);
   color: var(--color-gold-light);
 }
 
@@ -2616,7 +2668,7 @@ a.offer-card:hover {
 
 .why-claim:hover {
   transform: translateY(-2px);
-  border-color: rgba(212, 175, 55, 0.5);
+  border-color: rgba(255, 170, 0, 0.5);
   box-shadow: 0 12px 28px rgba(16, 24, 40, 0.1);
 }
 
@@ -2677,7 +2729,7 @@ a.offer-card:hover {
   content: '';
   position: absolute;
   inset: -6px 1.625rem 1.625rem 0.875rem;
-  border: 1.5px solid rgb(212 175 55 / 0.55);
+  border: 1.5px solid rgb(255 170 0 / 0.55);
   border-radius: 62% 38% 44% 56% / 52% 58% 42% 48%;
   pointer-events: none;
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
@@ -2705,9 +2757,9 @@ a.offer-card:hover {
 
 .cta-band {
   background:
-    radial-gradient(90% 120% at 78% 12%, rgb(212 175 55 / 0.26), transparent 58%),
-    linear-gradient(135deg, #16214a 0%, #0a0e20 60%);
-  border: 1px solid rgb(212 175 55 / 0.28);
+    radial-gradient(90% 120% at 78% 12%, rgb(255 170 0 / 0.26), transparent 58%),
+    linear-gradient(135deg, #44330f 0%, #1a1407 60%);
+  border: 1px solid rgb(255 170 0 / 0.28);
   box-shadow: 0 18px 48px rgb(16 24 40 / 0.18);
 }
 
@@ -2733,8 +2785,8 @@ a.offer-card:hover {
     transform: translateY(-50%);
     background: radial-gradient(
       circle at 42% 38%,
-      rgb(212 175 55 / 0.22),
-      rgb(212 175 55 / 0.06) 58%,
+      rgb(255 170 0 / 0.22),
+      rgb(255 170 0 / 0.06) 58%,
       transparent 72%
     );
     pointer-events: none;
@@ -2791,7 +2843,7 @@ a.offer-card:hover {
   /* The case: a dark metal with the light coming from the top left. */
   padding: 0.42rem;
   border-radius: 2.6rem;
-  background: linear-gradient(145deg, #4a5165 0%, #23283a 22%, #0c0f1a 55%, #05070f 100%);
+  background: linear-gradient(145deg, #4a5165 0%, #23283a 22%, #0c0f1a 55%, #0d0903 100%);
   box-shadow:
     0 34px 70px rgb(5 7 15 / 0.5),
     0 2px 6px rgb(5 7 15 / 0.4);
@@ -2859,7 +2911,7 @@ a.offer-card:hover {
   overflow: hidden;
   aspect-ratio: 390 / 844;
   border-radius: 2.2rem;
-  background: #05070f;
+  background: #0d0903;
 }
 
 /* Where the status bar would be, in the site's own header colour so the two
@@ -2869,7 +2921,7 @@ a.offer-card:hover {
   position: relative;
   display: block;
   height: 6.4%;
-  background: #05070f;
+  background: #0d0903;
 }
 
 .cta-phone-island {
@@ -3239,7 +3291,7 @@ a.offer-card:hover {
 }
 
 .faq-chip:hover {
-  border-color: rgb(212 175 55 / 0.5);
+  border-color: rgb(255 170 0 / 0.5);
   color: #fff;
 }
 

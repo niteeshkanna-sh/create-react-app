@@ -37,7 +37,7 @@ export function Loader({
         className="loader-wheel"
       >
         {/* The tyre. */}
-        <circle cx="32" cy="32" r="28" fill="#0a0e20" />
+        <circle cx="32" cy="32" r="28" fill="#1a1407" />
         <circle cx="32" cy="32" r="28" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2" />
         {/* Tread, as blocks around the wall rather than a dashed ring: a dash
             array on a circle starts and ends at three o'clock, and the seam

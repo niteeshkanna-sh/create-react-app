@@ -32,12 +32,12 @@ export function CarSilhouette({ className }: Props) {
       />
       {/* Glass. Navy at just over half, so it reads as glass on a pale tile
           and as shadow on a dark one rather than as a hole in the car. */}
-      <path d="M26 26 L36 26 L34 40 L18 40 Z" fill="#0a0e20" opacity="0.62" />
-      <path d="M42 26 L72 26 L74 40 L40 40 Z" fill="#0a0e20" opacity="0.62" />
-      <circle cx="32" cy="63" r="10" fill="#05070f" />
-      <circle cx="32" cy="63" r="4" fill="#d4af37" opacity="0.6" />
-      <circle cx="86" cy="63" r="10" fill="#05070f" />
-      <circle cx="86" cy="63" r="4" fill="#d4af37" opacity="0.6" />
+      <path d="M26 26 L36 26 L34 40 L18 40 Z" fill="#1a1407" opacity="0.62" />
+      <path d="M42 26 L72 26 L74 40 L40 40 Z" fill="#1a1407" opacity="0.62" />
+      <circle cx="32" cy="63" r="10" fill="#0d0903" />
+      <circle cx="32" cy="63" r="4" fill="#ffaa00" opacity="0.6" />
+      <circle cx="86" cy="63" r="10" fill="#0d0903" />
+      <circle cx="86" cy="63" r="4" fill="#ffaa00" opacity="0.6" />
     </svg>
   );
 }
@@ -58,7 +58,7 @@ export function ScooterSilhouette({ className }: Props) {
           and shares its construction with the car beside it. */}
       <path d="M54 46 L38 51" stroke="url(#ns-metal)" strokeWidth="5" strokeLinecap="round" opacity="0.7" />
       {/* Tail and seat. */}
-      <path d="M12 28 L50 25 L52 34 L14 36 Z" fill="#d4af37" opacity="0.92" />
+      <path d="M12 28 L50 25 L52 34 L14 36 Z" fill="#ffaa00" opacity="0.92" />
       {/* Tank. */}
       <path d="M48 26 Q64 13 82 21 L84 32 L50 34 Z" fill="url(#ns-metal)" />
       {/* Engine block, sitting in the gap between the wheels. */}
@@ -67,7 +67,7 @@ export function ScooterSilhouette({ className }: Props) {
       <path d="M96 20 L104 50" stroke="url(#ns-metal)" strokeWidth="5" strokeLinecap="round" />
       <path d="M88 14 L106 19" stroke="url(#ns-metal)" strokeWidth="4" strokeLinecap="round" />
       <path d="M74 40 L98 46" stroke="url(#ns-metal)" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="100" cy="27" r="5" fill="#f0d060" />
+      <circle cx="100" cy="27" r="5" fill="#ffc53d" />
 
       <circle cx="26" cy="52" r="15" fill="none" stroke="url(#ns-metal)" strokeWidth="5" />
       <circle cx="104" cy="52" r="15" fill="none" stroke="url(#ns-metal)" strokeWidth="5" />

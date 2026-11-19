@@ -65,7 +65,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <a
             href={`tel:${seo.site.phone}`}
-            className="hidden rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:block"
+            className="btn-amber hidden rounded-xl px-4 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:block"
           >
             Call us
           </a>
@@ -116,7 +116,7 @@ export function Header() {
             <li>
               <a
                 href={`tel:${seo.site.phone}`}
-                className="mt-1 block rounded-xl bg-gold px-3 py-2.5 text-center font-semibold text-navy sm:hidden"
+                className="btn-amber mt-1 block rounded-xl px-3 py-2.5 text-center sm:hidden"
               >
                 Call +91 63749 42976
               </a>
