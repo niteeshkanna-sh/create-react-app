@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 
 /**
  * The circular badge with text running round its edge.

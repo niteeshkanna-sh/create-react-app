@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import { dailyRate, inr, perDay, type Car } from '../data/cars';
 import { carPhoto } from '../lib/carPhoto';
 import { SectionArt } from './art/SectionArt';

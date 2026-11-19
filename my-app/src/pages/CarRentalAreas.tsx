@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../components/SiteLink';
 import seo from '../data/seo.json';
 import townData from '../data/towns.json';
 import { Reveal } from '../components/Reveal';

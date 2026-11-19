@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from './SiteLink';
 import seo from '../data/seo.json';
 import { Logo } from './Logo';
 

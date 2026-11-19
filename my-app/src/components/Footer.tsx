@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import seo from '../data/seo.json';
 import { useHome } from '../content';
 import { readablePhone } from '../lib/phone';

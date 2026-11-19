@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from '../components/SiteLink';
 import { dailyRate, inr, orDash, perDay } from '../data/cars';
 import { useFleet } from '../lib/useFleet';
 import { PageHeader } from './PageHeader';

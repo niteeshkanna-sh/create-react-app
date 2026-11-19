@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import pickupData from '../data/pickups.json';
 import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';

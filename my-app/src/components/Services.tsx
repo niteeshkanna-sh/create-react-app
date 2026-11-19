@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import { RAIL_REPEAT, useRailCrawl } from '../lib/useRailCrawl';
 import { useHome } from '../content';
 import { Reveal } from './Reveal';

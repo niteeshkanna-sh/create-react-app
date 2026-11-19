@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import { useHome, useSiteImage } from '../content';
 
 /** The photograph this band falls back to when the panel holds none. */

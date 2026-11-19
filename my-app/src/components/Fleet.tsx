@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { type BodyType } from '../data/cars';
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import { useFleet } from '../lib/useFleet';
 import { Reveal } from './Reveal';
 import { BrandPanel } from './BrandPanel';
