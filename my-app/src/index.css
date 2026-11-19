@@ -1833,6 +1833,74 @@ body {
   }
 }
 
+/* The banner heading, sized against its own column rather than the window.
+
+   It has to be, because the column does not grow with the window. Below the
+   laptop the words have the full width; at 1024 the chooser moves in beside
+   them and takes five twelfths, so the column drops from 836px at 900 wide to
+   521px at 1024. Every set of breakpoints tried here was wrong at one end or
+   the other -- the worst of them put the heading back to four lines and 208px
+   at exactly 1024, which is an iPad held sideways.
+
+   Measured across fourteen widths, the lead line of this face needs about a
+   fourteenth of its column per character, so 28 characters fit on one line at
+   column/14. 6.9cqw is that with a little to spare, the ceiling is the size
+   the desktop was designed at, and the floor is what still fits a 320-wide
+   phone. One rule, right at every width, including the ones between the
+   breakpoints nobody tests.
+
+   Re-measure if the heading copy gets longer: the panel owns those words, and
+   the coefficient is tuned to their length, not to the font alone. */
+.hero-col {
+  container-type: inline-size;
+}
+
+.hero-h1 {
+  font-size: clamp(1.2rem, 6.9cqw, 2.85rem);
+}
+
+/* A browser with no container-query units gets the breakpoints instead, with
+   the 1024 step sized for the narrow column rather than the wide window. */
+@supports not (font-size: 1cqw) {
+  .hero-h1 {
+    font-size: 1.55rem;
+  }
+
+  @media (min-width: 640px) {
+    .hero-h1 {
+      font-size: 2.4rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-h1 {
+      font-size: 2.2rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .hero-h1 {
+      font-size: 2.85rem;
+    }
+  }
+}
+
+/* The eyebrow over the banner heading, on the narrowest phones.
+
+   The site's eyebrows are tracked at 0.28em, which is most of their width:
+   "Nagercoil & Kanyakumari district" is 32 characters, so the tracking alone
+   adds about 96px and the pill wrapped onto a second line at 360 wide. A
+   two-line pill reads as a mistake rather than as a label.
+
+   Only this one, and only below the width where it fits. The same class
+   elsewhere sits over headings with far fewer characters under it. */
+@media (max-width: 389px) {
+  .hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+  }
+}
+
 /* The three badges under the headline.
    A tinted glass pill on a photograph: the gold hairline ties it to the brand
    and the eighth of white behind it lifts the words off whatever part of the

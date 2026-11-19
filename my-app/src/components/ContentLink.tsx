@@ -5,13 +5,16 @@ import type { AnchorHTMLAttributes, ReactNode } from 'react';
  * A link whose destination is typed into the admin panel.
  *
  * Which element it needs depends on what was typed, and the person typing it
- * should not have to know: "/cars" is a route and must not reload the whole
+ * should not have to know: "/tariff" is a route and must not reload the whole
  * app, "#fleet" is a place on the page already open, and "https://", "tel:"
  * or "mailto:" leaves the site entirely.
  *
  * This existed as a plain <a> before, which is why the two buttons under the
- * headline did nothing: they pointed at #fleet and #enquire, and neither
- * section is on the home page -- the fleet is /cars and the form is /contact.
+ * headline did nothing: they pointed at #fleet and #enquire when the home page
+ * carried neither section. Both are anchors on it now -- the fleet carousel
+ * and the enquiry bar under the banner -- so either spelling works there, and
+ * the shipped defaults use the routes (/tariff, /contact#enquire) so that the
+ * same buttons still land somewhere from any other page.
  */
 /**
  * Anything else an anchor takes rides through untouched -- `tabIndex`,

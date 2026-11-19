@@ -29,7 +29,7 @@ export function Home() {
           the chooser; here it is twice as wide, it is the first thing under
           the fold rather than the fourth, and the four tiles above it are
           free to be what somebody arriving actually wants. */}
-      <section className="relative z-10 mx-auto -mt-8 max-w-[86rem] px-5 sm:px-8 lg:-mt-10 lg:px-12">
+      <section id="enquire" className="relative z-10 mx-auto -mt-8 max-w-[86rem] scroll-mt-28 px-5 sm:px-8 lg:-mt-10 lg:px-12">
         <HeroEnquiry
           layout="bar"
           title={home.hero.formTitle ?? 'Check a date'}

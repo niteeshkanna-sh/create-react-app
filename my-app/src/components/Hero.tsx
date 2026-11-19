@@ -85,7 +85,7 @@ export function Hero() {
       </picture>
       <div aria-hidden="true" className="hero-scrim absolute inset-0 -z-10" />
 
-      <div className="relative mx-auto max-w-[86rem] px-5 pt-10 pb-12 sm:px-8 sm:pt-14 sm:pb-16 lg:px-12">
+      <div className="relative mx-auto max-w-[86rem] px-5 pt-12 pb-14 sm:px-8 sm:pt-16 sm:pb-20 lg:px-12 lg:pt-20">
         {/* Words and the form side by side from lg up, stacked below it.
             Twelve columns rather than a half each: the form needs about 380px
             to stop its two date boxes wrapping, and the headline needs the
@@ -98,24 +98,35 @@ export function Hero() {
             it. On a desktop the points return to under the words, where the
             card has room beside both. */}
         <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-9">
-          <div className="lg:col-span-7 lg:col-start-1 lg:row-start-1">
-            <p data-hero-item="" style={{ ['--hero-delay' as string]: '40ms' }} className="eyebrow-gold mb-4 inline-flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 px-3.5 py-1.5 text-[11px]">
+          <div className="hero-col lg:col-span-7 lg:col-start-1 lg:row-start-1">
+            <p data-hero-item="" style={{ ['--hero-delay' as string]: '40ms' }} className="hero-eyebrow eyebrow-gold mb-3 inline-flex items-center gap-2 rounded-full border border-gold/35 bg-gold/10 px-3.5 py-1.5 text-[11px]">
               {h.eyebrow}
             </p>
 
-            {/* Two lines on a desktop, three on a phone. It was four of
-                sixty-pixel type, which pushed everything that matters -- the
-                buttons, the form -- under the fold on a laptop. */}
-            <h1 data-hero-item="" style={{ ['--hero-delay' as string]: '120ms' }} className="text-[1.85rem] leading-[1.14] font-bold tracking-tight sm:text-[2.4rem] lg:text-[2.85rem]">
+            {/* Two lines from the laptop up, two or three on a phone.
+
+                The sizes here are measured, not chosen. At 1.85rem the lead
+                alone took two lines on every phone width and the gold line
+                under it took two more: the heading was four lines and 135px
+                of the first screen, on the device most of this site is read
+                on. The lead fits one line at 1.55rem even at 360 wide, which
+                is the narrowest Android worth drawing for here, and steps up
+                once there is room for it.
+
+                Keep this in step with the copy. The heading is the panel's,
+                so a lead longer than "Self drive car & bike rental" will
+                wrap again -- survivable, but measure before assuming it is
+                fine. */}
+            <h1 data-hero-item="" style={{ ['--hero-delay' as string]: '120ms' }} className="hero-h1 leading-[1.14] font-bold tracking-tight">
               {h.headingLead}
               <span className="block text-gold">{h.headingAccent}</span>
             </h1>
 
-            <p data-hero-item="" style={{ ['--hero-delay' as string]: '200ms' }} className="mt-4 text-base font-semibold text-white sm:text-lg">
+            <p data-hero-item="" style={{ ['--hero-delay' as string]: '200ms' }} className="mt-3.5 max-w-xl text-base font-semibold text-white sm:text-lg">
               {h.tagline}
             </p>
 
-            <p data-hero-item="" style={{ ['--hero-delay' as string]: '260ms' }} className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/85 sm:text-white/75">
+            <p data-hero-item="" style={{ ['--hero-delay' as string]: '260ms' }} className="mt-2.5 max-w-xl text-[15px] leading-relaxed text-white/85 sm:text-white/75">
               {h.intro}
             </p>
 
@@ -125,20 +136,20 @@ export function Hero() {
                 a figure in a component is a figure nobody can correct
                 without a deploy, and these are the ones that go stale. */}
             {stats.length > 0 ? (
-              <ul data-hero-item="" style={{ ['--hero-delay' as string]: '300ms' }} className="hero-stats mt-6 flex flex-wrap items-center gap-x-5 gap-y-4 sm:gap-x-6">
+              <ul data-hero-item="" style={{ ['--hero-delay' as string]: '300ms' }} className="hero-stats mt-8 grid grid-cols-3 gap-x-3 gap-y-4 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6">
                 {stats.map((s) => (
-                  <li key={s.label} className="hero-stat flex items-center gap-2.5">
+                  <li key={s.label} className="hero-stat flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2.5">
                     {/* The icon names a drawing; an unknown one is a dot
                         rather than a gap, so a typo in the panel cannot
                         leave a hole in the row. */}
                     <span
                       aria-hidden="true"
-                      className="grid size-10 shrink-0 place-items-center rounded-full border border-gold/35 bg-gold/10 text-gold-light sm:size-11"
+                      className="grid size-9 shrink-0 place-items-center rounded-full border border-gold/35 bg-gold/10 text-gold-light sm:size-11"
                     >
                       <Icon name={s.icon} size={20} />
                     </span>
                     <span>
-                      <span className="block text-xl leading-none font-bold text-white sm:text-2xl">
+                      <span className="block text-lg leading-none font-bold text-white min-[420px]:text-xl sm:text-2xl">
                         {s.figure}
                       </span>
                       <span className="mt-1 block text-[12px] leading-tight font-medium text-white/65 sm:text-[12.5px]">
@@ -150,7 +161,7 @@ export function Hero() {
               </ul>
             ) : null}
 
-            <div data-hero-item="" style={{ ['--hero-delay' as string]: '340ms' }} className="mt-7 grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap">
+            <div data-hero-item="" style={{ ['--hero-delay' as string]: '340ms' }} className="mt-8 grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap">
               <ContentLink
                 to={h.primaryHref}
                 className="rounded-xl bg-gold px-3 py-3 text-center text-[14px] font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-6 sm:text-base"
