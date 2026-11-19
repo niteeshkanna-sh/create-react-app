@@ -41,7 +41,7 @@ export function CarRentalAreas() {
             <Reveal key={town.slug} as="li" delay={i * 50} className="h-full">
               <Link
                 to={`/car-rental/${town.slug}`}
-                className="card-lift group flex h-full flex-col rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(16,24,40,0.06)]"
+                className="card-lift group flex h-full flex-col rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(60, 42, 12,0.06)]"
               >
                 <h2 className="text-lg font-bold text-navy">{town.name}</h2>
                 <p className="mt-1 text-sm font-semibold text-gold-deep">

@@ -102,7 +102,7 @@ export function Enquiry() {
     return (
       <div
         id="enquire"
-        className="scroll-mt-28 rounded-[18px] border border-line bg-white p-8 text-center shadow-[0_18px_44px_rgba(16,24,40,0.10)]"
+        className="scroll-mt-28 rounded-[18px] border border-line bg-white p-8 text-center shadow-[0_18px_44px_rgba(60, 42, 12,0.10)]"
       >
         <p aria-hidden="true" className="text-4xl">
           ✓
@@ -166,7 +166,7 @@ export function Enquiry() {
     // on the form rather than on the column holding it.
     <div
       id="enquire"
-      className="scroll-mt-28 rounded-[18px] border border-line bg-white p-6 shadow-[0_18px_44px_rgba(16,24,40,0.10)] sm:p-8"
+      className="scroll-mt-28 rounded-[18px] border border-line bg-white p-6 shadow-[0_18px_44px_rgba(60, 42, 12,0.10)] sm:p-8"
     >
       <h2 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">
         Check availability

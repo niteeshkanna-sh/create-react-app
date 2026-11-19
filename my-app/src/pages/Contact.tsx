@@ -50,7 +50,7 @@ function Way({
   );
 
   const shell =
-    'contact-way flex items-center gap-4 rounded-[16px] border border-line bg-white p-4 shadow-[0_10px_26px_rgba(16,24,40,0.07)]';
+    'contact-way flex items-center gap-4 rounded-[16px] border border-line bg-white p-4 shadow-[0_10px_26px_rgba(60, 42, 12,0.07)]';
 
   if (!href) {
     return <div className={shell}>{body}</div>;

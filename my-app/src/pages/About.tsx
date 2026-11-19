@@ -149,7 +149,7 @@ export function About() {
               <Reveal delay={i * 70} className="h-full">
                 <Link
                   to={r.to}
-                  className="card-lift group flex h-full flex-col gap-3 rounded-[14px] border border-line bg-white p-5 shadow-[0_10px_30px_rgba(16,24,40,0.06)] transition hover:border-gold/60"
+                  className="card-lift group flex h-full flex-col gap-3 rounded-[14px] border border-line bg-white p-5 shadow-[0_10px_30px_rgba(60, 42, 12,0.06)] transition hover:border-gold/60"
                 >
                   <Glyph>{r.icon}</Glyph>
                   <span className="text-[17px] font-bold text-navy">{r.title}</span>

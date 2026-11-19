@@ -72,7 +72,7 @@ export function Tariff() {
            * rows and columns the moment the rows stop being rows. Declared,
            * they survive the layout change.
            */
-          <div className="tariff-card overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
+          <div className="tariff-card overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(60, 42, 12,0.08)]">
             <table role="table" className="tariff-table w-full border-collapse text-left text-sm">
               <caption className="sr-only">
                 Daily, weekly and monthly rates for every car, with the

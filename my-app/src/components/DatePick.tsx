@@ -390,7 +390,7 @@ export function DatePick({
                 bottom: spot.bottom,
                 width: POP_WIDTH,
               }}
-              className="fixed z-50 rounded-xl border border-line bg-white p-2.5 shadow-[0_18px_44px_rgba(16,24,40,0.16)]"
+              className="fixed z-50 rounded-xl border border-line bg-white p-2.5 shadow-[0_18px_44px_rgba(60, 42, 12,0.16)]"
             >
               <div className="flex items-center justify-between">
                 <button
