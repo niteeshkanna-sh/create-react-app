@@ -62,7 +62,7 @@ export function CtaBand() {
               <div className="mt-7 flex flex-wrap gap-3">
                 <ContentLink
                   to={c.primaryHref}
-                  className="rounded-xl bg-gold px-6 py-3 text-[15px] font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  className="btn-amber rounded-xl px-6 py-3 text-[15px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   {c.primaryLabel}
                 </ContentLink>

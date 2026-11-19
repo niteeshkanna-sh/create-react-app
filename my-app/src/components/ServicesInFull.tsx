@@ -124,7 +124,7 @@ export function ServicesInFull() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     to="/contact#enquire"
-                    className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:text-base"
+                    className="btn-amber rounded-xl px-5 py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:text-base"
                   >
                     Check availability
                   </Link>
@@ -149,7 +149,7 @@ export function ServicesInFull() {
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Link
                 to="/contact#enquire"
-                className="rounded-xl bg-gold px-5 py-2.5 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="btn-amber rounded-xl px-5 py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 Send an enquiry
               </Link>

@@ -62,22 +62,22 @@ export function SceneDefs() {
          style={{ position: 'absolute' }}>
       <defs>
         <linearGradient id="ns-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#070a16" />
-          <stop offset="62%" stopColor="#111a38" />
+          <stop offset="0%" stopColor="#120d04" />
+          <stop offset="62%" stopColor="#3a2c10" />
           <stop offset="100%" stopColor="#1d2547" />
         </linearGradient>
         <radialGradient id="ns-glow">
-          <stop offset="0%" stopColor="#f0d060" stopOpacity="0.55" />
-          <stop offset="55%" stopColor="#d4af37" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
+          <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.55" />
+          <stop offset="55%" stopColor="#ffaa00" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="#ffaa00" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="ns-ground" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0a0e20" />
-          <stop offset="100%" stopColor="#05070f" />
+          <stop offset="0%" stopColor="#1a1407" />
+          <stop offset="100%" stopColor="#0d0903" />
         </linearGradient>
         <linearGradient id="ns-metal" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#f0d060" />
-          <stop offset="50%" stopColor="#d4af37" />
+          <stop offset="0%" stopColor="#ffc53d" />
+          <stop offset="50%" stopColor="#ffaa00" />
           <stop offset="100%" stopColor="#c8873a" />
         </linearGradient>
       </defs>
@@ -90,9 +90,9 @@ function Road() {
   return (
     <g>
       <path d="M150 200 L186 152 L214 152 L250 200 Z" fill="#161d38" />
-      <path d="M198 152 L202 152 L203 164 L197 164 Z" fill="#d4af37" opacity="0.75" />
-      <path d="M196 170 L204 170 L206 186 L194 186 Z" fill="#d4af37" opacity="0.6" />
-      <path d="M192 192 L208 192 L210 200 L190 200 Z" fill="#d4af37" opacity="0.45" />
+      <path d="M198 152 L202 152 L203 164 L197 164 Z" fill="#ffaa00" opacity="0.75" />
+      <path d="M196 170 L204 170 L206 186 L194 186 Z" fill="#ffaa00" opacity="0.6" />
+      <path d="M192 192 L208 192 L210 200 L190 200 Z" fill="#ffaa00" opacity="0.45" />
       <rect y="150" width="400" height="2" fill="url(#ns-metal)" opacity="0.35" />
     </g>
   );
@@ -105,12 +105,12 @@ function Car({ x = 0, y = 0, s = 1 }: { x?: number; y?: number; s?: number }) {
         d="M8 38 L18 20 Q22 13 32 13 L74 13 Q84 13 90 20 L104 38 Q110 39 110 46 L110 54 Q110 58 105 58 L98 58 A12 12 0 0 0 74 58 L44 58 A12 12 0 0 0 20 58 L13 58 Q8 58 8 54 Z"
         fill="url(#ns-metal)"
       />
-      <path d="M26 21 L36 21 L34 35 L18 35 Z" fill="#0a0e20" opacity="0.62" />
-      <path d="M42 21 L72 21 L74 35 L40 35 Z" fill="#0a0e20" opacity="0.62" />
-      <circle cx="32" cy="58" r="10" fill="#05070f" />
-      <circle cx="32" cy="58" r="4" fill="#d4af37" opacity="0.6" />
-      <circle cx="86" cy="58" r="10" fill="#05070f" />
-      <circle cx="86" cy="58" r="4" fill="#d4af37" opacity="0.6" />
+      <path d="M26 21 L36 21 L34 35 L18 35 Z" fill="#1a1407" opacity="0.62" />
+      <path d="M42 21 L72 21 L74 35 L40 35 Z" fill="#1a1407" opacity="0.62" />
+      <circle cx="32" cy="58" r="10" fill="#0d0903" />
+      <circle cx="32" cy="58" r="4" fill="#ffaa00" opacity="0.6" />
+      <circle cx="86" cy="58" r="10" fill="#0d0903" />
+      <circle cx="86" cy="58" r="4" fill="#ffaa00" opacity="0.6" />
     </g>
   );
 }
@@ -143,7 +143,7 @@ function Bikes() {
         <path d="M54 46 L38 51" stroke="url(#ns-metal)" strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.7" />
 
         {/* Tail and seat. */}
-        <path d="M12 28 L50 25 L52 34 L14 36 Z" fill="#d4af37" opacity="0.92" />
+        <path d="M12 28 L50 25 L52 34 L14 36 Z" fill="#ffaa00" opacity="0.92" />
         {/* Tank. */}
         <path d="M48 26 Q64 13 82 21 L84 32 L50 34 Z" fill="url(#ns-metal)" />
         {/* Engine block, sitting in the gap between the wheels. */}
@@ -152,7 +152,7 @@ function Bikes() {
         <path d="M96 20 L104 50" stroke="url(#ns-metal)" strokeWidth="5" strokeLinecap="round" fill="none" />
         <path d="M88 14 L106 19" stroke="url(#ns-metal)" strokeWidth="4" strokeLinecap="round" fill="none" />
         <path d="M74 40 L98 46" stroke="url(#ns-metal)" strokeWidth="4" strokeLinecap="round" fill="none" />
-        <circle cx="100" cy="27" r="5" fill="#f0d060" />
+        <circle cx="100" cy="27" r="5" fill="#ffc53d" />
 
         <circle cx="26" cy="52" r="15" fill="none" stroke="url(#ns-metal)" strokeWidth="5" />
         <circle cx="104" cy="52" r="15" fill="none" stroke="url(#ns-metal)" strokeWidth="5" />
@@ -167,12 +167,12 @@ function WeddingCars() {
       <Backdrop />
       <g opacity="0.5">
         {[70, 120, 170, 220, 270, 320].map((cx, i) => (
-          <circle key={cx} cx={cx} cy={30 + (i % 2) * 12} r="3" fill="#f0d060" opacity="0.7" />
+          <circle key={cx} cx={cx} cy={30 + (i % 2) * 12} r="3" fill="#ffc53d" opacity="0.7" />
         ))}
         <path
           d="M50 42 Q200 6 350 42"
           fill="none"
-          stroke="#d4af37"
+          stroke="#ffaa00"
           strokeWidth="1.5"
           strokeDasharray="4 7"
           opacity="0.6"
@@ -229,11 +229,11 @@ function TouristVehicles() {
       {/* Tempo traveller: taller box body, so it reads as a group vehicle. */}
       <g transform="translate(138 82)">
         <path d="M6 62 L6 22 Q6 14 16 14 L104 14 Q116 14 116 26 L116 62 Z" fill="url(#ns-metal)" />
-        <rect x="14" y="22" width="24" height="18" rx="2" fill="#0a0e20" opacity="0.6" />
-        <rect x="44" y="22" width="24" height="18" rx="2" fill="#0a0e20" opacity="0.6" />
-        <rect x="74" y="22" width="34" height="18" rx="2" fill="#0a0e20" opacity="0.6" />
-        <circle cx="30" cy="62" r="10" fill="#05070f" />
-        <circle cx="94" cy="62" r="10" fill="#05070f" />
+        <rect x="14" y="22" width="24" height="18" rx="2" fill="#1a1407" opacity="0.6" />
+        <rect x="44" y="22" width="24" height="18" rx="2" fill="#1a1407" opacity="0.6" />
+        <rect x="74" y="22" width="34" height="18" rx="2" fill="#1a1407" opacity="0.6" />
+        <circle cx="30" cy="62" r="10" fill="#0d0903" />
+        <circle cx="94" cy="62" r="10" fill="#0d0903" />
       </g>
     </>
   );
@@ -245,7 +245,7 @@ function Monthly() {
     <>
       <Backdrop ground={200} />
       <g transform="translate(112 42)">
-        <rect width="176" height="122" rx="12" fill="#0d1428" stroke="#d4af37" strokeOpacity="0.4" />
+        <rect width="176" height="122" rx="12" fill="#0d1428" stroke="#ffaa00" strokeOpacity="0.4" />
         <rect width="176" height="30" rx="12" fill="url(#ns-metal)" opacity="0.9" />
         <rect y="20" width="176" height="10" fill="url(#ns-metal)" opacity="0.9" />
         {cells.map((i) => {
@@ -260,7 +260,7 @@ function Monthly() {
               width="20"
               height="13"
               rx="3"
-              fill={active ? '#d4af37' : '#1b2442'}
+              fill={active ? '#ffaa00' : '#1b2442'}
               opacity={active ? 0.25 + (i % 5) * 0.14 : 1}
             />
           );
@@ -279,21 +279,21 @@ function Nri() {
     <>
       <Backdrop />
       <g opacity="0.55">
-        <circle cx="200" cy="112" r="66" fill="none" stroke="#d4af37" strokeOpacity="0.35" strokeWidth="1.5" />
-        <ellipse cx="200" cy="112" rx="26" ry="66" fill="none" stroke="#d4af37" strokeOpacity="0.28" strokeWidth="1.5" />
-        <path d="M136 94 H264 M136 130 H264" stroke="#d4af37" strokeOpacity="0.28" strokeWidth="1.5" />
+        <circle cx="200" cy="112" r="66" fill="none" stroke="#ffaa00" strokeOpacity="0.35" strokeWidth="1.5" />
+        <ellipse cx="200" cy="112" rx="26" ry="66" fill="none" stroke="#ffaa00" strokeOpacity="0.28" strokeWidth="1.5" />
+        <path d="M136 94 H264 M136 130 H264" stroke="#ffaa00" strokeOpacity="0.28" strokeWidth="1.5" />
       </g>
       <path
         d="M56 128 Q160 34 336 58"
         fill="none"
-        stroke="#f0d060"
+        stroke="#ffc53d"
         strokeWidth="2"
         strokeDasharray="6 8"
         opacity="0.75"
       />
       <g transform="translate(318 44) rotate(24)">
         <path d="M0 10 L40 4 L52 12 L40 20 L0 14 Z" fill="url(#ns-metal)" />
-        <path d="M14 12 L6 -8 L14 -8 L28 10 Z" fill="#f0d060" opacity="0.85" />
+        <path d="M14 12 L6 -8 L14 -8 L28 10 Z" fill="#ffc53d" opacity="0.85" />
         <path d="M14 12 L6 32 L14 32 L28 14 Z" fill="#c8873a" opacity="0.85" />
       </g>
       <g transform="translate(40 108) scale(0.62)">
@@ -321,8 +321,8 @@ function Coast() {
           <stop offset="100%" stopColor="#060911" />
         </linearGradient>
         <linearGradient id="ns-beam" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#f0d060" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#f0d060" stopOpacity="0" />
+          <stop offset="0%" stopColor="#ffc53d" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#ffc53d" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -336,7 +336,7 @@ function Coast() {
       <rect y="125" width="400" height="1.5" fill="url(#ns-metal)" opacity="0.4" />
 
       {/* Headland the tower stands on. */}
-      <path d="M0 126 Q26 108 56 112 Q86 116 104 126 Z" fill="#05070f" />
+      <path d="M0 126 Q26 108 56 112 Q86 116 104 126 Z" fill="#0d0903" />
 
       <g>
         <path d="M40 124 L48 48 L64 48 L72 124 Z" fill="#fff8ea" opacity="0.92" />
@@ -353,7 +353,7 @@ function Coast() {
           came out as dark olive lozenges: gold at low alpha over a near-black
           sea subtracts more than it adds. Thin bright strokes read as glints
           because they sit above the sea's luminance rather than below it. */}
-      <g stroke="#f0d060" strokeLinecap="round" fill="none">
+      <g stroke="#ffc53d" strokeLinecap="round" fill="none">
         <path d="M112 144 h26" strokeWidth="2" opacity="0.3" />
         <path d="M158 158 h18" strokeWidth="2" opacity="0.22" />
         <path d="M208 148 h32" strokeWidth="2" opacity="0.26" />
@@ -367,7 +367,7 @@ function Coast() {
       </g>
 
       {/* The tower's reflection, directly below it and fading out. */}
-      <path d="M50 126 L62 126 L68 200 L44 200 Z" fill="#f0d060" opacity="0.07" />
+      <path d="M50 126 L62 126 L68 200 L44 200 Z" fill="#ffc53d" opacity="0.07" />
     </>
   );
 }
@@ -378,11 +378,11 @@ function StepChoose() {
       <Backdrop ground={200} />
       {[0, 1, 2].map((i) => (
         <g key={i} transform={`translate(${34 + i * 116} ${56 + (i === 1 ? -10 : 0)})`}>
-          <rect width="98" height="88" rx="10" fill="#0d1428" stroke="#d4af37" strokeOpacity={i === 1 ? 0.75 : 0.28} />
+          <rect width="98" height="88" rx="10" fill="#0d1428" stroke="#ffaa00" strokeOpacity={i === 1 ? 0.75 : 0.28} />
           <g transform="translate(6 18) scale(0.76)">
             <Car />
           </g>
-          <rect x="16" y="70" width="46" height="6" rx="3" fill="#d4af37" opacity={i === 1 ? 0.8 : 0.3} />
+          <rect x="16" y="70" width="46" height="6" rx="3" fill="#ffaa00" opacity={i === 1 ? 0.8 : 0.3} />
         </g>
       ))}
     </>
@@ -394,13 +394,13 @@ function StepEnquire() {
     <>
       <Backdrop ground={200} />
       <g transform="translate(66 44)">
-        <path d="M0 14 Q0 0 16 0 L150 0 Q166 0 166 14 L166 74 Q166 88 150 88 L46 88 L20 108 L24 88 L16 88 Q0 88 0 74 Z" fill="#0d1428" stroke="#d4af37" strokeOpacity="0.45" />
-        <rect x="22" y="24" width="106" height="8" rx="4" fill="#d4af37" opacity="0.65" />
-        <rect x="22" y="44" width="122" height="8" rx="4" fill="#d4af37" opacity="0.38" />
-        <rect x="22" y="64" width="72" height="8" rx="4" fill="#d4af37" opacity="0.24" />
+        <path d="M0 14 Q0 0 16 0 L150 0 Q166 0 166 14 L166 74 Q166 88 150 88 L46 88 L20 108 L24 88 L16 88 Q0 88 0 74 Z" fill="#0d1428" stroke="#ffaa00" strokeOpacity="0.45" />
+        <rect x="22" y="24" width="106" height="8" rx="4" fill="#ffaa00" opacity="0.65" />
+        <rect x="22" y="44" width="122" height="8" rx="4" fill="#ffaa00" opacity="0.38" />
+        <rect x="22" y="64" width="72" height="8" rx="4" fill="#ffaa00" opacity="0.24" />
       </g>
       <circle cx="286" cy="60" r="20" fill="url(#ns-metal)" opacity="0.9" />
-      <path d="M278 60 L284 66 L296 54" stroke="#0a0e20" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M278 60 L284 66 L296 54" stroke="#1a1407" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </>
   );
 }

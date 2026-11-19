@@ -73,7 +73,7 @@ export function BrandPanel({
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               to="/contact#enquire"
-              className="rounded-xl bg-gold px-5 py-2.5 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="btn-amber rounded-xl px-5 py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Send an enquiry
             </Link>

@@ -307,7 +307,7 @@ export function Enquiry() {
         <button
           type="submit"
           disabled={sending}
-          className="rounded-xl bg-gold px-6 py-3 font-semibold text-navy transition hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+          className="btn-amber rounded-xl px-6 py-3 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
         >
           {sending ? 'Sending…' : 'Send enquiry'}
         </button>

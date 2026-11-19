@@ -4,16 +4,16 @@
 /* NiteSha palette — same navy and gold as the public site, but kept flat and
    dense: this is an operational tool, not a marketing page (spec Part 43). */
 :root {
-  --primary: #0A0E20;      /* brand navy — buttons, active states, links */
-  --accent: #F5A500;       /* brand gold — highlights and key figures */
-  --accent-deep: #B36B00;  /* gold that stays legible as text on white */
+  --primary: #1A1407;      /* brand near-black — buttons, active states, links */
+  --accent: #FFAA00;       /* brand amber, sampled from the logo */
+  --accent-deep: #9A5B00;  /* the amber that stays legible as text on white */
   --danger: #B3261E;
-  --ink: #14100D;
-  --ink-dim: #5C5348;
-  --ink-faint: #948B80;
-  --bg: #FAF8F4;
+  --ink: #231A0D;
+  --ink-dim: #6B6052;
+  --ink-faint: #7A7164;  /* #948B80 was 3.35:1 on white */
+  --bg: #FFFAF2;
   --surface: #ffffff;
-  --border: #E9E2D8;
+  --border: #EFE4D2;
   --radius: 14px;
   --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
   --font: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

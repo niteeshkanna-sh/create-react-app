@@ -204,7 +204,7 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
       <Reveal className="mt-8 text-center">
         <Link
           to={moreHref}
-          className="tap-target group inline-flex items-center gap-2 rounded-xl bg-navy px-6 py-3 font-semibold text-white transition hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          className="btn-amber tap-target group inline-flex items-center gap-2 rounded-xl px-6 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
           {moreLabel}
           <span aria-hidden="true" className="transition group-hover:translate-x-1">

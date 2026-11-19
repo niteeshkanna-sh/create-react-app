@@ -145,7 +145,7 @@ export function Town() {
                         {item.label}
                         <span
                           aria-hidden="true"
-                          className="text-gold transition group-hover:translate-x-0.5"
+                          className="text-gold-deep transition group-hover:translate-x-0.5"
                         >
                           →
                         </span>
@@ -157,7 +157,7 @@ export function Town() {
 
                 <Link
                   to={enquire}
-                  className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-5 py-3 font-semibold text-navy transition hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+                  className="btn-amber group mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
                 >
                   Check availability in {town.name}
                   <span aria-hidden="true" className="transition group-hover:translate-x-1">

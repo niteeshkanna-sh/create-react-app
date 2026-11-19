@@ -47,9 +47,9 @@ export type Icon3dName =
  * as the wrong icon rather than as a design decision.
  */
 const TONES = {
-  gold: { stops: ['#f6dc84', '#c9a227'], shadow: '#c9a227' },
+  gold: { stops: ['#f6dc84', '#ee9900'], shadow: '#ee9900' },
   bronze: { stops: ['#e6a860', '#a85f22'], shadow: '#a85f22' },
-  navy: { stops: ['#2b3a72', '#0a0e20'], shadow: '#0a0e20' },
+  navy: { stops: ['#5a431a', '#1a1407'], shadow: '#1a1407' },
   cream: { stops: ['#fffdf6', '#e8dcc4'], shadow: '#e8dcc4' },
   green: { stops: ['#5ee08a', '#128c3e'], shadow: '#128c3e' },
   plum: { stops: ['#d08bd6', '#7b2f86'], shadow: '#7b2f86' },
@@ -171,7 +171,7 @@ const GLYPHS: Record<Icon3dName, React.ReactNode> = {
 
 /** The mark is white on every plate but the pale ones. */
 const INK: Partial<Record<Icon3dTone, string>> = {
-  cream: '#8a5a00',
+  cream: '#9a5b00',
 };
 
 export function Icon3d({
