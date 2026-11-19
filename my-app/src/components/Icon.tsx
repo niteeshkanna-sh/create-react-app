@@ -57,10 +57,17 @@ const FILLED: ReadonlySet<IconName> = new Set<IconName>(['dot']);
 export function Icon({
   name,
   size = 20,
+  strokeWidth = 1.6,
   className,
 }: {
   name: string | undefined;
   size?: number;
+  /**
+   * Heavier than the default where the icon has to hold its own: on a
+   * photograph, or inside a badge that is bigger than the glyph. A 1.6
+   * hairline at 20px reads as a scratch over a busy picture.
+   */
+  strokeWidth?: number;
   className?: string;
 }) {
   const key: IconName = isIcon(name) ? name : 'dot';
@@ -73,7 +80,7 @@ export function Icon({
       viewBox="0 0 24 24"
       fill={filled ? 'currentColor' : 'none'}
       stroke={filled ? 'none' : 'currentColor'}
-      strokeWidth="1.6"
+      strokeWidth={filled ? undefined : strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"

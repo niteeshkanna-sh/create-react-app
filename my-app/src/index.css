@@ -1901,6 +1901,52 @@ body {
   }
 }
 
+/* The badge behind each figure under the headline.
+
+   It was a 44px circle with a gold hairline at 35% and a gold wash at 10%,
+   holding a 20px glyph drawn at 1.6. Over a photograph that is three faint
+   smudges with a scratch in each: the ring was barely there, and the glyph
+   was small enough inside it to read as an accident rather than a drawing.
+
+   So the badge carries weight now -- a gold edge at 55%, a wash that falls
+   from 30% to 8% across it, and a hairline of white along the top so it
+   catches light the way the cards further down the page do -- and the glyph
+   grew into it and thickened to 2.
+
+   A squircle rather than a circle, and no solid gold: the one solid gold
+   mass in this column is the button below, and three gold discs above it
+   were the better-looking option until you noticed they were competing with
+   the thing the banner is actually asking you to press. */
+.hero-stat-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-gold) 30%, transparent),
+    color-mix(in srgb, var(--color-gold) 8%, transparent)
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16);
+}
+
+.hero-stat-badge svg {
+  width: 23px;
+  height: 23px;
+}
+
+@media (min-width: 640px) {
+  .hero-stat-badge {
+    width: 46px;
+    height: 46px;
+  }
+
+  .hero-stat-badge svg {
+    width: 25px;
+    height: 25px;
+  }
+}
+
 /* The three badges under the headline.
    A tinted glass pill on a photograph: the gold hairline ties it to the brand
    and the eighth of white behind it lifts the words off whatever part of the
