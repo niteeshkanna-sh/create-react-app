@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Link } from '../components/SiteLink';
 import postData from '../data/posts.json';
 import { Reveal } from '../components/Reveal';
 import { PageHeader } from './PageHeader';

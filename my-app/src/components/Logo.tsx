@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import seo from '../data/seo.json';
 import { useSiteImage } from '../content';
 import { Monogram } from './Monogram';

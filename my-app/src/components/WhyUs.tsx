@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import { useHome, useSiteImageLookup } from '../content';
 import { Reveal } from './Reveal';
 import { Icon } from './Icon';

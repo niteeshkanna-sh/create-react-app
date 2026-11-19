@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import { usePlaces } from '../lib/usePlaces';
 import type { Place } from '../lib/places';
 import { Reveal } from './Reveal';

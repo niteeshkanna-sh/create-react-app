@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from './SiteLink';
 import type { Car } from '../data/cars';
 import { CarCard } from './CarCard';
 import { Reveal } from './Reveal';
