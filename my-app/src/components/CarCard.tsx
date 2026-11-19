@@ -100,7 +100,7 @@ export function CarCard({ car, offstage = false }: { car: Car; offstage?: boolea
   return (
     <article
       data-lift=""
-      className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]"
+      className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(60, 42, 12,0.08)]"
     >
       <div className="relative aspect-[16/9] bg-cream">
         {/* No photograph yet falls through to the drawing the rest of the

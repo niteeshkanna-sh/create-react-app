@@ -53,7 +53,7 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
         // more stops for a keyboard and six more announcements for a screen
         // reader, saying nothing new either time.
         {...(copy ? { tabIndex: -1, 'aria-hidden': true } : {})}
-        className="card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]"
+        className="card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-line bg-white shadow-[0_10px_30px_rgba(60, 42, 12,0.08)]"
       >
         {/* The words first and the picture under them. It was the other way
             round, which put six photographs in a row across the page and the

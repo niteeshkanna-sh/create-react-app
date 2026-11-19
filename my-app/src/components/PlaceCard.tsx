@@ -22,7 +22,7 @@ import { PlaceScene } from './art/PlaceScene';
  */
 export function PlaceCard({ place, decorative = false }: { place: Place; decorative?: boolean }) {
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(16,24,40,0.08)]">
+    <article className="flex h-full flex-col overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_10px_30px_rgba(60, 42, 12,0.08)]">
       <div className="place-media relative bg-cream">
         {place.photo ? (
           <img

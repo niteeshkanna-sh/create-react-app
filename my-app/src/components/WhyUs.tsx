@@ -93,7 +93,7 @@ export function WhyUs() {
             they are a column of their own. */}
         <div className="order-1 lg:order-2">
           <Reveal>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold tracking-wide text-navy uppercase shadow-[0_10px_30px_rgba(16,24,40,0.06)]">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold tracking-wide text-navy uppercase shadow-[0_10px_30px_rgba(60, 42, 12,0.06)]">
               <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
               {badge}
             </p>

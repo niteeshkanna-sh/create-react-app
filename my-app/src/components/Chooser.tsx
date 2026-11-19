@@ -45,7 +45,7 @@ export function Chooser() {
   const last = items.length - 1;
 
   return (
-    <div className="chooser-card rounded-[20px] bg-white p-3.5 shadow-[0_18px_50px_rgba(5,7,15,0.28)] sm:p-[18px]">
+    <div className="chooser-card rounded-[20px] bg-white p-3.5 shadow-[0_18px_50px_rgba(26, 18, 5,0.28)] sm:p-[18px]">
       <h2 className="px-1 text-[15px] font-bold tracking-tight text-navy sm:text-[17px]">
         {chooser.heading}
       </h2>

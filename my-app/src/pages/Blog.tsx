@@ -47,7 +47,7 @@ export function Blog() {
           <ul className="space-y-6">
             {ordered.map((post, i) => (
               <Reveal key={post.slug} delay={i * 60}>
-                <li className="rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(16,24,40,0.08)] transition hover:border-gold/60 sm:p-7">
+                <li className="rounded-[14px] border border-line bg-white p-6 shadow-[0_10px_30px_rgba(60, 42, 12,0.08)] transition hover:border-gold/60 sm:p-7">
                   <p className="text-xs tracking-wide text-ink-faint uppercase">
                     <time dateTime={post.date}>{readable(post.date)}</time>
                   </p>

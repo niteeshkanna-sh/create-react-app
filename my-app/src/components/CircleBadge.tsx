@@ -18,7 +18,7 @@ export function CircleBadge({ label = 'Contact Us' }: { label?: string }) {
     <Link
       to="/contact"
       aria-label={label}
-      className="group relative grid size-[136px] place-items-center rounded-full bg-gold shadow-[0_10px_30px_rgba(16,24,40,0.18)] transition hover:scale-[1.03]"
+      className="group relative grid size-[136px] place-items-center rounded-full bg-gold shadow-[0_10px_30px_rgba(60, 42, 12,0.18)] transition hover:scale-[1.03]"
     >
       <svg viewBox="0 0 120 120" className="absolute inset-0 size-full [animation:spin_14s_linear_infinite] motion-reduce:animate-none">
         <defs>
