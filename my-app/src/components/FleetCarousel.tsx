@@ -55,7 +55,8 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
   const [driving, setDriving] = useState(true);
   // On screen, and in a tab that is actually being looked at.
   const [showing, setShowing] = useState(false);
-  // A pointer resting on it, or the keyboard focus inside it.
+  // The keyboard focus is inside it. Not the mouse: see the note on the
+  // timer below.
   const [held, setHeld] = useState(false);
   const [tall, setTall] = useState<number>();
   const frame = useRef<HTMLDivElement>(null);
@@ -145,8 +146,20 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
    *  - Being off screen, or in a background tab. A timer firing every six
    *    seconds against a fan of transformed cards nobody is looking at is
    *    battery spent on nothing.
-   *  - A pointer or the keyboard focus being on it, so it does not slide out
-   *    from under somebody who is reading.
+   *  - The keyboard focus being inside it. Advancing then would move the
+   *    focused link offstage and out of the tab order while somebody is on
+   *    it, which loses their place entirely.
+   *
+   * A mouse resting on it deliberately does NOT stop it. That was here, and
+   * it is the obvious thing to do, but it made the carousel look broken: on
+   * a desktop you move the pointer towards whatever you are looking at, so
+   * the one person actually watching the cars was the one person who never
+   * saw them change. Measured on the live site -- cursor away, three
+   * advances at 2999 and 3000ms; cursor on it, none at all.
+   *
+   * The cost is that a card can change while somebody is reading it with the
+   * mouse over it. One click, swipe or arrow stops it for good, which is the
+   * control that matters.
    *  - Any deliberate move, for good.
    *
    * The interval itself is DWELL, at the top of the file.
@@ -224,8 +237,6 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
         onKeyDown={onKey}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        onMouseEnter={() => setHeld(true)}
-        onMouseLeave={() => setHeld(false)}
         onFocusCapture={() => setHeld(true)}
         onBlurCapture={() => setHeld(false)}
         // The class is the floor for the first paint and for the prerendered
