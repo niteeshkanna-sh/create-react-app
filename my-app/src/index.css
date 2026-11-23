@@ -1999,6 +1999,28 @@ body {
   }
 }
 
+/* The dots under the car carousel.
+
+   Each dot used to be its own button, 10px by 10px, which is what you were
+   asked to hit on a phone. WCAG 2.5.8 asks for 24px and a thumb is nearer
+   45px, so the button is now a transparent box around the dot: 24px wide for
+   an inactive one (10px dot plus 7px either side), 44px tall because there is
+   nothing above or below it to crowd.
+
+   The padding replaces the gap the row used to carry, so the dots still look
+   the same distance apart -- 24px centre to centre, which is also what the
+   WCAG spacing exception measures. The active dot is a wider pill, so its box
+   is wider too; that was already true of the dot itself. */
+.fleet-dot {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  padding: 0 7px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
 /* The three badges under the headline.
    A tinted glass pill on a photograph: the gold hairline ties it to the brand
    and the eighth of white behind it lifts the words off whatever part of the
