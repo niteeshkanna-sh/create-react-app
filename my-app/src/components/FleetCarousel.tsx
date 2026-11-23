@@ -35,6 +35,13 @@ interface FleetCarouselProps {
 export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps) {
   const [at, setAt] = useState(0);
   const [motion, setMotion] = useState(true);
+  // Whether the carousel is still advancing itself. It stops for good the
+  // first time somebody takes the wheel -- see `nudge`.
+  const [driving, setDriving] = useState(true);
+  // On screen, and in a tab that is actually being looked at.
+  const [showing, setShowing] = useState(false);
+  // A pointer resting on it, or the keyboard focus inside it.
+  const [held, setHeld] = useState(false);
   const [tall, setTall] = useState<number>();
   const frame = useRef<HTMLDivElement>(null);
   const touch = useRef<{ x: number; y: number } | null>(null);
@@ -89,6 +96,79 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
     [count],
   );
 
+  /*
+   * The same move, but made by a person -- which also ends the autoplay.
+   *
+   * Pausing while they touch it and resuming afterwards sounds friendlier and
+   * is worse: it means the card can still change itself while somebody is
+   * halfway through reading the one they chose. Once a visitor has said which
+   * car they want to look at, the page should stop having opinions.
+   */
+  const nudge = useCallback(
+    (n: number) => {
+      setDriving(false);
+      go(n);
+    },
+    [go],
+  );
+
+  /** Jump straight to one, from the dots. Also takes the wheel. */
+  const jump = useCallback((i: number) => {
+    setDriving(false);
+    setAt(i);
+  }, []);
+
+  /*
+   * Advancing on its own, one car at a time.
+   *
+   * Four things stop it, and all four matter on the device most of this site
+   * is read on:
+   *
+   *  - prefers-reduced-motion. Somebody who has asked their phone to stop
+   *    animating things has asked this too, and a carousel that moves by
+   *    itself is the clearest case of it.
+   *  - Being off screen, or in a background tab. A timer firing every six
+   *    seconds against a fan of transformed cards nobody is looking at is
+   *    battery spent on nothing.
+   *  - A pointer or the keyboard focus being on it, so it does not slide out
+   *    from under somebody who is reading.
+   *  - Any deliberate move, for good.
+   *
+   * Six seconds because a card here is not a photograph -- it has a name, four
+   * specs, a kilometre limit and two prices on it, and four seconds is not
+   * enough to take that in.
+   */
+  useEffect(() => {
+    if (!driving || !motion || !showing || held || count < 2) return;
+    const id = window.setInterval(() => go(1), 6000);
+    return () => window.clearInterval(id);
+  }, [driving, motion, showing, held, count, go]);
+
+  /* Whether it is worth running at all: on screen, and the tab in front. */
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+
+    let onScreen = false;
+    const settle = () => setShowing(onScreen && !document.hidden);
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        settle();
+      },
+      // A third of it showing: enough that somebody is plausibly looking at
+      // it, rather than it having just crossed the bottom edge.
+      { threshold: 0.34 },
+    );
+    io.observe(el);
+    document.addEventListener('visibilitychange', settle);
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', settle);
+    };
+  }, []);
+
   /** How far round the ring, by the shorter way. */
   const offsetOf = (i: number) => {
     const raw = i - at;
@@ -97,8 +177,8 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
   };
 
   const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); nudge(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); nudge(1); }
   };
 
   // A swipe, but only a horizontal one: a diagonal drag down the page is
@@ -115,7 +195,7 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
     const t = e.changedTouches[0];
     const dx = t.clientX - from.x;
     const dy = t.clientY - from.y;
-    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) nudge(dx < 0 ? 1 : -1);
   };
 
   if (count === 0) return null;
@@ -131,6 +211,10 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
         onKeyDown={onKey}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onMouseEnter={() => setHeld(true)}
+        onMouseLeave={() => setHeld(false)}
+        onFocusCapture={() => setHeld(true)}
+        onBlurCapture={() => setHeld(false)}
         // The class is the floor for the first paint and for the prerendered
         // HTML, where nothing has been measured yet; the measurement replaces
         // it as soon as there is one. Generous on purpose: too tall for a
@@ -167,7 +251,7 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
 
         <button
           type="button"
-          onClick={() => go(-1)}
+          onClick={() => nudge(-1)}
           aria-label="Previous car"
           className="fleet-arrow left-0 sm:-left-2"
         >
@@ -175,7 +259,7 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
         </button>
         <button
           type="button"
-          onClick={() => go(1)}
+          onClick={() => nudge(1)}
           aria-label="Next car"
           className="fleet-arrow right-0 sm:-right-2"
         >
@@ -197,7 +281,7 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
           <button
             key={car.id}
             type="button"
-            onClick={() => setAt(i)}
+            onClick={() => jump(i)}
             aria-label={`Show ${car.brand} ${car.name}`}
             aria-current={i === at ? 'true' : undefined}
             className="fleet-dot group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
