@@ -25,6 +25,21 @@ import { Reveal } from './Reveal';
 /** How far from the front a card can be and still be drawn. */
 const WINGS = 2;
 
+/**
+ * How long each car holds the front, in milliseconds.
+ *
+ * Set by the owner, who watched it on his own phone and wanted it quicker.
+ * It is up here rather than buried in the timer because it is the one number
+ * in this file anybody is likely to want to change.
+ *
+ * It is faster than a card this full really wants -- there is a name, four
+ * specs, a kilometre limit and two prices on it, and three seconds is not
+ * long enough to read all of that. What makes it defensible is that it stops
+ * dead the moment anybody touches it, so a visitor who wants to read one is
+ * never fighting the clock.
+ */
+const DWELL = 3000;
+
 interface FleetCarouselProps {
   cars: Car[];
   /** Where "see all of them" goes. */
@@ -134,13 +149,11 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
    *    from under somebody who is reading.
    *  - Any deliberate move, for good.
    *
-   * Six seconds because a card here is not a photograph -- it has a name, four
-   * specs, a kilometre limit and two prices on it, and four seconds is not
-   * enough to take that in.
+   * The interval itself is DWELL, at the top of the file.
    */
   useEffect(() => {
     if (!driving || !motion || !showing || held || count < 2) return;
-    const id = window.setInterval(() => go(1), 6000);
+    const id = window.setInterval(() => go(1), DWELL);
     return () => window.clearInterval(id);
   }, [driving, motion, showing, held, count, go]);
 
