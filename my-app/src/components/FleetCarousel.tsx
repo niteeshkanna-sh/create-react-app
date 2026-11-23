@@ -186,7 +186,13 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
       {/* Which of them is in front, and a way to any of them directly. A live
           region would announce every step of a held-down arrow key, so the
           card itself carries the name and this is only the map. */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+      {/* The button is the target, the span inside it is the dot. They were
+          the same element, which made each one a 10px by 10px thing to hit on
+          a phone -- under the 24px WCAG asks for, and well under what a thumb
+          actually lands on. The dot looks exactly as it did; what grew is the
+          part that listens for the tap. The gap moved into the buttons'
+          padding so the dots still sit apart by eye. */}
+      <div className="mt-3 flex flex-wrap items-center justify-center">
         {cars.map((car, i) => (
           <button
             key={car.id}
@@ -194,10 +200,15 @@ export function FleetCarousel({ cars, moreHref, moreLabel }: FleetCarouselProps)
             onClick={() => setAt(i)}
             aria-label={`Show ${car.brand} ${car.name}`}
             aria-current={i === at ? 'true' : undefined}
-            className={`h-2.5 rounded-full transition-all ${
-              i === at ? 'w-7 bg-navy' : 'w-2.5 bg-line hover:bg-gold'
-            }`}
-          />
+            className="fleet-dot group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          >
+            <span
+              aria-hidden="true"
+              className={`block h-2.5 rounded-full transition-all ${
+                i === at ? 'w-7 bg-navy' : 'w-2.5 bg-line group-hover:bg-gold'
+              }`}
+            />
+          </button>
         ))}
       </div>
 
