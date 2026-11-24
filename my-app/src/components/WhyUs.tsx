@@ -23,6 +23,40 @@ import { CircleBadge } from './CircleBadge';
 /** The photographs, in the order the collage lays them out. */
 const PHOTO_SLOTS = ['why-us-1', 'why-us-2', 'why-us-3', 'why-us-4', 'why-us-5', 'why-us-6'];
 
+/**
+ * Pictures the site already has that suit this collage, in the order they get
+ * used, once the six slots above run out.
+ *
+ * The owner filled why-us-1 and why-us-2 and stopped, so the collage was two
+ * frames where the layout wants six -- a wall with two pictures on it reads
+ * as a wall somebody gave up on. These are all photographs of this business's
+ * own vehicles, already uploaded for other parts of the site, so topping up
+ * with them invents nothing and costs no upload.
+ *
+ * Site-image slots rather than the fleet's own photographs on purpose. The
+ * fleet's arrive only in the browser -- fetch-fleet.mjs deliberately leaves
+ * them out of the build, because a panel URL can be gone by the time a
+ * crawler reads the markup -- so using those would mean a collage that is two
+ * frames in the prerendered HTML and six a moment later. These are baked, so
+ * it is six from the first paint.
+ *
+ * Anything the owner uploads to why-us-3 and up pushes these out, oldest
+ * first, which is the right way round: their choice beats a sensible guess.
+ */
+const TOP_UP = [
+  'cars',
+  'bikes',
+  'wedding-cars',
+  'tourist-vehicles',
+  'chooser-1',
+  'chooser-2',
+  'chooser-3',
+  'chooser-4',
+];
+
+/** How many frames the collage lays out. */
+const WANTED = 6;
+
 /** Shipped with the site, so the collage is never empty on a fresh install. */
 const BAKED = [
   '/self-drive-car-rental-nitesha-cars-and-bikes.webp',
@@ -34,11 +68,19 @@ export function WhyUs() {
   const imageFor = useSiteImageLookup();
   const { badge, heading, intro, items } = home.whyUs;
 
-  // Whatever has actually been uploaded, plus the two committed photographs
-  // when nothing has. Six empty frames would be worse than two full ones:
-  // a collage of placeholders says the business has no pictures of itself.
-  const uploaded = PHOTO_SLOTS.map(imageFor).filter((src): src is string => Boolean(src));
-  const photos = uploaded.length > 0 ? uploaded : BAKED;
+  // The owner's own choices first, then the site's other photographs of its
+  // vehicles until the collage is full. De-duplicated by address, because the
+  // same file can sit in two slots -- the car in chooser-1 is quite likely the
+  // one already chosen for why-us-1, and showing it twice would look like a
+  // mistake rather than a collage.
+  const chosen = PHOTO_SLOTS.map(imageFor).filter((src): src is string => Boolean(src));
+  const spare = TOP_UP.map(imageFor).filter((src): src is string => Boolean(src));
+  const photos = [...new Set([...chosen, ...spare])].slice(0, WANTED);
+
+  // Still nothing uploaded at all: the two committed photographs, rather than
+  // six empty frames. A collage of placeholders says the business has no
+  // pictures of itself.
+  const collage = photos.length > 0 ? photos : BAKED;
 
   const hasReviews = (home.reviews?.items ?? []).length > 0;
 
@@ -57,7 +99,7 @@ export function WhyUs() {
         <Reveal className="order-2 lg:order-1">
           <div className="relative">
           <ul className="why-collage grid grid-cols-2 gap-3 sm:gap-4">
-            {photos.map((src, i) => (
+            {collage.map((src, i) => (
               <li key={src} className={i % 2 === 1 ? 'mt-6 sm:mt-10' : ''}>
                 <img
                   src={src}
