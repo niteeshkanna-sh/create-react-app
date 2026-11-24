@@ -399,10 +399,42 @@ function enrichJsonLd(html) {
 
   data.address = address;
 
-  // Opening hours, if the owner has given any. Written the way schema.org
-  // wants them; the panel says what that looks like.
+  // Opening hours, if the owner has given any.
+  //
+  // openingHoursSpecification rather than the plain openingHours string this
+  // used to emit. Both are valid and Google reads both, but the structured
+  // form is the one it uses to say "Open now" or "Closes 8 pm" beside a local
+  // result, and a string cannot carry that.
+  //
+  // The panel asks for "Mo-Sa 08:00-20:00, Su 09:00-18:00" and that is what
+  // this parses. Anything it cannot parse falls back to the old string rather
+  // than being dropped: a format nobody anticipated is still better published
+  // than discarded, and openingHours is still valid schema.
   const hours = String(footer.hours ?? '').trim();
-  if (hours !== '') data.openingHours = hours;
+  if (hours !== '') {
+    const spec = openingHoursSpec(hours);
+    if (spec) data.openingHoursSpecification = spec;
+    else data.openingHours = hours;
+  }
+
+  // Where the business actually is.
+  //
+  // Google will not pin a business from a locality and a postcode, and this
+  // site has no street address to give it -- the panel's address lines are
+  // the town, the district and the state, which the block above correctly
+  // refuses to pass off as a street. Coordinates are the one thing that
+  // places it exactly, so they are read from seo.json when they are there.
+  //
+  // Only when both are real numbers in range. A half-filled or mistyped
+  // coordinate would put the business somewhere it is not, which is worse
+  // than saying nothing: the whole value of this property is that it is
+  // exact.
+  const geo = seo.site.geo ?? {};
+  const lat = Number(geo.latitude ?? geo.lat);
+  const lng = Number(geo.longitude ?? geo.lng ?? geo.lon);
+  if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+    data.geo = { '@type': 'GeoCoordinates', latitude: lat, longitude: lng };
+  }
 
   // The map link the footer already builds, which is how Google is told which
   // pin on the map this is.
@@ -738,6 +770,72 @@ function publisherFor(route) {
       publisher: { '@id': seo.site.origin + '#organization' },
     },
   ];
+}
+
+/**
+ * "Mo-Sa 08:00-20:00, Su 09:00-18:00" as schema.org wants it.
+ *
+ * The two-letter day codes are the ones the panel's own help text asks for,
+ * which are also schema.org's abbreviations. A range (Mo-Sa) expands; a list
+ * (Mo,We,Fr) splits; a single day stands alone.
+ *
+ * Returns null rather than a half-built answer when any part of the string
+ * does not parse, so the caller can fall back to publishing the string as it
+ * was typed. A specification with Tuesday quietly missing from it would be
+ * worse than no specification at all -- somebody would drive to a closed
+ * shop on the strength of it.
+ */
+const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+const DAY_NAMES = {
+  Mo: 'Monday', Tu: 'Tuesday', We: 'Wednesday', Th: 'Thursday',
+  Fr: 'Friday', Sa: 'Saturday', Su: 'Sunday',
+};
+
+export function openingHoursSpec(text) {
+  const out = [];
+
+  for (const part of String(text).split(',').map((x) => x.trim()).filter(Boolean)) {
+    // Day codes, then the times. A list like "Mo,We 09:00-17:00" arrives here
+    // already split on the comma, so a part with no time is days continuing
+    // from the part before -- which this does not try to be clever about.
+    const m = part.match(/^([A-Za-z]{2}(?:\s*-\s*[A-Za-z]{2})?)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+    if (!m) return null;
+
+    const [, dayPart, opens, closes] = m;
+    const norm = (t) => {
+      const [h, mm] = t.split(':');
+      const hh = Number(h);
+      if (!Number.isInteger(hh) || hh < 0 || hh > 24 || !/^[0-5]\d$/.test(mm)) return null;
+      return String(hh).padStart(2, '0') + ':' + mm;
+    };
+    const o = norm(opens);
+    const c = norm(closes);
+    if (!o || !c) return null;
+
+    const cap = (d) => d[0].toUpperCase() + d.slice(1).toLowerCase();
+    let days;
+    if (dayPart.includes('-')) {
+      const [a, b] = dayPart.split('-').map((d) => cap(d.trim()));
+      const i = DAYS.indexOf(a);
+      const j = DAYS.indexOf(b);
+      if (i < 0 || j < 0) return null;
+      // Wrapping the week (Sa-Mo) is legitimate and reads round the end.
+      days = i <= j ? DAYS.slice(i, j + 1) : [...DAYS.slice(i), ...DAYS.slice(0, j + 1)];
+    } else {
+      const d = cap(dayPart.trim());
+      if (!DAYS.includes(d)) return null;
+      days = [d];
+    }
+
+    out.push({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: days.map((d) => DAY_NAMES[d]),
+      opens: o,
+      closes: c,
+    });
+  }
+
+  return out.length > 0 ? out : null;
 }
 
 /**
