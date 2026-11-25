@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useFleet } from '../lib/useFleet';
 import { Link } from '../components/SiteLink';
 import seo from '../data/seo.json';
 import townData from '../data/towns.json';
@@ -38,6 +39,31 @@ export function Town() {
 
   const others = towns.filter((t) => t.slug !== town.slug);
   const enquire = `/contact?town=${encodeURIComponent(town.name)}`;
+
+  // The cheapest daily rate in each shape of vehicle, from the live fleet
+  // rather than written down here: a figure typed into a component is a
+  // figure nobody can correct without a deploy, and these are exactly the
+  // ones that go stale.
+  //
+  // These pages carried no price at all, which is what the rest of the first
+  // page of results leads with -- "From Rs 1990/Day", "from Rs 2,000". A
+  // visitor comparing three rental firms has no reason to click the one that
+  // will not say.
+  const fleet = useFleet();
+  const cheapest = new Map<string, number>();
+  if (fleet.status === 'ready') {
+    for (const car of fleet.cars) {
+      const rate = Number(car.rateDaily);
+      if (!Number.isFinite(rate) || rate <= 0) continue;
+      const kind: string = car.bodyType ?? 'Other';
+      const seen = cheapest.get(kind);
+      if (seen === undefined || rate < seen) cheapest.set(kind, rate);
+    }
+  }
+  const bands = [...cheapest.entries()]
+    .map(([kind, rate]) => ({ kind, rate }))
+    .sort((a, b) => a.rate - b.rate);
+  const rupees = (n: number) => '\u20b9' + n.toLocaleString('en-IN');
 
   // Where a service has a page written for this particular town, the list
   // below points at that rather than at the general one -- which is the more
@@ -210,6 +236,71 @@ export function Town() {
             , and they come down on a longer rental.
           </p>
         </Reveal>
+
+        {/* What it costs, on the page about the town rather than only on the
+            tariff.
+
+            The heading says "car rental" and not "self drive car rental" on
+            purpose. Every page on this site is written for the longer phrase
+            and ranks for it -- first for "self drive car kanyakumari", second
+            for "self drive car nagercoil" -- while the plainer "car rental
+            nagercoil" does not reach the first page at all, because nothing
+            here is written in those words.
+
+            Kept to four figures and two sentences. The cards that used to be
+            here were taken out for pushing the overlap between two town pages
+            towards thirty-six per cent, and a full rate table repeated on
+            twenty pages would do the same thing again. */}
+        {bands.length > 0 ? (
+          <Reveal delay={80}>
+            <h2 className="mt-16 text-2xl font-bold tracking-tight text-navy sm:text-3xl">
+              Car rental rates in {town.name}
+            </h2>
+
+            <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
+              {bands.map((band) => (
+                <li
+                  key={band.kind}
+                  className="flex items-baseline justify-between gap-4 rounded-[12px] border border-line bg-white px-4 py-3"
+                >
+                  <span className="font-semibold text-navy">{band.kind}</span>
+                  <span className="text-ink-dim">
+                    from{' '}
+                    <span className="font-bold text-navy tabular-nums">
+                      {rupees(band.rate)}
+                    </span>{' '}
+                    a day
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {/* Worded from this town's own distance rather than the same
+                sentence twenty times. The first draft of this paragraph was
+                identical on every town page and took the closest pair from
+                31.7% alike to 36.0% -- the exact figure the note above says
+                the car cards were removed for. */}
+            <p className="mt-4 leading-relaxed text-ink-dim">
+              {town.distanceKm === 0 ? (
+                <>
+                  The vehicles are kept in {town.name}, so nothing is added for
+                  bringing one to you.
+                </>
+              ) : (
+                <>
+                  {town.name} is {town.distanceKm} km out, and that run is
+                  included in the rate rather than charged on top.
+                </>
+              )}{' '}
+              The{' '}
+              <Link to="/tariff" className="font-semibold text-navy hover:text-gold-deep">
+                full tariff
+              </Link>{' '}
+              gives every vehicle with its kilometre limit and deposit, and the
+              weekly and monthly figures, which work out lower per day.
+            </p>
+          </Reveal>
+        ) : null}
 
         {/* The other towns, from every town page. Twelve pages that each link
             to the other eleven is how a crawler finds all of them from any one
