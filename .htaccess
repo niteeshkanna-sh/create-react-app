@@ -70,6 +70,36 @@
   # renamed file is a 404 to anything that already knew the old one -- so the
   # old names redirect rather than simply stopping. 301, because the move is
   # permanent and that is what passes the old address's standing to the new.
+  # The six service pages, and the town page under each of them, were removed
+  # in #168. Nothing was left behind for the addresses, so every one of them
+  # has been answering 404 since -- and Google still has them.
+  #
+  # This is not hypothetical. Searching "bike rental nagercoil" returns
+  # /bikes/nagercoil at about fifth place, titled "Self Drive Bike & Scooty
+  # Rental in Nagercoil - By the Hour", and that address is a 404. Somebody
+  # looking to hire a scooter finds this business, clicks, and is told the
+  # page does not exist. Eighteen addresses were checked and all eighteen
+  # were dead.
+  #
+  # A 301 keeps both halves of that: the visitor lands somewhere useful, and
+  # the standing the old address earned passes to the page that replaced it.
+  # NE because the target carries a #fragment, which would otherwise be sent
+  # as %23 and land at the top of the page instead of the section.
+
+  # The service itself -> its section on the services page.
+  RewriteRule ^(cars|bikes|wedding-cars|tourist-vehicles|monthly|nri)/?$ /services/#$1 [R=301,L,NE]
+
+  # A service in a town -> that town's page, which covers cars, bikes,
+  # wedding cars and monthly hire for the town. Only when the town page is
+  # really there: redirecting to another 404 would be worse than this one,
+  # because it costs a round trip to say the same thing.
+  RewriteCond %{DOCUMENT_ROOT}/car-rental/$2 -d
+  RewriteRule ^(cars|bikes|wedding-cars|tourist-vehicles|monthly|nri)/([a-z0-9-]+)/?$ /car-rental/$2/ [R=301,L]
+
+  # A town that no longer has a page -> the service section, which is still
+  # about the right thing even if it is not about the right place.
+  RewriteRule ^(cars|bikes|wedding-cars|tourist-vehicles|monthly|nri)/[^/]+/?$ /services/#$1 [R=301,L,NE]
+
   RewriteRule ^hero-car\.webp$ /self-drive-car-rental-nitesha-cars-and-bikes.webp [R=301,L]
   RewriteRule ^open-road\.webp$ /mountain-road-at-sunrise-self-drive-car-rental.webp [R=301,L]
   RewriteRule ^car-brezza\.avif$ /maruti-brezza-self-drive-car-rental-nagercoil.avif [R=301,L]
