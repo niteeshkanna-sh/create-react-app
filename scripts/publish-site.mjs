@@ -112,6 +112,34 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+/**
+ * Every rewrite that hands a request to the panel has to keep the query string.
+ *
+ * A RewriteRule whose substitution carries its own query string replaces the
+ * request's rather than adding to it, so without QSA the ?w= that the srcset
+ * in the markup asks for is dropped on the way through. Nothing errors. The
+ * panel honours the parameter, the markup is correct, and every picture comes
+ * back at the default width anyway -- which is exactly what shipped once, and
+ * was only noticed by fetching the same file at six widths and getting six
+ * identical answers.
+ */
+const htaccess = await readFile(join(root, '.htaccess'), 'utf8');
+const dropped = htaccess
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line.startsWith('RewriteRule'))
+  .filter((line) => /\/admin\/[a-z-]+\.php\?/.test(line))
+  .filter((line) => !/\[[^\]]*\bQSA\b[^\]]*\]/.test(line));
+
+if (dropped.length > 0) {
+  console.error(
+    'publish: these rewrites send a request to the panel but discard its query string.\n' +
+      'Add QSA to the flags, or ?w= never arrives and every picture is sent at full width:\n' +
+      dropped.map((line) => `    ${line}`).join('\n'),
+  );
+  process.exit(1);
+}
+
 await mkdir(dirname(manifestPath), { recursive: true });
 await writeFile(manifestPath, JSON.stringify(published.sort(), null, 2) + '\n');
 
