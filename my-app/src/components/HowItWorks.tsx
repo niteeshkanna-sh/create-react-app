@@ -83,6 +83,10 @@ export function HowItWorks() {
               name="step-2"
               alt="Booking a self-drive car with NiteSha Cars & Bikes"
               className="how-leaf"
+              // Measured: 350 on a phone, 704 at 768, then a steady 336 from
+              // 1024 up -- it stops growing once the steps sit side by side.
+              widest={800}
+              sizes="(min-width: 1024px) 350px, 92vw"
             />
           </Reveal>
         </div>

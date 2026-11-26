@@ -5,6 +5,7 @@ import { Reveal } from './Reveal';
 import { useReveal } from '../lib/useReveal';
 import { Skyline } from './art/Skyline';
 import { PlaceScene } from './art/PlaceScene';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * Where people go, as a handful of snapshots pinned to a board.
@@ -97,6 +98,10 @@ function Pile({ kind, places, at }: { kind: string; places: Place[]; at: number 
                   {place.photo ? (
                     <img
                       src={place.photo}
+                      // The same photographs as /places/ and barely half the
+                      // size: 229 at most here, against 409 there.
+                      srcSet={imageSrcSet(place.photo, 600)}
+                      sizes="(min-width: 1024px) 240px, 46vw"
                       alt=""
                       aria-hidden="true"
                       loading="lazy"

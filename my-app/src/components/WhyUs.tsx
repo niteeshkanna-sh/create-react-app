@@ -4,6 +4,7 @@ import { Reveal } from './Reveal';
 import { Icon } from './Icon';
 import { Reviews } from './Reviews';
 import { CircleBadge } from './CircleBadge';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * Why hire from us: the pictures, the claims, and what customers said.
@@ -103,6 +104,10 @@ export function WhyUs() {
               <li key={src} className={i % 2 === 1 ? 'mt-6 sm:mt-10' : ''}>
                 <img
                   src={src}
+                  // Measured: 169 on a phone, 344 at 768, 300 from 1440 up.
+                  // Twice the largest is 600, and these are stored at 1200.
+                  srcSet={imageSrcSet(src, 600)}
+                  sizes="(min-width: 1280px) 310px, (min-width: 1024px) 230px, 45vw"
                   // Decorative: every one of them is a photograph of the
                   // fleet or the people, and the three claims beside them
                   // are what the section actually says. Describing six

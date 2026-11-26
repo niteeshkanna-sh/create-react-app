@@ -88,7 +88,16 @@ export function ServicesInFull() {
                   phone there is one column and it always leads. */}
               <Reveal className={flipped ? 'lg:order-2' : ''}>
                 {hasScene(s.to) ? (
-                  <SectionArt name={s.to} alt={s.title} className="service-art rounded-[16px]" />
+                  <SectionArt
+                    name={s.to}
+                    alt={s.title}
+                    className="service-art rounded-[16px]"
+                    // Measured: 350 on a phone, 704 at 768, settling at 612
+                    // from 1440 up. This is the widest any service card is
+                    // drawn, and the reason the stored file is 1200.
+                    widest={1200}
+                    sizes="(min-width: 1536px) 620px, (min-width: 1024px) 45vw, 92vw"
+                  />
                 ) : (
                   <div className="art-frame service-art rounded-[16px]" />
                 )}

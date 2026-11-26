@@ -1,6 +1,7 @@
 import { useHome, useSiteImageLookup } from '../content';
 import { ContentLink } from './ContentLink';
 import { VehicleArt, hasVehicleArt } from './art/Vehicle';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * "What are you looking for?" -- the card in the banner.
@@ -138,6 +139,12 @@ export function Chooser() {
                     {photo ? (
                       <img
                         src={photo}
+                        // Measured: 159 on a phone, 333 at 768, 233 from
+                        // 1440 up. These are already stored at 600, so this
+                        // only helps the smaller screens -- which is where
+                        // it matters most.
+                        srcSet={imageSrcSet(photo, 600)}
+                        sizes="(min-width: 1024px) 240px, 44vw"
                         alt=""
                         loading="lazy"
                         decoding="async"

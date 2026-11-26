@@ -169,6 +169,52 @@ ok('the new version gets its own file', $second['path'] !== $first['path']);
 // Without this the cache keeps a copy of every picture ever uploaded.
 ok('the copy of the old version is swept up', !is_file($first['path']));
 
+echo "\n-- the widths a page may ask for --\n";
+$_SERVER['HTTP_ACCEPT'] = $MODERN;
+// Read by image_serve, not image_variant: the width is a fact about the
+// request, and image_variant is handed a number and makes that size. Asking
+// image_variant to read the query as well would give two places that decide
+// how wide a picture is.
+$_GET['w'] = '400';
+ok('the width is recognised', image_requested_width() === 400);
+$GLOBALS['streamed'] = null;
+image_serve($big, 'image/jpeg', 800);
+ok('?w= narrows the picture', getimagesize($GLOBALS['streamed']['path'])[0] === 400,
+    (string) getimagesize($GLOBALS['streamed']['path'])[0]);
+
+// A query must never raise the cap: that would serve a file bigger than
+// anything on the site displays, and would let anyone fill the cache.
+$_GET['w'] = '1600';
+$GLOBALS['streamed'] = null;
+image_serve($big, 'image/jpeg', 800);
+ok('?w= cannot ask for more than the cap',
+    getimagesize($GLOBALS['streamed']['path'])[0] === 800,
+    (string) getimagesize($GLOBALS['streamed']['path'])[0]);
+
+foreach (['401', '0', '-400', 'big', '400.5', '1e3', ''] as $junk) {
+    $_GET['w'] = $junk;
+    ok("a width of '{$junk}' is ignored", image_requested_width() === null);
+}
+$_GET['w'] = ['400'];
+ok('an array is ignored', image_requested_width() === null);
+unset($_GET['w']);
+ok('no width at all is ignored', image_requested_width() === null);
+
+echo "\n-- the site and the panel agree on the widths --\n";
+// The srcset in the markup names widths this file has to answer for. A width
+// in one list and not the other is either a file nobody downloads or a 404 at
+// exactly the screen size that asks for it, and nothing else would catch it.
+$helper = __DIR__ . '/../../my-app/src/lib/images.ts';
+if (is_file($helper)) {
+    preg_match('/const LADDER = \[([^\]]*)\]/', (string) file_get_contents($helper), $m);
+    $siteWidths = array_map('intval', array_filter(array_map('trim', explode(',', $m[1] ?? ''))));
+    ok('the site asks for widths the panel offers',
+        $siteWidths !== [] && $siteWidths === IMAGE_WIDTHS,
+        'site: [' . implode(', ', $siteWidths) . '] panel: [' . implode(', ', IMAGE_WIDTHS) . ']');
+} else {
+    echo "  --    the site is not beside this panel, so the widths cannot be compared\n";
+}
+
 echo "\n-- when it cannot work --\n";
 $junk = $work . '/junk.jpg';
 file_put_contents($junk, 'this is not an image');
