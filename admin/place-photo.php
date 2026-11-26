@@ -24,4 +24,7 @@ if (!is_file($path)) {
     image_not_found();
 }
 
-image_stream($path, VEHICLE_PHOTO_MIME[$m[1]]);
+// At the size the gallery draws it -- 409 across on /places/, so 900
+// covers a two-times screen. Several of these are stored at 1280, and
+// one is a 714KB PNG of a beach.
+image_serve($path, VEHICLE_PHOTO_MIME[$m[1]], IMAGE_CAP_PLACE);

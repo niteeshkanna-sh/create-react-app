@@ -30,4 +30,7 @@ if (!is_file($path)) {
     image_not_found();
 }
 
-image_stream($path, VEHICLE_PHOTO_MIME[$m[1]]);
+// At the size a card actually draws it. Stored at 1200 across and
+// drawn at most 382, so the original is three times the width of its
+// own frame on every page that shows it.
+image_serve($path, VEHICLE_PHOTO_MIME[$m[1]], IMAGE_CAP_CAR);

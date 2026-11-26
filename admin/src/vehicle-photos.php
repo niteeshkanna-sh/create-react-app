@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/image-names.php';
+require_once __DIR__ . '/image-variant.php';
 
 /**
  * Where a vehicle's photograph lives, and what counts as one.

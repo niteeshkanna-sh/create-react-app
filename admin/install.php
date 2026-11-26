@@ -310,6 +310,16 @@ function environment_checks(): array
          'note'  => extension_loaded('pdo_mysql') ? 'Available' : 'Enable it in hPanel → PHP Configuration'],
         ['label' => 'JSON support',
          'ok'    => extension_loaded('json'), 'note' => ''],
+        // Not required to run the panel -- without it every picture is simply
+        // served at the size it was uploaded, which is what happened before
+        // there was anything here to shrink them. Listed because a visitor on
+        // a phone pays for the difference and nothing else would say so.
+        ['label' => 'Picture shrinking (gd)',
+         'ok'    => extension_loaded('gd') && function_exists('imagewebp'),
+         'note'  => extension_loaded('gd') && function_exists('imagewebp')
+             ? 'Available — photographs are sent at the size the page draws them'
+             : 'Optional. Without it photographs are sent at full size, which is '
+                 . 'slower on a phone. Enable gd in hPanel → PHP Configuration'],
         ['label' => 'Somewhere to keep config.php',
          'ok'    => $writable,
          'note'  => !$writable
