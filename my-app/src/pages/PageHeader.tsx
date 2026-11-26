@@ -1,6 +1,7 @@
 import { useSiteImage } from '../content';
 import { SectionArt } from '../components/art/SectionArt';
 import type { SceneName } from '../components/art/scenes';
+import { imageSrcSet } from '../lib/images';
 
 interface PageHeaderProps {
   title: string;
@@ -52,6 +53,10 @@ export function PageHeader({ title, intro, photo, scene, imageAlt }: PageHeaderP
         <>
           <img
             src={src}
+            // Full width on every screen, so a phone was fetching 1600 pixels
+            // to paint 390 of them. The widest it is ever drawn is the window.
+            srcSet={imageSrcSet(src, 1600)}
+            sizes="100vw"
             // Described rather than decorative. It was alt="" and hidden from
             // assistive technology, which is the right call for an ornament --
             // but this is a photograph of the thing being hired, on a site that
@@ -79,7 +84,14 @@ export function PageHeader({ title, intro, photo, scene, imageAlt }: PageHeaderP
           aria-hidden="true"
           className="banner-art absolute inset-y-0 right-0 hidden w-1/2 lg:block"
         >
-          <SectionArt name={scene} className="h-full" />
+          <SectionArt
+            name={scene}
+            className="h-full"
+            // Half the window, and only drawn from 1024 up: 512 there, 960 at
+            // 1920. Hidden below that, though a browser may still fetch it.
+            widest={1600}
+            sizes="50vw"
+          />
         </div>
       ) : null}
 

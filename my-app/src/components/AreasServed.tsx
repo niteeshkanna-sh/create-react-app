@@ -2,6 +2,7 @@ import { Link } from './SiteLink';
 import pickupData from '../data/pickups.json';
 import { useHome, useSiteImage } from '../content';
 import { Reveal } from './Reveal';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * Where a vehicle can be handed over, named on the page and marked on a map.
@@ -108,7 +109,16 @@ export function AreasServed() {
   return (
     <section className="deliver-band">
       {photo ? (
-        <img src={photo} alt="" aria-hidden="true" className="deliver-photo" loading="lazy" />
+        <img
+          src={photo}
+          // Full width of the band, and the file itself is 1200 across.
+          srcSet={imageSrcSet(photo, 1200)}
+          sizes="100vw"
+          alt=""
+          aria-hidden="true"
+          className="deliver-photo"
+          loading="lazy"
+        />
       ) : null}
       <span aria-hidden="true" className="deliver-veil" />
 

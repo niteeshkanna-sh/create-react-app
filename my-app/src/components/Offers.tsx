@@ -2,6 +2,7 @@ import { RAIL_REPEAT, useRailCrawl } from '../lib/useRailCrawl';
 import { useHome, useSiteImageLookup } from '../content';
 import { ContentLink } from './ContentLink';
 import { Reveal } from './Reveal';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * What is on offer at the moment, as a rail that moves on its own.
@@ -59,6 +60,11 @@ export function Offers() {
             <>
               <img
                 src={photo}
+                // Fills an offer card, which the slot shape puts at 800
+                // across -- nothing here is uploaded yet, so this is for
+                // when one is.
+                srcSet={imageSrcSet(photo, 800)}
+                sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 92vw"
                 alt=""
                 aria-hidden="true"
                 loading="lazy"

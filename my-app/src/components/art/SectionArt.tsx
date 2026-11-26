@@ -1,5 +1,6 @@
 import { useSiteImage } from '../../content';
 import type { SceneName } from './scenes';
+import { imageSrcSet } from '../../lib/images';
 
 /**
  * Illustrated headers for the section cards.
@@ -443,9 +444,17 @@ interface SectionArtProps {
   alt?: string;
   /** The page's own banner image, which must not wait for a lazy load. */
   eager?: boolean;
+  /**
+   * Twice the widest this is drawn at this call site, and how the browser
+   * works that out for itself. Both come from the caller because the same
+   * component draws a service card 612 across on /cars/ and 286 on the home
+   * page -- one number here would be wrong on one of them.
+   */
+  widest?: number;
+  sizes?: string;
 }
 
-export function SectionArt({ name, className, photo, alt, eager }: SectionArtProps) {
+export function SectionArt({ name, className, photo, alt, eager, widest, sizes }: SectionArtProps) {
   const Scene = SCENES[name];
 
   // Uploaded in the panel first, then a file in public/photos, then the
@@ -469,6 +478,8 @@ export function SectionArt({ name, className, photo, alt, eager }: SectionArtPro
       <div className={`art-frame ${className ?? ''}`}>
         <img
           src={src}
+          srcSet={widest ? imageSrcSet(src, widest) : undefined}
+          sizes={widest ? sizes : undefined}
           alt={alt ?? ''}
           aria-hidden={described ? undefined : true}
           loading={eager ? 'eager' : 'lazy'}

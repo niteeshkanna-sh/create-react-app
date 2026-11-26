@@ -68,6 +68,37 @@ const IMAGE_CAP_BANNER = 1600;
 /** The fallback, wide enough that an unrecognised picture is never softened. */
 const IMAGE_CAP_DEFAULT = IMAGE_CAP_BANNER;
 
+/**
+ * The widths a page may ask for, and nothing else.
+ *
+ * The caps above are the most a picture is ever drawn at anywhere on the
+ * site, which is the right default but is wrong for the page in front of you:
+ * the six service cards are drawn 612 across on /cars/ and 300 on the home
+ * page, from the same file, so one number has to be the larger and the home
+ * page carries four times the pixels it shows. A page that knows better says
+ * so with ?w=, and the srcset in the markup lets the browser pick by its own
+ * screen as well.
+ *
+ * A fixed list rather than any number, because the answer is written to disk:
+ * an open parameter is an invitation to fill it one width at a time. Six
+ * entries, roughly a stop apart, which is as fine as srcset can usefully pick
+ * between anyway.
+ */
+const IMAGE_WIDTHS = [240, 400, 600, 800, 1200, 1600];
+
+/** The width this request asked for, if it asked for one we offer. */
+function image_requested_width(): ?int
+{
+    $raw = $_GET['w'] ?? null;
+    if ($raw === null || is_array($raw)) {
+        return null;
+    }
+
+    $asked = filter_var($raw, FILTER_VALIDATE_INT);
+
+    return ($asked !== false && in_array($asked, IMAGE_WIDTHS, true)) ? $asked : null;
+}
+
 /** Pixels GD will agree to decode. Four bytes each, so this is about 160MB. */
 const IMAGE_DECODE_MAX_PIXELS = 40000000;
 
@@ -254,6 +285,15 @@ function image_cache_sweep(string $dir, string $whose, string $which): void
  */
 function image_serve(string $path, string $mime, int $cap = IMAGE_CAP_DEFAULT): void
 {
+    // A page may ask for less than the cap, never more. The cap is what this
+    // kind of picture is drawn at somewhere on the site, so letting a query
+    // raise it would serve a bigger file than anything displays -- and would
+    // let anyone fill the cache with widths no page will ever request.
+    $asked = image_requested_width();
+    if ($asked !== null && $asked < $cap) {
+        $cap = $asked;
+    }
+
     $variant = image_variant($path, $mime, $cap);
 
     if ($variant === null) {

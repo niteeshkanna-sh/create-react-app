@@ -1,5 +1,6 @@
 import type { Place } from '../lib/places';
 import { PlaceScene } from './art/PlaceScene';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * One place, as a card.
@@ -27,6 +28,10 @@ export function PlaceCard({ place, decorative = false }: { place: Place; decorat
         {place.photo ? (
           <img
             src={place.photo}
+            // Measured: 348 on a phone, 338 at 768, 409 from 1440 up. Twice
+            // the largest is 818, so 800 -- these are stored at up to 1280.
+            srcSet={imageSrcSet(place.photo, 800)}
+            sizes="(min-width: 1280px) 420px, (min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
             // Named, not decorative: someone searching for a photograph of
             // Vattakottai Fort should be able to find this one.
             alt={decorative ? '' : `${place.name}, Kanyakumari district`}

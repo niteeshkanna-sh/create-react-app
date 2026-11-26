@@ -97,7 +97,16 @@ export function Services({ showHeading = true }: { showHeading?: boolean }) {
             searching for exactly that. */}
         <div className="service-leaf-wrap px-5 pb-5">
           {hasScene(s.to) ? (
-            <SectionArt name={s.to} className="service-leaf" alt={copy ? '' : s.title} />
+            <SectionArt
+              name={s.to}
+              className="service-leaf"
+              alt={copy ? '' : s.title}
+              // The same picture as the /cars/ card and less than half the
+              // size: 286 at most, against 612 there. This is where most of
+              // the home page's remaining weight was.
+              widest={600}
+              sizes="(min-width: 1280px) 300px, (min-width: 768px) 270px, 240px"
+            />
           ) : (
             <div className="art-frame service-leaf" />
           )}

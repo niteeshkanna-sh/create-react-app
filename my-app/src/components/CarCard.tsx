@@ -112,6 +112,10 @@ export function CarCard({ car, offstage = false }: { car: Car; offstage?: boolea
           className="h-full"
           photo={photo}
           alt={photo ? label : undefined}
+          // Measured: 334 wide on a phone, 382 at 768, never more than 382 on
+          // a desktop grid. Twice the largest is 764, so 800 is the top.
+          widest={800}
+          sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 92vw"
         />
         {/* Top left, where a card is read from. On the right it sat where the
             eye arrives last, which is the wrong place for the one thing that

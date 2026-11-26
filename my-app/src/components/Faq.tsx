@@ -7,6 +7,7 @@ import { useHome, useSiteImage } from '../content';
 const BAKED = '/mountain-road-at-sunrise-self-drive-car-rental.webp';
 import { useReveal } from '../lib/useReveal';
 import { Reveal } from './Reveal';
+import { imageSrcSet } from '../lib/images';
 
 /**
  * The questions people ask before they book.
@@ -162,17 +163,21 @@ export function Faq({
   const chosen = uploadedFaq ?? uploadedHero;
   const photo = chosen ?? BAKED;
 
-  // Only the committed file gets narrower copies: a photograph uploaded in the
-  // panel is served by the panel at the size it was cropped to, and inventing
-  // -800w addresses for it would be inventing files that 404.
-  //
   // It was asking for the full 1920-wide original -- 166 KB, nearly half the
   // weight of the tariff page -- for a picture that is lazily loaded, purely
   // decorative, and sunk under a navy wash. 800 wide in AVIF is 26 KB and
   // there is nothing in this band anyone can see well enough to miss.
+  //
+  // This used to apply to the committed file only, because a photograph
+  // uploaded in the panel came back at one size and inventing -800w addresses
+  // for it would have been inventing files that 404. The panel now answers for
+  // a width, so an uploaded one gets the same treatment -- through imageSrcSet,
+  // which knows which widths it will actually answer for.
   const sources = chosen
-    ? undefined
+    ? imageSrcSet(chosen, 1200)
     : [800, 1280].map((w) => `${BAKED.replace('.webp', `-${w}w.webp`)} ${w}w`).join(', ');
+  // AVIF only for the committed file: those are encoded at build time by
+  // image-variants.mjs and sit in public/. The panel sends WebP.
   const avif = chosen
     ? undefined
     : [800, 1280].map((w) => `${BAKED.replace('.webp', `-${w}w.avif`)} ${w}w`).join(', ');
