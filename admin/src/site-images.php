@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/image-names.php';
+require_once __DIR__ . '/image-variant.php';
 require_once __DIR__ . '/vehicle-photos.php';
 
 /**
@@ -272,6 +273,117 @@ function site_images(): array
     }
 }
 
+/**
+ * How wide this file is ever drawn, from the slot it fills.
+ *
+ * The site images are not one kind of picture. On the home page a collage
+ * frame is drawn 300 points across and a page banner 1440, from the same
+ * directory, through the same reader -- so one number for all of them either
+ * softens the banner or leaves the collage six times larger than it needs to
+ * be.
+ *
+ * The slot already knows. SITE_IMAGE_SHAPES is the size each slot is saved
+ * at, and site_image_warning() already calls it "the space it fills" when it
+ * tells the owner a picture is too small for its slot. The same number read
+ * the other way says when one is too big.
+ *
+ * Found by looking the filename back up, because a file's name no longer says
+ * which slot it belongs to -- it says what is in the picture, for Google's
+ * benefit, so `cars-hero` is stored as self-drive-car-rental-nagercoil-<hex>.
+ * Guessing from the name would cap a banner as though it were a card.
+ *
+ * A name this does not recognise is left alone rather than guessed at: the
+ * fallback is the widest any slot is, so an unknown file is never softened.
+ */
+function site_image_cap(string $name): int
+{
+    static $caps = null;
+
+    if ($caps === null) {
+        $caps = site_image_caps_remembered();
+    }
+
+    // A name that is not in the map is how a new upload announces itself:
+    // every stored file ends in sixteen random characters chosen when it was
+    // saved, so a replaced picture is never a name we have already seen.
+    if (!isset($caps[$name])) {
+        $caps = site_image_caps_rebuild();
+    }
+
+    return $caps[$name] ?? IMAGE_CAP_DEFAULT;
+}
+
+/** Where the map of filename to drawn width is kept between requests. */
+function site_image_caps_file(): string
+{
+    return image_cache_dir() . '/site-image-caps.json';
+}
+
+/**
+ * The map as it was last written, or a fresh one.
+ *
+ * Read from a file rather than the database because this runs on the public
+ * side, once per picture on the page. brand.php never opened a database
+ * connection before this, and making every photograph on the site wait for
+ * one in order to find out how wide to send it would cost more than the
+ * bytes it saves.
+ */
+function site_image_caps_remembered(): array
+{
+    $file = site_image_caps_file();
+    $raw  = @file_get_contents($file);
+
+    if ($raw === false) {
+        return site_image_caps_rebuild();
+    }
+
+    $map = json_decode($raw, true);
+    return is_array($map) ? $map : site_image_caps_rebuild();
+}
+
+/** Drops the remembered map, so the next request builds a fresh one. */
+function site_image_caps_forget(): void
+{
+    @unlink(site_image_caps_file());
+}
+
+/**
+ * Reads the slots from the database and writes the map out.
+ *
+ * Rate limited by the file's own age, because the one case that would
+ * otherwise rebuild on every single request is a file sitting in the brand
+ * directory with no row pointing at it -- an upload to a slot that was later
+ * removed, of which there are several here.
+ */
+function site_image_caps_rebuild(): array
+{
+    $file = site_image_caps_file();
+
+    $age = @filemtime($file);
+    if ($age !== false && (time() - $age) < 60) {
+        $map = json_decode((string) @file_get_contents($file), true);
+        if (is_array($map)) {
+            return $map;
+        }
+    }
+
+    $caps = [];
+    foreach (site_images() as $slot => $stored) {
+        if ($stored === '') {
+            continue;
+        }
+        [, , $wide] = site_image_shape($slot);
+        $caps[$stored] = max(1, (int) $wide);
+    }
+
+    $tmp = $file . '.' . getmypid() . '.tmp';
+    if (@file_put_contents($tmp, json_encode($caps)) !== false && !@rename($tmp, $file)) {
+        @unlink($tmp);
+    }
+
+    return $caps;
+}
+
 /** The public URL for a stored site image, or null. */
 function site_image_url(?string $name): ?string
 {
@@ -330,6 +442,10 @@ function site_image_save(string $slot, array $file, int $userId): ?string
     // Only once the row points at the new file, so a failed write never leaves
     // the site pointing at something that has just been deleted.
     site_image_delete_file($previous);
+
+    // So the new picture is sent at its slot's width from the first request
+    // rather than at the cautious default for the next minute.
+    site_image_caps_forget();
 
     return null;
 }
@@ -448,6 +564,7 @@ function site_image_forget(string $slot): void
     $file = site_images_orphaned()[$slot] ?? null;
     query('DELETE FROM site_images WHERE slot = ?', [$slot]);
     site_image_delete_file($file);
+    site_image_caps_forget();
 }
 
 /** Clears a slot and removes its file. */
@@ -459,6 +576,7 @@ function site_image_clear(string $slot): void
     $previous = site_images()[$slot] ?? null;
     query('DELETE FROM site_images WHERE slot = ?', [$slot]);
     site_image_delete_file($previous);
+    site_image_caps_forget();
 }
 
 function site_image_delete_file(?string $name): void

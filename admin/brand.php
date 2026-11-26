@@ -29,4 +29,8 @@ if (!is_file($path)) {
     image_not_found();
 }
 
-image_stream($path, VEHICLE_PHOTO_MIME[$m[1]]);
+// At the size its own slot is drawn at. Not one number for the whole
+// directory: a collage frame is drawn 300 across and a page banner
+// 1440, and the banners are already narrower than a dense screen
+// wants, so capping those would soften them for nothing.
+image_serve($path, VEHICLE_PHOTO_MIME[$m[1]], site_image_cap($name));
