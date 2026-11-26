@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/src/site-images.php';
+// For current_user(). Defines functions only -- no session is started and no
+// query runs unless ?full=1 actually asks for one.
+require_once __DIR__ . '/src/auth.php';
 
 /**
  * Streams one of the site's own images.
@@ -27,6 +30,18 @@ if (!preg_match(IMAGE_NAME_PATTERN, $name, $m)) {
 $path = site_image_dir() . '/' . $name;
 if (!is_file($path)) {
     image_not_found();
+}
+
+// The crop tool asks for the stored picture itself, because it re-frames
+// one that is already uploaded and has to work from the pixels that were
+// saved. Checked against a panel session: this reader is public, so
+// without that anyone could ask for the full-size copy of everything, and
+// the sizing below would be decoration. A visitor who asks gets the
+// ordinary answer rather than an error -- there is nothing secret here,
+// it is simply not their copy to ask for.
+if (image_requested_full() && current_user() !== null) {
+    image_stream($path, VEHICLE_PHOTO_MIME[$m[1]]);
+    return;
 }
 
 // At the size its own slot is drawn at. Not one number for the whole

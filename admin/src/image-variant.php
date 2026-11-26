@@ -109,6 +109,23 @@ function image_accepts_webp(): bool
 }
 
 /**
+ * Whether this request wants the picture exactly as it was stored.
+ *
+ * The panel's crop tool re-frames a picture that is already uploaded, and it
+ * has to work from the pixels that were stored rather than from a copy sized
+ * for the page the picture appears on. Re-framing the collage -- stored at
+ * 1200 across, drawn at 300, so sent at 700 -- and zooming in would otherwise
+ * stretch 700 pixels to fill the 700 it saves, and each pass would lose a
+ * little more.
+ *
+ * Only ever honoured for someone signed in to the panel; see brand.php.
+ */
+function image_requested_full(): bool
+{
+    return ($_GET['full'] ?? '') === '1';
+}
+
+/**
  * A cached copy of $path no wider than $cap, or null to send the original.
  *
  * Null is not an error the caller has to handle: it means "stream what is on

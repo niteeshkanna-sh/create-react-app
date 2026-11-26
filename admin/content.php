@@ -313,8 +313,8 @@ admin_shell_open($me, 'content.php', 'Website content');
               <?php if (!$whole): ?>
                 <!-- Nothing to frame on a slot that keeps the whole image. -->
                 <button class="btn btn-ghost btn-sm brand-edit" type="button"
-                        data-src="<?= e((string) site_image_url($brand[$slot])) ?>"
-                        data-src-fallback="brand.php?f=<?= e(rawurlencode($brand[$slot])) ?>">Edit</button>
+                        data-src="<?= e((string) site_image_url($brand[$slot])) ?>?full=1"
+                        data-src-fallback="brand.php?f=<?= e(rawurlencode($brand[$slot])) ?>&amp;full=1">Edit</button>
               <?php endif; ?>
               <!-- Same form, different action: a form cannot contain another,
                    and a second form beside it would be a second cell in the

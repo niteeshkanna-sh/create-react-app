@@ -200,6 +200,18 @@ ok('an array is ignored', image_requested_width() === null);
 unset($_GET['w']);
 ok('no width at all is ignored', image_requested_width() === null);
 
+echo "\n-- asking for the picture as it was stored --\n";
+// Honoured only for a signed-in panel session, which brand.php checks; this
+// is just the reading of the request. Anything but exactly "1" is a no, so a
+// stray ?full= on a public URL cannot bypass the sizing.
+unset($_GET['w']);
+foreach (['1' => true, '0' => false, 'yes' => false, 'true' => false, '' => false, '11' => false] as $value => $want) {
+    $_GET['full'] = (string) $value;
+    ok("full='{$value}' reads as " . ($want ? 'yes' : 'no'), image_requested_full() === $want);
+}
+unset($_GET['full']);
+ok('no full at all reads as no', image_requested_full() === false);
+
 echo "\n-- the site and the panel agree on the widths --\n";
 // The srcset in the markup names widths this file has to answer for. A width
 // in one list and not the other is either a file nobody downloads or a 404 at
