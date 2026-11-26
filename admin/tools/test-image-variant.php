@@ -200,6 +200,29 @@ ok('an array is ignored', image_requested_width() === null);
 unset($_GET['w']);
 ok('no width at all is ignored', image_requested_width() === null);
 
+echo "\n-- how hard a copy is compressed --\n";
+// Scaled by how wide the copy is: a collage frame drawn 300 across hides what
+// a full-window banner would show.
+ok('a collage-sized copy is compressed hardest', image_quality(600) === 68, (string) image_quality(600));
+ok('a mid-sized copy sits between', image_quality(1000) === 76, (string) image_quality(1000));
+ok('a banner keeps the detail', image_quality(1600) === 82, (string) image_quality(1600));
+ok('the steps never invert', image_quality(240) <= image_quality(800)
+    && image_quality(800) <= image_quality(1600));
+
+unset($_GET['w'], $_GET['full']);
+$_SERVER['HTTP_ACCEPT'] = $MODERN;
+$wide = $work . '/wide.jpg';
+a_photograph($wide, 1800, 1125, 'jpg');
+// Names of their own: $small further down is a path, and reusing it here
+// handed image_serve an array.
+$thumbCopy = image_variant($wide, 'image/jpeg', 600);
+$bannerCopy = image_variant($wide, 'image/jpeg', 1600);
+// Per pixel, not in total: the big one is of course the bigger file.
+$thumbPer = filesize($thumbCopy['path']) / (600 * 375);
+$bannerPer = filesize($bannerCopy['path']) / (1600 * 1000);
+ok('and a small copy really is lighter per pixel', $thumbPer < $bannerPer,
+    sprintf('%.3f vs %.3f bytes/pixel', $thumbPer, $bannerPer));
+
 echo "\n-- asking for the picture as it was stored --\n";
 // Honoured only for a signed-in panel session, which brand.php checks; this
 // is just the reading of the request. Anything but exactly "1" is a no, so a
@@ -226,6 +249,18 @@ if (is_file($helper)) {
 } else {
     echo "  --    the site is not beside this panel, so the widths cannot be compared\n";
 }
+
+echo "\n-- a change to the recipe reaches copies already made --\n";
+// The cache is keyed on which picture and which version of it. Without the
+// recipe in that key, changing the quality would never reach anything already
+// cached: the old copies would answer for ever and the change would look like
+// it had done nothing.
+$keyed = $work . '/keyed.jpg';
+a_photograph($keyed, 1400, 900, 'jpg');
+$before = image_variant($keyed, 'image/jpeg', 600);
+ok('a copy exists', $before !== null && is_file($before['path']));
+ok('its name carries the recipe',
+    str_contains(file_get_contents(__DIR__ . '/../src/image-variant.php'), "'|r' . IMAGE_RECIPE"));
 
 echo "\n-- when it cannot work --\n";
 $junk = $work . '/junk.jpg';

@@ -109,6 +109,46 @@ function image_accepts_webp(): bool
 }
 
 /**
+ * Bumped whenever the way a copy is made changes.
+ *
+ * The cache is keyed on which picture and which version of it, so without
+ * this a change to the quality or the resampling would never reach anything
+ * already cached -- the old copies answer for ever and the change appears to
+ * have done nothing, which is the hardest kind of result to doubt. Changing
+ * this makes every existing copy a different key, so the next request writes
+ * a fresh one and the sweep removes what it replaced.
+ */
+const IMAGE_RECIPE = 2;
+
+/**
+ * How hard to compress, from how wide the copy is.
+ *
+ * One number for every picture was wrong in both directions. A page banner is
+ * looked at across a whole window and wants the detail; a collage frame is
+ * drawn 300 points across in a grid of six, where the artefacts shrink with
+ * everything else and nobody can see them.
+ *
+ * The "why rent from us" collage is where this shows: six photographs, every
+ * one decorative, 241KB between them at a quality meant for a banner.
+ * Rendered side by side at the size they are actually drawn, 82 and 68 are
+ * indistinguishable -- so is 60, on faces, where compression shows first --
+ * and 68 is a third less to download.
+ *
+ * Kept well above where WebP starts to band a gradient, because these same
+ * small sizes carry the sky in the place photographs.
+ */
+function image_quality(int $width): int
+{
+    if ($width <= 600) {
+        return 68;
+    }
+    if ($width <= 1000) {
+        return 76;
+    }
+    return 82;
+}
+
+/**
  * Whether this request wants the picture exactly as it was stored.
  *
  * The panel's crop tool re-frames a picture that is already uploaded, and it
@@ -200,7 +240,10 @@ function image_variant(string $path, string $mime, int $cap = IMAGE_CAP_DEFAULT)
     // the version it replaced can be found and swept up. Without that the
     // cache would keep every variant of every picture ever uploaded.
     $whose = substr(hash('sha256', $path), 0, 24);
-    $which = substr(hash('sha256', (string) @filemtime($path) . '|' . (string) @filesize($path)), 0, 12);
+    $which = substr(hash(
+        'sha256',
+        (string) @filemtime($path) . '|' . (string) @filesize($path) . '|r' . IMAGE_RECIPE
+    ), 0, 12);
     $dir   = image_cache_dir();
     $file  = $dir . '/' . $whose . '-' . $which . '-' . $cap . '.' . $out;
     $type  = $out === 'jpeg' ? 'image/jpeg' : ($out === 'png' ? 'image/png' : 'image/webp');
@@ -236,11 +279,14 @@ function image_variant(string $path, string $mime, int $cap = IMAGE_CAP_DEFAULT)
     // Written under a temporary name and moved into place, so a request that
     // arrives mid-write never reads half a file.
     $tmp = $file . '.' . getmypid() . '.tmp';
+    $quality = image_quality($target);
     if ($out === 'webp') {
-        $ok = @imagewebp($dst, $tmp, 82);
+        $ok = @imagewebp($dst, $tmp, $quality);
     } elseif ($out === 'jpeg') {
-        $ok = @imagejpeg($dst, $tmp, 82);
+        $ok = @imagejpeg($dst, $tmp, $quality);
     } else {
+        // PNG's number is effort, not loss, so there is nothing to trade
+        // here: it is lossless at every setting.
         $ok = @imagepng($dst, $tmp, 8);
     }
 
