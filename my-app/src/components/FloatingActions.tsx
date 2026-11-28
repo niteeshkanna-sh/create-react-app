@@ -27,11 +27,34 @@ export function FloatingActions() {
   // would connect back to it.
   const onHome = pathname === '/' || pathname === '';
 
+  // Watched rather than polled. This used to read window.scrollY in a scroll
+  // handler, which runs on the main thread for every scroll event a finger
+  // generates -- dozens a second, all to answer one yes-or-no question that
+  // changes twice in a whole page. An observer on a marker 600px down asks the
+  // browser to tell us when that line is crossed, and costs nothing in
+  // between.
+  //
+  // The marker is a zero-height element positioned absolutely at the top of
+  // the document, so it adds nothing to the layout and cannot be scrolled past
+  // without the document itself scrolling.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 600);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const mark = document.createElement('div');
+    mark.setAttribute('aria-hidden', 'true');
+    mark.style.cssText = 'position:absolute;top:600px;left:0;width:1px;height:1px;pointer-events:none';
+    document.body.appendChild(mark);
+
+    // isIntersecting goes false once the marker has left the top of the
+    // viewport, which is exactly "scrolled past 600px".
+    const watch = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0 },
+    );
+    watch.observe(mark);
+
+    return () => {
+      watch.disconnect();
+      mark.remove();
+    };
   }, []);
 
   const number = seo.site.phone.replace(/[^0-9]/g, '');
