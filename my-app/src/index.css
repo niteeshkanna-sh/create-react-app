@@ -2102,15 +2102,20 @@ footer {
    photograph, between the white chooser card above and the white enquiry
    card below. Nothing about it reads as a decision.
 
-   So below the `sm` breakpoint they stop being badges and become one panel
-   with three rows. Same words, same ticks, but the edges line up, the three
-   belong to each other, and it sits against the two white cards as a third
-   deliberate block rather than as debris between them.
+   It is not only a phone. Measured across the range, the three need 664px
+   on one line and the column gives them that only at 744-1023 and again at
+   1280 and up: at 640-743 it is 576-656, and at 1024-1279 the desktop grid
+   hands the list 7 of 12 columns and it falls to 521-636. So the badges
+   break onto two lines across most of tablet and most of laptop too.
+
+   Below 1280 they stop being badges and become one panel: stacked rows on a
+   phone, three across once there is room. Same words, same ticks, but the
+   edges line up and the three belong to each other.
 
    Written here rather than as responsive classes on the element so that the
-   desktop arrangement is untouched by it: above 640px not one of these rules
-   applies and the badges are exactly what they were. */
-@media (max-width: 639px) {
+   arrangement it was drawn for is untouched by it: at 1280 and up not one of
+   these rules applies and the badges are exactly what they were. */
+@media (max-width: 1279px) {
   .hero-promises {
     display: block;
     width: 100%;
@@ -2147,6 +2152,39 @@ footer {
 
   .hero-promises .hero-chip + .hero-chip:hover {
     border-top-color: color-mix(in srgb, var(--color-gold) 15%, transparent);
+  }
+}
+
+/* The same panel, three across, once there is room for it.
+
+   Stacked, the panel is as wide as the column it sits in, and that column
+   reaches 936px before the desktop grid takes over -- three short phrases down
+   the left of a panel that wide is mostly empty panel. Three equal columns use
+   it, and keep the block reading as one thing.
+
+   The divider turns with them: a rule between rows is horizontal, a rule
+   between columns is vertical, and the one the stacked rules set has to be
+   cleared or both appear at once. */
+@media (min-width: 640px) and (max-width: 1279px) {
+  .hero-promises {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hero-promises .hero-chip {
+    align-items: flex-start;
+    padding: 0.875rem 1rem;
+  }
+
+  .hero-promises .hero-chip + .hero-chip,
+  .hero-promises .hero-chip + .hero-chip:hover {
+    border-top: 0;
+    border-left: 1px solid color-mix(in srgb, var(--color-gold) 15%, transparent);
+  }
+
+  /* The tick stays on the first line of a phrase that takes two. */
+  .hero-promises .hero-chip-tick {
+    margin-top: 0.0625rem;
   }
 }
 
