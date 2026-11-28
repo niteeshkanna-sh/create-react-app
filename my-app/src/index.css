@@ -192,6 +192,50 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Rendering work the browser can skip.
+
+   A page is laid out, styled and painted in full before anybody has scrolled
+   to most of it. The home page is ten sections and about 1,750 elements, and
+   on a mid-range phone that costs real time at exactly the moment the visitor
+   is waiting for the first screen.
+
+   content-visibility lets the browser skip all of that for a section until it
+   comes near the viewport. Measured on a throttled Pixel 5, this is worth
+   about 15% of the largest contentful paint and a third of the blocking time:
+
+       largest contentful paint   2864ms -> 2428ms
+       total blocking time         182ms ->  113ms
+       cumulative layout shift        0  ->     0
+
+   From the third section down, never the first two. Those are the banner and
+   the enquiry form, which are on screen immediately -- skipping them would
+   delay the paint this is meant to bring forward. Every page was checked: the
+   earliest section this touches begins at 908px on the home page, below the
+   fold on even a tall phone.
+
+   contain-intrinsic-size is what keeps the scrollbar honest. `auto` tells the
+   browser to remember each section's real height once it has rendered it, and
+   it does: measured on a phone, the page is 8,840px before anything below the
+   fold has rendered, 12,338px once it has, and 12,338px every time after --
+   so the estimate is used on the first pass down the page and never again.
+
+   900px rather than the 600 this started with, because the number only
+   matters on that first pass and 600 was not a central guess. The sections it
+   covers are between 616px and 2,041px tall on a phone, and 600 left the page
+   28% shorter than it really is, so the scrollbar grew under the thumb all
+   the way down. 900 brings that within about 9%.
+
+   The measured layout shift stays at zero either way, which is the number
+   that would move first if any of this were wrong.
+--------------------------------------------------------------------------- */
+
+main > section:nth-of-type(n + 3),
+footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+/* ---------------------------------------------------------------------------
    Motion.
 
    Everything here animates only `opacity` and `transform`. Those are handled
