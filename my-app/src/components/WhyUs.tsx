@@ -88,7 +88,7 @@ export function WhyUs() {
   return (
     <section className="bg-cream py-20">
       <div
-        className={`mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 lg:gap-12 lg:px-12 ${
+        className={`mx-auto grid max-w-[86rem] gap-10 px-5 sm:px-8 md:grid-cols-2 md:items-center md:gap-8 lg:gap-12 lg:px-12 ${
           hasReviews
             ? 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.1fr)_minmax(0,0.85fr)]'
             : 'lg:grid-cols-2 lg:items-center'

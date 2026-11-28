@@ -368,6 +368,39 @@ footer {
   order: -1;
 }
 
+/* On a tablet the steps run two-up under a wide photograph.
+
+   One column was the phone's layout and it was still in use at 1023px: four
+   steps and a portrait photograph stacked down a 704px screen made the
+   section 1934px tall, of which 880 was the photograph alone. Three columns
+   is not the answer either -- the steps either side of the picture leaves
+   each of them about 160px to live in.
+
+   So: the picture across the top, cropped wide, and the steps two-up beneath
+   it. 1934px becomes 1162, and the grid goes from 89% full to 89% full -- the
+   same density in two thirds of the height.
+
+   The crop needs the corners changed with it. how-leaf rounds by percentage,
+   which is what gives it its shape at 4:5; at 16:7 the same percentages draw
+   an ellipse. Fixed radii keep the one square corner that makes it a leaf. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .how-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 2.5rem;
+    row-gap: 1.75rem;
+  }
+
+  .how-photo {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .art-frame.how-leaf {
+    aspect-ratio: 16 / 7;
+    border-radius: 1.5rem 1.5rem 0 1.5rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .how-grid {
     grid-template-columns: 1fr minmax(17rem, 21rem) 1fr;
@@ -2962,6 +2995,31 @@ a.offer-card:hover {
     /* Leaning the way the panel's gradient runs, so the two agree. */
     transform: rotate(-8deg);
     pointer-events: none;
+  }
+}
+
+/* The panel on a tablet.
+
+   The handset was sized for a panel that is 928px wide on a laptop and the
+   same rule was running at 768, where the panel is 704 and the words were
+   being squeezed into 336px of it -- less than half the panel, with a heading
+   on two lines, to leave room for a picture. A smaller handset gives the words
+   416px and takes 18px off the section.
+
+   The three buttons stay on two rows here. They want about 530px between them
+   and there is no width at which that fits beside a phone on a 768px screen;
+   two rows of large targets is the right answer on a tablet anyway. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .cta-phone {
+    right: 2rem;
+    bottom: -1.5rem;
+    width: 10.5rem;
+  }
+
+  .cta-disc {
+    right: -1rem;
+    width: 17rem;
+    height: 17rem;
   }
 }
 

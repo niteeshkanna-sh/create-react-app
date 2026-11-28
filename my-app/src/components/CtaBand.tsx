@@ -58,7 +58,7 @@ export function CtaBand() {
                 flat rectangle. */}
             <span aria-hidden="true" className="cta-disc" />
 
-            <div className="relative z-10 max-w-xl md:max-w-[21rem] lg:max-w-[31rem] xl:max-w-[34rem]">
+            <div className="relative z-10 max-w-xl md:max-w-[26rem] lg:max-w-[31rem] xl:max-w-[34rem]">
               <p className="eyebrow-gold text-[11px]">Car &amp; bike hire · Kanyakumari district</p>
 
               <h2 className="mt-3 text-[1.7rem] leading-tight font-bold tracking-tight sm:text-[2.2rem]">
