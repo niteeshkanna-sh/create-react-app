@@ -2973,18 +2973,21 @@ a.offer-card:hover {
   }
 
   .cta-phone {
-    right: 5rem;
-    bottom: -3rem;
-    width: 14.5rem;
+    /* Pulled in and brought down to meet the narrower panel. Further out it
+       left a dark gap between itself and the words; larger it leaned so far
+       past the top that the section needed 192px of clear space above it to
+       keep off the questions band. */
+    right: 2.5rem;
+    bottom: -2rem;
+    width: 12.5rem;
   }
 }
 
-@media (min-width: 1280px) {
-  .cta-phone {
-    right: 7rem;
-    width: 15.5rem;
-  }
-}
+/* No step at 1280. There used to be one -- right: 7rem, width: 15.5rem -- from
+   when the panel grew with the page and the handset had to grow and move out
+   with it. The panel stops at 64rem now, so it is the same panel at 1024 and
+   at 1600, and a phone that kept growing past it was the thing overlapping the
+   words at 1440 while fitting at 1152. */
 
 /* ---- The handset -------------------------------------------------------
  *

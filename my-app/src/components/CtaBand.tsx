@@ -36,15 +36,23 @@ const PHONE = '/self-drive-car-rental-nagercoil-on-a-phone';
 export function CtaBand() {
   const c = useHome().closingCta;
 
-  // Taller above than below from the laptop up. A handset at a real
-  // proportion leans about a hundred and eighty points past the top of the
-  // panel, and that has to be the section's own space -- at py-20 it was
-  // reaching into the questions band above and sitting on the answers.
+  // Narrower than the rest of the page from the laptop up, which is the whole
+  // point of it. At the page's own 86rem the words stop 600px into a 1280px
+  // panel and the handset starts at 885px, so a third of the last thing on the
+  // page -- the one block whose entire job is to be clicked -- was a dark gap
+  // between the two. At 64rem they sit together and the gap is 67px.
+  //
+  // Still taller above than below, because the handset leans past the top of
+  // the panel and that has to be the section's own space: at py-20 it reached
+  // into the questions band above and sat on the answers. Less of it than
+  // before, though -- a smaller phone leans less far. It leans 114px past the
+  // top at the widest the panel gets, so 8rem clears it where 12rem was
+  // clearing a phone that grew with the page and no longer does.
   return (
-    <section className="mx-auto max-w-[86rem] px-5 pt-20 pb-20 sm:px-8 lg:px-12 lg:pt-48">
+    <section className="mx-auto max-w-[86rem] px-5 pt-20 pb-20 sm:px-8 lg:max-w-[64rem] lg:px-12 lg:pt-32 lg:pb-16">
       <Reveal>
         <div className="cta-wrap relative">
-          <div className="cta-band relative isolate overflow-hidden rounded-[22px] px-6 py-10 text-white sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+          <div className="cta-band relative isolate overflow-hidden rounded-[22px] px-6 py-10 text-white sm:px-10 sm:py-12 lg:px-12 lg:py-10">
             {/* Behind the phone and clipped by the panel, so the phone reads
                 as standing in front of something rather than floating on a
                 flat rectangle. */}
