@@ -198,7 +198,7 @@ export function Hero() {
               they are not read. A badge is read, because there is nothing in
               it to skip: a tick and two or three words. The words are still
               the panel's. */}
-          <ul data-hero-item="" style={{ ['--hero-delay' as string]: '420ms' }} className="flex flex-wrap gap-2.5 lg:col-span-7 lg:col-start-1 lg:row-start-2">
+          <ul data-hero-item="" style={{ ['--hero-delay' as string]: '420ms' }} className="hero-promises flex flex-wrap gap-2.5 lg:col-span-7 lg:col-start-1 lg:row-start-2">
             {h.points.map((p) => (
               <li key={p} className="hero-chip inline-flex items-center gap-2 rounded-full border border-gold/30 bg-white/[0.08] py-2 pr-4 pl-2.5 text-[13px] font-semibold text-white sm:text-sm">
                 <span aria-hidden="true" className="hero-chip-tick grid size-5 shrink-0 place-items-center rounded-full bg-gold/20 text-gold-light">

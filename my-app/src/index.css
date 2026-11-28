@@ -2093,6 +2093,63 @@ footer {
   }
 }
 
+/* The three promises, on a phone.
+
+   Side by side under the heading they are three badges in a row, which is
+   what they were drawn as. A phone has no row: at 390px the column is 350
+   wide and the badges are 231, 192 and 187, so they break one to a line and
+   land as a ragged left-aligned stack -- three stray tags floating on the
+   photograph, between the white chooser card above and the white enquiry
+   card below. Nothing about it reads as a decision.
+
+   So below the `sm` breakpoint they stop being badges and become one panel
+   with three rows. Same words, same ticks, but the edges line up, the three
+   belong to each other, and it sits against the two white cards as a third
+   deliberate block rather than as debris between them.
+
+   Written here rather than as responsive classes on the element so that the
+   desktop arrangement is untouched by it: above 640px not one of these rules
+   applies and the badges are exactly what they were. */
+@media (max-width: 639px) {
+  .hero-promises {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--color-gold) 24%, transparent);
+    border-radius: 14px;
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  .hero-promises .hero-chip {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.8125rem 0.9375rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  /* A hairline between the rows, never above the first one -- that would
+     double the panel's own top border. */
+  .hero-promises .hero-chip + .hero-chip {
+    border-top: 1px solid color-mix(in srgb, var(--color-gold) 15%, transparent);
+  }
+
+  /* There is no hover on a touch screen, and the lift these carry would
+     otherwise fire on tap and shift a row inside a fixed panel. */
+  .hero-promises .hero-chip:hover {
+    transform: none;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .hero-promises .hero-chip + .hero-chip:hover {
+    border-top-color: color-mix(in srgb, var(--color-gold) 15%, transparent);
+  }
+}
+
 .hero-scrim {
   /* Weighted, not a flat wash. The complaint the last one earned was that the
      picture could not be seen, and the reason was a single curtain drawn over
